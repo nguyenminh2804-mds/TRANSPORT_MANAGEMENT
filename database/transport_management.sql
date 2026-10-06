@@ -1,0 +1,2 @@
+-- Database schema cho hệ thống TRANSPORT_MANAGEMENT.
+-- Sẽ bổ sung các bảng sau khi bắt đầu thiết kế CSDL.
