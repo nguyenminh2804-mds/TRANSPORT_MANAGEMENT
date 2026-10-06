@@ -1,0 +1,12 @@
+# Environment / secrets
+.env
+
+# Dependencies
+vendor/
+node_modules/
+
+# Logs
+*.log
+
+# Uploaded files
+uploads/

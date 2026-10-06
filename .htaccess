@@ -1,0 +1,5 @@
+# URL rewriting for the project
+RewriteEngine On
+
+# Route requests to backend/public/index.php
+RewriteRule ^backend/api/(.*)$ backend/public/index.php [QSA,L]
