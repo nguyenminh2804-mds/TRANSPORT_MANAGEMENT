@@ -6,17 +6,13 @@ require_once __DIR__ . '/../../core/Database.php';
 class User
 {
     private $conn;
-
     private $table = 'users';
-
 
     public function __construct()
     {
         $database = new Database();
-
         $this->conn = $database->connect();
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -42,7 +38,6 @@ class User
         return $stmt->fetch();
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Tìm user theo ID
@@ -64,7 +59,6 @@ class User
 
         return $stmt->fetch();
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -90,7 +84,6 @@ class User
 
         return $stmt->fetchAll();
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -119,7 +112,6 @@ class User
 
         $stmt = $this->conn->prepare($sql);
 
-
         return $stmt->execute([
             ':username' => $data['username'],
 
@@ -141,7 +133,6 @@ class User
                 : 1
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -169,18 +160,13 @@ class User
 
         $stmt = $this->conn->prepare($sql);
 
-
         return $stmt->execute([
             ':full_name' => $data['full_name'],
-
             ':role' => $data['role'],
-
             ':status' => (int)$data['status'],
-
             ':id' => $id
         ]);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -199,22 +185,27 @@ class User
             ':id' => $id
         ]);
     }
-    // Cập nhật mật khẩu
-public function updatePassword($id, $password)
-{
-    $sql = "UPDATE {$this->table}
-            SET password = :password
-            WHERE id = :id";
 
-    $stmt = $this->conn->prepare($sql);
+    /*
+    |--------------------------------------------------------------------------
+    | Cập nhật mật khẩu
+    |--------------------------------------------------------------------------
+    */
 
-    return $stmt->execute([
-        ':password' => password_hash(
-            $password,
-            PASSWORD_DEFAULT
-        ),
-        ':id' => $id
-    ]);
-}
-    
+    public function updatePassword($id, $password)
+    {
+        $sql = "UPDATE {$this->table}
+                SET password = :password
+                WHERE id = :id";
+
+        $stmt = $this->conn->prepare($sql);
+
+        return $stmt->execute([
+            ':password' => password_hash(
+                $password,
+                PASSWORD_DEFAULT
+            ),
+            ':id' => $id
+        ]);
+    }
 }

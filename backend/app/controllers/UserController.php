@@ -28,7 +28,6 @@ class UserController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Lấy thông tin một người dùng
@@ -51,7 +50,6 @@ class UserController extends Controller
 
         $this->success($user);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -85,7 +83,6 @@ class UserController extends Controller
             ? (int)$data['status']
             : 1;
 
-
         /*
         |--------------------------------------------------------------------------
         | Validate
@@ -101,7 +98,6 @@ class UserController extends Controller
                 'Vui lòng nhập đầy đủ thông tin'
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -122,7 +118,6 @@ class UserController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Validate status
@@ -134,7 +129,6 @@ class UserController extends Controller
                 'Trạng thái tài khoản không hợp lệ'
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -148,7 +142,6 @@ class UserController extends Controller
                 409
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -164,7 +157,6 @@ class UserController extends Controller
             'status' => $status
         ]);
 
-
         if (!$created) {
             $this->error(
                 'Không thể tạo người dùng',
@@ -172,13 +164,11 @@ class UserController extends Controller
             );
         }
 
-
         $this->success(
             [],
             'Tạo người dùng thành công'
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -197,12 +187,10 @@ class UserController extends Controller
             );
         }
 
-
         $data = json_decode(
             file_get_contents('php://input'),
             true
         );
-
 
         $fullName = trim(
             $data['full_name'] ?? ''
@@ -213,7 +201,6 @@ class UserController extends Controller
         $status = isset($data['status'])
             ? (int)$data['status']
             : -1;
-
 
         /*
         |--------------------------------------------------------------------------
@@ -230,7 +217,6 @@ class UserController extends Controller
                 'Vui lòng nhập đầy đủ thông tin'
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -251,7 +237,6 @@ class UserController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Validate status
@@ -263,7 +248,6 @@ class UserController extends Controller
                 'Trạng thái tài khoản không hợp lệ'
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -280,7 +264,6 @@ class UserController extends Controller
             ]
         );
 
-
         if (!$updated) {
             $this->error(
                 'Không thể cập nhật người dùng',
@@ -288,13 +271,11 @@ class UserController extends Controller
             );
         }
 
-
         $this->success(
             [],
             'Cập nhật người dùng thành công'
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -313,9 +294,7 @@ class UserController extends Controller
             );
         }
 
-
         $deleted = $this->userModel->delete($id);
-
 
         if (!$deleted) {
             $this->error(
@@ -323,7 +302,6 @@ class UserController extends Controller
                 500
             );
         }
-
 
         $this->success(
             [],

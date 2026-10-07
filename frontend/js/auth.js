@@ -16,7 +16,6 @@ loginForm.addEventListener('submit', async function (event) {
     loginMessage.innerHTML = '';
 
     try {
-
         const response = await fetch(
             `${API_BASE_URL}?route=/api/login`,
             {
@@ -35,9 +34,7 @@ loginForm.addEventListener('submit', async function (event) {
             }
         );
 
-
         const result = await response.json();
-
 
         /*
         |--------------------------------------------------------------------------
@@ -46,7 +43,6 @@ loginForm.addEventListener('submit', async function (event) {
         */
 
         if (!result.success) {
-
             loginMessage.innerHTML = `
                 <div class="alert alert-danger">
                     ${result.message}
@@ -55,7 +51,6 @@ loginForm.addEventListener('submit', async function (event) {
 
             return;
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -68,7 +63,6 @@ loginForm.addEventListener('submit', async function (event) {
             JSON.stringify(result.data)
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Phân quyền và chuyển trang
@@ -76,7 +70,6 @@ loginForm.addEventListener('submit', async function (event) {
         */
 
         const role = result.data.role;
-
 
         switch (role) {
 
@@ -150,9 +143,10 @@ loginForm.addEventListener('submit', async function (event) {
                     </div>
                 `;
 
+                sessionStorage.removeItem('user');
+
                 break;
         }
-
 
     } catch (error) {
 
@@ -161,12 +155,10 @@ loginForm.addEventListener('submit', async function (event) {
             error
         );
 
-
         loginMessage.innerHTML = `
             <div class="alert alert-danger">
                 Không thể kết nối đến máy chủ.
             </div>
         `;
-
     }
 });

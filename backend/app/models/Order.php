@@ -14,6 +14,7 @@ class Order
         $this->conn = $database->connect();
     }
 
+    // Lấy tất cả đơn hàng của một khách hàng
     public function getByCustomerId($customerId)
     {
         $sql = "SELECT
@@ -40,6 +41,7 @@ class Order
         return $stmt->fetchAll();
     }
 
+    // Tra cứu một đơn hàng của khách hàng
     public function findByCustomerAndCode(
         $customerId,
         $orderCode

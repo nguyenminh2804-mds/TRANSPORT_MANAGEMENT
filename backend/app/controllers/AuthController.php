@@ -9,12 +9,35 @@ class AuthController extends Controller
     private $userModel;
     private $customerModel;
 
+    /**
+     * Tìm tài khoản và xử lý lỗi database.
+     */
+    private function findAccount($method, $value)
+    {
+        try {
+            return $this->userModel->$method($value);
+        } catch (PDOException $e) {
+            error_log('Account integration: ' . $e->getMessage());
+
+            if ((int)($e->errorInfo[1] ?? 0) === 1146) {
+                $this->error(
+                    'Chưa có bảng users trong database. Cần schema tài khoản chính thức trước khi đăng nhập hoặc quản lý tài xế.',
+                    503
+                );
+            }
+
+            $this->error(
+                'Không thể đọc tài khoản. Kiểm tra kết nối và schema module users.',
+                500
+            );
+        }
+    }
+
     public function __construct()
     {
         $this->userModel = new User();
         $this->customerModel = new Customer();
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -24,6 +47,8 @@ class AuthController extends Controller
 
     public function login()
     {
+        header('Cache-Control: no-store, private');
+
         $data = json_decode(
             file_get_contents('php://input'),
             true
@@ -41,8 +66,10 @@ class AuthController extends Controller
             );
         }
 
-        $user = $this->userModel
-            ->findByUsername($username);
+        $user = $this->findAccount(
+            'findByUsername',
+            $username
+        );
 
         if (!$user) {
             $this->error(
@@ -68,6 +95,8 @@ class AuthController extends Controller
             );
         }
 
+        session_regenerate_id(true);
+
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
@@ -79,7 +108,6 @@ class AuthController extends Controller
             'Đăng nhập thành công'
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -118,7 +146,6 @@ class AuthController extends Controller
             $data['address'] ?? ''
         );
 
-
         /*
         |--------------------------------------------------------------------------
         | Validate
@@ -139,13 +166,11 @@ class AuthController extends Controller
             );
         }
 
-
         if (strlen($username) < 4) {
             $this->error(
                 'Tên đăng nhập phải có ít nhất 4 ký tự'
             );
         }
-
 
         if (strlen($password) < 6) {
             $this->error(
@@ -153,20 +178,17 @@ class AuthController extends Controller
             );
         }
 
-
         if ($password !== $confirmPassword) {
             $this->error(
                 'Mật khẩu xác nhận không khớp'
             );
         }
 
-
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->error(
                 'Email không hợp lệ'
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -184,7 +206,6 @@ class AuthController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Check customer email / phone
@@ -201,7 +222,6 @@ class AuthController extends Controller
             );
         }
 
-
         if (
             $this->customerModel
                 ->findByPhone($phone)
@@ -211,7 +231,6 @@ class AuthController extends Controller
                 409
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -227,14 +246,12 @@ class AuthController extends Controller
             'status' => 1
         ]);
 
-
         if (!$createdUser) {
             $this->error(
                 'Không thể tạo tài khoản',
                 500
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -245,14 +262,12 @@ class AuthController extends Controller
         $user = $this->userModel
             ->findByUsername($username);
 
-
         if (!$user) {
             $this->error(
                 'Không tìm thấy tài khoản vừa tạo',
                 500
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -269,7 +284,6 @@ class AuthController extends Controller
                 'address' => $address
             ]);
 
-
         if (!$createdCustomer) {
 
             // Xóa user vừa tạo nếu tạo customer thất bại
@@ -283,13 +297,11 @@ class AuthController extends Controller
             );
         }
 
-
         $this->success(
             [],
             'Đăng ký tài khoản thành công'
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -317,7 +329,6 @@ class AuthController extends Controller
         $confirmPassword =
             $data['confirm_password'] ?? '';
 
-
         /*
         |--------------------------------------------------------------------------
         | Validate
@@ -335,20 +346,17 @@ class AuthController extends Controller
             );
         }
 
-
         if ($newPassword !== $confirmPassword) {
             $this->error(
                 'Mật khẩu xác nhận không khớp'
             );
         }
 
-
         if (strlen($newPassword) < 6) {
             $this->error(
                 'Mật khẩu mới phải có ít nhất 6 ký tự'
             );
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -359,7 +367,6 @@ class AuthController extends Controller
         $user = $this->userModel
             ->findByUsername($username);
 
-
         if (!$user) {
             $this->error(
                 'Thông tin xác minh không chính xác',
@@ -367,6 +374,18 @@ class AuthController extends Controller
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Check account status
+        |--------------------------------------------------------------------------
+        */
+
+        if ((int)$user['status'] !== 1) {
+            $this->error(
+                'Tài khoản đã bị khóa',
+                403
+            );
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -387,7 +406,6 @@ class AuthController extends Controller
             );
         }
 
-
         /*
         |--------------------------------------------------------------------------
         | Update password
@@ -400,7 +418,6 @@ class AuthController extends Controller
                 $newPassword
             );
 
-
         if (!$updated) {
             $this->error(
                 'Không thể cập nhật mật khẩu',
@@ -408,13 +425,11 @@ class AuthController extends Controller
             );
         }
 
-
         $this->success(
             [],
             'Đặt lại mật khẩu thành công'
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -424,12 +439,13 @@ class AuthController extends Controller
 
     public function logout()
     {
+        header('Cache-Control: no-store, private');
+
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {
 
-            $params =
-                session_get_cookie_params();
+            $params = session_get_cookie_params();
 
             setcookie(
                 session_name(),
@@ -450,15 +466,16 @@ class AuthController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
-    | Current User
+    | Current logged-in user
     |--------------------------------------------------------------------------
     */
 
     public function me()
     {
+        header('Cache-Control: no-store, private');
+
         if (!isset($_SESSION['user_id'])) {
             $this->error(
                 'Chưa đăng nhập',
@@ -466,15 +483,22 @@ class AuthController extends Controller
             );
         }
 
-        $user = $this->userModel
-            ->findById(
-                $_SESSION['user_id']
-            );
+        $user = $this->findAccount(
+            'findById',
+            $_SESSION['user_id']
+        );
 
         if (!$user) {
             $this->error(
-                'Không tìm thấy người dùng',
-                404
+                'Phiên đăng nhập không còn hợp lệ',
+                401
+            );
+        }
+
+        if ((int)$user['status'] !== 1) {
+            $this->error(
+                'Tài khoản đã bị khóa',
+                403
             );
         }
 

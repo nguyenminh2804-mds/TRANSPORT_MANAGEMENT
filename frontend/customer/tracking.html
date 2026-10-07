@@ -2,6 +2,7 @@
 <html lang="vi">
 
 <head>
+
     <meta charset="UTF-8">
 
     <meta
@@ -23,18 +24,20 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
-    <!-- CSS giống orders.html -->
+    <!-- Common CSS -->
     <link
         rel="stylesheet"
         href="../css/common.css"
     >
 
+    <!-- Customer CSS -->
     <link
         rel="stylesheet"
         href="../css/customer.css"
     >
 
     <style>
+
         /* =========================================================
            TRACKING PAGE
         ========================================================= */
@@ -52,7 +55,10 @@
             color: #718096;
         }
 
-        /* Search */
+
+        /* =========================================================
+           SEARCH
+        ========================================================= */
 
         .customer-tracking-search-card {
             background: #ffffff;
@@ -108,7 +114,10 @@
             pointer-events: none;
         }
 
-        /* Message */
+
+        /* =========================================================
+           MESSAGE
+        ========================================================= */
 
         .customer-tracking-message {
             margin-top: 16px;
@@ -130,7 +139,10 @@
             color: #991b1b;
         }
 
-        /* Result */
+
+        /* =========================================================
+           RESULT
+        ========================================================= */
 
         .customer-tracking-result {
             display: none;
@@ -178,7 +190,10 @@
             white-space: nowrap;
         }
 
-        /* Status colors */
+
+        /* =========================================================
+           STATUS COLORS
+        ========================================================= */
 
         .tracking-status-pending {
             background: #fff7ed;
@@ -215,7 +230,10 @@
             color: #475569;
         }
 
-        /* Info grid */
+
+        /* =========================================================
+           INFO GRID
+        ========================================================= */
 
         .customer-tracking-info-grid {
             display: grid;
@@ -244,7 +262,10 @@
             font-weight: 600;
         }
 
-        /* Timeline */
+
+        /* =========================================================
+           TIMELINE
+        ========================================================= */
 
         .customer-tracking-timeline-section {
             padding: 28px;
@@ -340,7 +361,10 @@
             font-weight: 600;
         }
 
-        /* System status */
+
+        /* =========================================================
+           SYSTEM STATUS
+        ========================================================= */
 
         .customer-tracking-system-status {
             margin-top: 24px;
@@ -356,7 +380,10 @@
             color: #334155;
         }
 
-        /* Back */
+
+        /* =========================================================
+           BACK
+        ========================================================= */
 
         .customer-tracking-back {
             margin-top: 24px;
@@ -381,7 +408,10 @@
             border-color: #bfdbfe;
         }
 
-        /* Responsive */
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
 
         @media (max-width: 768px) {
 
@@ -416,6 +446,7 @@
                 overflow-x: auto;
             }
         }
+
     </style>
 
 </head>
@@ -436,18 +467,22 @@
             href="dashboard.html"
             class="customer-brand"
         >
+
             <i class="fa-solid fa-truck-fast"></i>
 
             <span>
                 Quản lý vận tải
             </span>
+
         </a>
 
 
         <div class="customer-user">
 
             <div class="customer-avatar">
+
                 <i class="fa-solid fa-user"></i>
+
             </div>
 
             <span id="welcomeUser">
@@ -459,8 +494,11 @@
                 id="logoutBtn"
                 class="btn customer-logout"
             >
+
                 <i class="fa-solid fa-right-from-bracket me-2"></i>
+
                 Đăng xuất
+
             </button>
 
         </div>
@@ -496,7 +534,9 @@
     </div>
 
 
-    <!-- SEARCH -->
+    <!-- =====================================================
+         SEARCH
+    ====================================================== -->
 
     <section class="customer-tracking-search-card">
 
@@ -518,8 +558,11 @@
                 id="trackingBtn"
                 class="customer-tracking-search-btn"
             >
+
                 <i class="fa-solid fa-magnifying-glass me-2"></i>
+
                 Tra cứu
+
             </button>
 
         </form>
@@ -545,7 +588,7 @@
         <div class="customer-tracking-card">
 
 
-            <!-- Header -->
+            <!-- HEADER -->
 
             <div class="customer-tracking-card-header">
 
@@ -569,14 +612,19 @@
                     id="resultStatus"
                     class="customer-tracking-status tracking-status-unknown"
                 >
+
                     <i class="fa-solid fa-circle-question"></i>
+
                     Không xác định
+
                 </div>
 
             </div>
 
 
-            <!-- Information -->
+            <!-- =================================================
+                 INFORMATION
+            ================================================== -->
 
             <div class="customer-tracking-info-grid">
 
@@ -676,7 +724,6 @@
 
                 </div>
 
-
             </div>
 
 
@@ -712,7 +759,7 @@
                         ></div>
 
 
-                        <!-- Step 1 -->
+                        <!-- STEP 1 -->
 
                         <div
                             class="tracking-step"
@@ -732,7 +779,7 @@
                         </div>
 
 
-                        <!-- Step 2 -->
+                        <!-- STEP 2 -->
 
                         <div
                             class="tracking-step"
@@ -752,7 +799,7 @@
                         </div>
 
 
-                        <!-- Step 3 -->
+                        <!-- STEP 3 -->
 
                         <div
                             class="tracking-step"
@@ -772,7 +819,7 @@
                         </div>
 
 
-                        <!-- Step 4 -->
+                        <!-- STEP 4 -->
 
                         <div
                             class="tracking-step"
@@ -792,7 +839,7 @@
                         </div>
 
 
-                        <!-- Step 5 -->
+                        <!-- STEP 5 -->
 
                         <div
                             class="tracking-step"
@@ -820,8 +867,11 @@
                     id="systemStatus"
                     class="customer-tracking-system-status"
                 >
+
                     <strong>Trạng thái hệ thống:</strong>
+
                     Chưa có dữ liệu
+
                 </div>
 
             </div>
@@ -831,7 +881,9 @@
     </section>
 
 
-    <!-- BACK -->
+    <!-- =====================================================
+         BACK
+    ====================================================== -->
 
     <div class="customer-tracking-back">
 
@@ -875,7 +927,9 @@ document.addEventListener(
 
         setupLogout();
 
+
         // Nếu URL có ?code=DH001 thì tự tra cứu
+
         const params = new URLSearchParams(
             window.location.search
         );
@@ -884,11 +938,13 @@ document.addEventListener(
 
         if (code) {
 
-            document.getElementById(
-                'orderCodeInput'
-            ).value = code;
+            const input =
+                document.getElementById('orderCodeInput');
+
+            input.value = code;
 
             trackOrder(code);
+
         }
 
     }
@@ -913,7 +969,6 @@ async function loadCurrentUser() {
             }
         );
 
-
         const result =
             await response.json();
 
@@ -924,13 +979,16 @@ async function loadCurrentUser() {
                 'login.html';
 
             return;
+
         }
 
 
         document.getElementById(
             'welcomeUser'
         ).textContent =
-            result.data.full_name;
+            result.data.full_name ||
+            result.data.username;
+
 
     } catch (error) {
 
@@ -941,6 +999,7 @@ async function loadCurrentUser() {
 
         window.location.href =
             'login.html';
+
     }
 
 }
@@ -987,6 +1046,7 @@ function setupTracking() {
                 input.focus();
 
                 return;
+
             }
 
 
@@ -1015,6 +1075,7 @@ async function trackOrder(orderCode) {
     button.classList.add(
         'is-loading'
     );
+
 
     button.innerHTML =
         '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tra cứu';
@@ -1059,6 +1120,7 @@ async function trackOrder(orderCode) {
             );
 
             return;
+
         }
 
 
@@ -1088,11 +1150,13 @@ async function trackOrder(orderCode) {
             'error'
         );
 
+
     } finally {
 
         button.classList.remove(
             'is-loading'
         );
+
 
         button.innerHTML =
             '<i class="fa-solid fa-magnifying-glass me-2"></i>Tra cứu';
@@ -1167,7 +1231,8 @@ function renderOrder(order) {
         'systemStatus'
     ).innerHTML =
         `<strong>Trạng thái hệ thống:</strong> ${
-            order.status || 'Không có status'
+            order.status ||
+            'Không có status'
         }`;
 
 
@@ -1178,6 +1243,7 @@ function renderOrder(order) {
 
 
     // Cuộn tới kết quả
+
     setTimeout(
         () => {
 
@@ -1197,12 +1263,12 @@ function renderOrder(order) {
 
 /*
 |--------------------------------------------------------------------------
-| Status
+| Normalize status
 |--------------------------------------------------------------------------
 |
-| DB của m đang có IN_TRANSIT.
-| Ta quy đổi IN_TRANSIT -> DELIVERING
-|--------------------------------------------------------------------------
+| DB hiện tại dùng IN_TRANSIT.
+| Frontend dùng DELIVERING để hiển thị "Đang giao hàng".
+|
 */
 
 function normalizeStatus(status) {
@@ -1238,7 +1304,7 @@ function normalizeStatus(status) {
 
 /*
 |--------------------------------------------------------------------------
-| Update status + timeline
+| Update status
 |--------------------------------------------------------------------------
 */
 
@@ -1362,7 +1428,7 @@ function updateTimeline(status) {
 
         /*
          * Timeline từ 9% tới 91%.
-         * 4 khoảng tương ứng 0 -> 4.
+         * Có 4 khoảng tương ứng 0 -> 4.
          */
 
         const percentage =
@@ -1447,7 +1513,7 @@ function getStatusInfo(status) {
                 'tracking-status-delivered',
 
             icon:
-                'fa-solid fa-circle-check'
+                'fa-solid fa-house-circle-check'
 
         },
 
@@ -1460,7 +1526,7 @@ function getStatusInfo(status) {
                 'tracking-status-cancelled',
 
             icon:
-                'fa-solid fa-xmark'
+                'fa-solid fa-circle-xmark'
 
         }
 
@@ -1469,9 +1535,7 @@ function getStatusInfo(status) {
 
     return statuses[status] || {
 
-        label:
-            status ||
-            'Không xác định',
+        label: 'Không xác định',
 
         className:
             'tracking-status-unknown',
@@ -1486,13 +1550,13 @@ function getStatusInfo(status) {
 
 /*
 |--------------------------------------------------------------------------
-| Payment
+| Payment label
 |--------------------------------------------------------------------------
 */
 
 function getPaymentLabel(status) {
 
-    const payments = {
+    const paymentStatuses = {
 
         PAID:
             'Đã thanh toán',
@@ -1501,14 +1565,22 @@ function getPaymentLabel(status) {
             'Chưa thanh toán',
 
         PENDING:
-            'Chờ thanh toán'
+            'Chờ thanh toán',
+
+        COD:
+            'Thanh toán khi nhận hàng'
 
     };
 
 
-    return payments[status] ||
-        status ||
-        'Không xác định';
+    if (!status) {
+        return '-';
+    }
+
+
+    return paymentStatuses[
+        String(status).toUpperCase()
+    ] || status;
 
 }
 
@@ -1521,11 +1593,13 @@ function getPaymentLabel(status) {
 
 function formatCurrency(value) {
 
-    return Number(
-        value || 0
-    ).toLocaleString(
+    const amount =
+        Number(value || 0);
+
+
+    return amount.toLocaleString(
         'vi-VN'
-    ) + ' VND';
+    ) + ' VNĐ';
 
 }
 
@@ -1539,9 +1613,7 @@ function formatCurrency(value) {
 function formatDate(value) {
 
     if (!value) {
-
         return '-';
-
     }
 
 
@@ -1558,7 +1630,7 @@ function formatDate(value) {
     }
 
 
-    return date.toLocaleDateString(
+    return date.toLocaleString(
         'vi-VN'
     );
 
@@ -1582,21 +1654,33 @@ function showMessage(
         );
 
 
-    element.textContent =
-        message;
-
-
     element.className =
         `customer-tracking-message ${type}`;
+
+
+    element.innerHTML =
+        message;
 
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| Hide result
-|--------------------------------------------------------------------------
-*/
+function hideMessage() {
+
+    const element =
+        document.getElementById(
+            'trackingMessage'
+        );
+
+
+    element.className =
+        'customer-tracking-message';
+
+
+    element.innerHTML =
+        '';
+
+}
+
 
 function hideResult() {
 
@@ -1628,33 +1712,13 @@ function setupLogout() {
 
             try {
 
-                const response =
-                    await fetch(
-                        `${API_BASE_URL}?route=/api/logout`,
-                        {
-                            method: 'POST',
-                            credentials: 'include'
-                        }
-                    );
-
-
-                const result =
-                    await response.json();
-
-
-                if (result.success) {
-
-                    window.location.href =
-                        'login.html';
-
-                } else {
-
-                    alert(
-                        result.message ||
-                        'Đăng xuất thất bại'
-                    );
-
-                }
+                await fetch(
+                    `${API_BASE_URL}?route=/api/logout`,
+                    {
+                        method: 'POST',
+                        credentials: 'include'
+                    }
+                );
 
             } catch (error) {
 
@@ -1663,12 +1727,16 @@ function setupLogout() {
                     error
                 );
 
-
-                alert(
-                    'Không thể kết nối đến máy chủ'
-                );
-
             }
+
+
+            sessionStorage.removeItem(
+                'user'
+            );
+
+
+            window.location.href =
+                'login.html';
 
         }
     );

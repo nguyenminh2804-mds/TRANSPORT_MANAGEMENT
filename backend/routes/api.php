@@ -6,6 +6,7 @@ require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/UserController.php';
 require_once __DIR__ . '/../app/controllers/CustomerController.php';
 require_once __DIR__ . '/../app/controllers/OrderController.php';
+require_once __DIR__ . '/../app/controllers/DriverController.php';
 
 $router = new Router();
 
@@ -20,6 +21,7 @@ $authController = new AuthController();
 $router->post('/api/login', function () use ($authController) {
     $authController->login();
 });
+
 $router->post('/api/customer/register', function () use ($authController) {
     $authController->registerCustomer();
 });
@@ -209,6 +211,42 @@ $router->get('/api/customer/orders', function () use ($orderController) {
 
 $router->post('/api/customer/orders/track', function () use ($orderController) {
     $orderController->track();
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Driver Management
+|--------------------------------------------------------------------------
+|
+| Session and ADMIN/STAFF authorization are handled by DriverController.
+|--------------------------------------------------------------------------
+*/
+
+$driverController = new DriverController();
+
+$router->get('/api/drivers', function () use ($driverController) {
+    $driverController->handle('index');
+});
+
+$router->get('/api/drivers/show', function () use ($driverController) {
+    $driverController->handle('show');
+});
+
+$router->post('/api/drivers', function () use ($driverController) {
+    $driverController->handle('store');
+});
+
+$router->put('/api/drivers', function () use ($driverController) {
+    $driverController->handle('update');
+});
+
+$router->delete('/api/drivers', function () use ($driverController) {
+    $driverController->handle('destroy');
+});
+
+$router->put('/api/drivers/status', function () use ($driverController) {
+    $driverController->handle('status');
 });
 
 
