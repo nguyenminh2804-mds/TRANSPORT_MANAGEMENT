@@ -1912,8 +1912,63 @@
            API
         ====================================================== */
 
-        const API_BASE_URL =
-            'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+        async function adminRequest(route, options = {}, params = {}) {
+    const url = new URL('../../backend/public/index.php', window.location.href);
+    url.searchParams.set('route', route);
+    for (const [key, value] of Object.entries(params)) url.searchParams.set(key, value);
+    let response;
+    try {
+        response = await fetch(url.href, { ...options, credentials: 'same-origin', cache: 'no-store' });
+    } catch {
+        adminApiError('Không thể kết nối tới máy chủ. Hãy kiểm tra Apache/XAMPP rồi thử lại.');
+        throw new Error('Admin API network error');
+    }
+    if (route === '/api/me' && response.status === 401) {
+        window.location.href = '../customer/login.html';
+        throw new Error('Session expired');
+    }
+    let result;
+    try { result = await response.json(); }
+    catch {
+        adminApiError(`Máy chủ trả HTTP ${response.status} nhưng JSON không hợp lệ.`);
+        throw new Error('Invalid admin API JSON');
+    }
+    if (!response.ok || !result || typeof result.success !== 'boolean' || !result.success) {
+        const message = response.status >= 500 ? 'Máy chủ gặp lỗi. Vui lòng thử lại sau.' : (result?.message || 'Yêu cầu thất bại.');
+        adminApiError(`HTTP ${response.status}: ${message}`);
+        throw new Error('Admin API request failed');
+    }
+    return { json: async () => result };
+}
+
+function adminApiError(message) {
+    let banner = document.getElementById('adminApiError');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'adminApiError';
+        banner.className = 'alert alert-danger m-3';
+        banner.setAttribute('role', 'alert');
+        document.body.prepend(banner);
+    }
+    banner.textContent = message;
+}
+
+function adminRequestWithId(route, id, options) {
+    return adminRequest(route, options, { id });
+}
+
+async function loadAdminUsers() {
+    try {
+        const response = await adminRequest('/api/me', { method: 'GET' });
+        const result = await response.json();
+        if (result.data?.role !== 'ADMIN') {
+            adminApiError('Bạn không có quyền quản trị người dùng.');
+            return;
+        }
+        await loadUsers();
+    } catch (error) { console.error('Admin session error:', error); }
+}
+
 
 
         /* =====================================================
@@ -1951,7 +2006,7 @@
             'DOMContentLoaded',
             () => {
 
-                loadUsers();
+                loadAdminUsers();
 
                 setupEvents();
 
@@ -1973,12 +2028,11 @@
             {
 
                 const response =
-                    await fetch(
-                        `${API_BASE_URL}?route=/api/users`,
+                    await adminRequest('/api/users',
                         {
                             method: 'GET',
 
-                            credentials: 'include'
+                            credentials: 'same-origin'
                         }
                     );
 
@@ -2535,12 +2589,11 @@
             {
 
                 const response =
-                    await fetch(
-                        `${API_BASE_URL}?route=/api/users/show&id=${id}`,
+                    await adminRequestWithId('/api/users/show', id,
                         {
                             method: 'GET',
 
-                            credentials: 'include'
+                            credentials: 'same-origin'
                         }
                     );
 
@@ -2730,8 +2783,7 @@
                 {
 
                     response =
-                        await fetch(
-                            `${API_BASE_URL}?route=/api/users`,
+                        await adminRequest('/api/users',
                             {
 
                                 method: 'POST',
@@ -2741,8 +2793,7 @@
                                         'application/json'
                                 },
 
-                                credentials:
-                                    'include',
+                                credentials: 'same-origin',
 
                                 body:
                                     JSON.stringify({
@@ -2776,8 +2827,7 @@
                 {
 
                     response =
-                        await fetch(
-                            `${API_BASE_URL}?route=/api/users&id=${editingUserId}`,
+                        await adminRequestWithId('/api/users', editingUserId,
                             {
 
                                 method: 'PUT',
@@ -2787,8 +2837,7 @@
                                         'application/json'
                                 },
 
-                                credentials:
-                                    'include',
+                                credentials: 'same-origin',
 
                                 body:
                                     JSON.stringify({
@@ -2911,14 +2960,12 @@
             {
 
                 const response =
-                    await fetch(
-                        `${API_BASE_URL}?route=/api/users&id=${id}`,
+                    await adminRequestWithId('/api/users', id,
                         {
 
                             method: 'DELETE',
 
-                            credentials:
-                                'include'
+                            credentials: 'same-origin'
 
                         }
                     );
