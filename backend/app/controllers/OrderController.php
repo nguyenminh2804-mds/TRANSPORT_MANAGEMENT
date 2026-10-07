@@ -15,6 +15,31 @@ class OrderController extends Controller
         $this->customerModel = new Customer();
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kiểm tra quyền CUSTOMER
+    |--------------------------------------------------------------------------
+    */
+
+    private function requireCustomer()
+    {
+        if (empty($_SESSION['user_id'])) {
+            $this->error(
+                'Vui lòng đăng nhập.',
+                401
+            );
+        }
+
+        if (
+            empty($_SESSION['role']) ||
+            $_SESSION['role'] !== 'CUSTOMER'
+        ) {
+            $this->error(
+                'Chức năng này chỉ dành cho khách hàng.',
+                403
+            );
+        }
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -24,12 +49,7 @@ class OrderController extends Controller
 
     public function myOrders()
     {
-        if (!isset($_SESSION['user_id'])) {
-            $this->error(
-                'Chưa đăng nhập',
-                401
-            );
-        }
+        $this->requireCustomer();
 
         $customer = $this->customerModel
             ->findByUserId(
@@ -54,7 +74,6 @@ class OrderController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Track order
@@ -63,12 +82,7 @@ class OrderController extends Controller
 
     public function track()
     {
-        if (!isset($_SESSION['user_id'])) {
-            $this->error(
-                'Chưa đăng nhập',
-                401
-            );
-        }
+        $this->requireCustomer();
 
         $data = json_decode(
             file_get_contents('php://input'),

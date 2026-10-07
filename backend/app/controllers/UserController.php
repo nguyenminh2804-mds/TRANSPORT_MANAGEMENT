@@ -14,12 +14,55 @@ class UserController extends Controller
 
     /*
     |--------------------------------------------------------------------------
+    | Kiểm tra quyền ADMIN
+    |--------------------------------------------------------------------------
+    */
+
+    private function requireAdmin()
+    {
+        // Chưa đăng nhập
+        if (empty($_SESSION['user_id'])) {
+            $this->error(
+                'Vui lòng đăng nhập.',
+                401
+            );
+        }
+
+        // Lấy thông tin user hiện tại từ database
+        $currentUser = $this->userModel->findById(
+            $_SESSION['user_id']
+        );
+
+        // User không tồn tại hoặc đã bị khóa
+        if (
+            !$currentUser ||
+            (int)$currentUser['status'] !== 1
+        ) {
+            $this->error(
+                'Tài khoản không hợp lệ hoặc đã bị khóa.',
+                401
+            );
+        }
+
+        // Không phải ADMIN
+        if ($currentUser['role'] !== 'ADMIN') {
+            $this->error(
+                'Bạn không có quyền thực hiện chức năng này.',
+                403
+            );
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Lấy danh sách người dùng
     |--------------------------------------------------------------------------
     */
 
     public function index()
     {
+        $this->requireAdmin();
+
         $users = $this->userModel->getAll();
 
         $this->success(
@@ -36,6 +79,8 @@ class UserController extends Controller
 
     public function show($id)
     {
+        $this->requireAdmin();
+
         $user = $this->userModel->findById($id);
 
         if (!$user) {
@@ -59,6 +104,8 @@ class UserController extends Controller
 
     public function store()
     {
+        $this->requireAdmin();
+
         $data = json_decode(
             file_get_contents('php://input'),
             true
@@ -178,6 +225,8 @@ class UserController extends Controller
 
     public function update($id)
     {
+        $this->requireAdmin();
+
         $user = $this->userModel->findById($id);
 
         if (!$user) {
@@ -241,6 +290,7 @@ class UserController extends Controller
         |--------------------------------------------------------------------------
         | Validate status
         |--------------------------------------------------------------------------
+
         */
 
         if ($status !== 0 && $status !== 1) {
@@ -285,6 +335,8 @@ class UserController extends Controller
 
     public function destroy($id)
     {
+        $this->requireAdmin();
+
         $user = $this->userModel->findById($id);
 
         if (!$user) {

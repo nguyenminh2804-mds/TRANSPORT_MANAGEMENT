@@ -1,11 +1,1423 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Permissions</title>
+
+    <title>Phân quyền - Quản lý vận tải</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f7fb;
+            color: #172033;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* =========================
+           TOPBAR
+        ========================== */
+
+        .topbar {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            min-height: 82px;
+            display: flex;
+            align-items: center;
+            padding: 0 7%;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .brand i {
+            font-size: 30px;
+        }
+
+        .topbar-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: white;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logout-btn {
+            border: none;
+            background: white;
+            color: #172033;
+            padding: 11px 18px;
+            border-radius: 9px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #eef2ff;
+        }
+
+        /* =========================
+           PAGE
+        ========================== */
+
+        .page {
+            width: 86%;
+            max-width: 1400px;
+            margin: 35px auto 60px;
+        }
+
+        .breadcrumb-custom {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #718096;
+            margin-bottom: 28px;
+            font-size: 15px;
+        }
+
+        .breadcrumb-custom a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .breadcrumb-custom a:hover {
+            text-decoration: underline;
+        }
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .title-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 15px;
+            background: #e8f0ff;
+            color: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 34px;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            margin: 7px 0 0;
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .back-btn {
+            border: 1px solid #dbe3ef;
+            background: white;
+            color: #334155;
+            padding: 11px 18px;
+            border-radius: 9px;
+            text-decoration: none;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .back-btn:hover {
+            background: #f8fafc;
+        }
+
+        /* =========================
+           INFO
+        ========================== */
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            color: #1e40af;
+            border-radius: 12px;
+            padding: 17px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .info-box i {
+            margin-top: 3px;
+        }
+
+        /* =========================
+           ROLE CARDS
+        ========================== */
+
+        .role-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .role-card {
+            background: white;
+            border: 1px solid #e3eaf3;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.04);
+        }
+
+        .role-card-header {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            margin-bottom: 13px;
+        }
+
+        .role-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .role-admin .role-icon {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+
+        .role-staff .role-icon {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .role-driver .role-icon {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .role-customer .role-icon {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .role-card h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .role-code {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 3px;
+        }
+
+        .role-card p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* =========================
+           TABLE
+        ========================== */
+
+        .table-card {
+            background: white;
+            border: 1px solid #e3eaf3;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(15, 23, 42, 0.04);
+        }
+
+        .table-header {
+            padding: 23px 25px;
+            border-bottom: 1px solid #e8edf4;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .table-header p {
+            margin: 6px 0 0;
+            color: #718096;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        .permission-table {
+            width: 100%;
+            min-width: 850px;
+            border-collapse: collapse;
+        }
+
+        .permission-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 16px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .permission-table th:first-child {
+            text-align: left;
+            padding-left: 25px;
+            min-width: 270px;
+        }
+
+        .permission-table td {
+            padding: 16px 15px;
+            border-bottom: 1px solid #edf1f6;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .permission-table td:first-child {
+            text-align: left;
+            padding-left: 25px;
+        }
+
+        .permission-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .permission-table tbody tr:hover {
+            background: #fafcff;
+        }
+
+        .function-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .function-description {
+            display: block;
+            margin-top: 3px;
+            font-size: 13px;
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .permission-yes {
+            width: 31px;
+            height: 31px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #16a34a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .permission-view {
+            width: 31px;
+            height: 31px;
+            border-radius: 50%;
+            background: #dbeafe;
+            color: #2563eb;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .permission-no {
+            width: 31px;
+            height: 31px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .role-heading-admin {
+            color: #7c3aed !important;
+        }
+
+        .role-heading-staff {
+            color: #2563eb !important;
+        }
+
+        .role-heading-driver {
+            color: #16a34a !important;
+        }
+
+        .role-heading-customer {
+            color: #d97706 !important;
+        }
+
+        /* =========================
+           LEGEND
+        ========================== */
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 22px;
+            padding: 20px 25px;
+            border-top: 1px solid #e8edf4;
+            background: #fafcff;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .legend-item .permission-yes,
+        .legend-item .permission-view,
+        .legend-item .permission-no {
+            width: 25px;
+            height: 25px;
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        .footer-note {
+            margin-top: 22px;
+            color: #94a3b8;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 1100px) {
+            .role-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .page {
+                width: 92%;
+            }
+
+            .topbar {
+                padding: 0 4%;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .topbar {
+                padding: 15px 20px;
+            }
+
+            .brand {
+                font-size: 19px;
+            }
+
+            .brand i {
+                font-size: 23px;
+            }
+
+            .user-info span {
+                display: none;
+            }
+
+            .page {
+                width: 94%;
+                margin-top: 22px;
+            }
+
+            .page-header {
+                flex-direction: column;
+            }
+
+            .page-header h1 {
+                font-size: 27px;
+            }
+
+            .role-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar-right {
+                gap: 8px;
+            }
+
+            .logout-btn {
+                padding: 9px 12px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <h1>Permissions</h1>
+
+    <!-- =====================================================
+         TOPBAR
+    ====================================================== -->
+
+    <header class="topbar">
+
+        <div class="brand">
+            <i class="fa-solid fa-truck"></i>
+            <span>Quản lý vận tải</span>
+        </div>
+
+        <div class="topbar-right">
+
+            <div class="user-info">
+
+                <div class="user-icon">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+
+                <span id="currentUser">
+                    Admin
+                </span>
+
+            </div>
+
+            <button
+                type="button"
+                class="logout-btn"
+                id="logoutBtn"
+            >
+                <i class="fa-solid fa-right-from-bracket me-1"></i>
+                Đăng xuất
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main class="page">
+
+        <!-- Breadcrumb -->
+
+        <div class="breadcrumb-custom">
+
+            <a href="dashboard.html">
+                <i class="fa-solid fa-house"></i>
+                Trang tổng quan
+            </a>
+
+            <i class="fa-solid fa-chevron-right"></i>
+
+            <span>Phân quyền</span>
+
+        </div>
+
+
+        <!-- Page header -->
+
+        <section class="page-header">
+
+            <div class="title-wrapper">
+
+                <div class="title-icon">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+
+                <div>
+
+                    <h1>Phân quyền</h1>
+
+                    <p>
+                        Xem quyền truy cập và chức năng của từng vai trò.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a
+                href="dashboard.html"
+                class="back-btn"
+            >
+                <i class="fa-solid fa-arrow-left me-1"></i>
+                Quay lại
+            </a>
+
+        </section>
+
+
+        <!-- Information -->
+
+        <div class="info-box">
+
+            <i class="fa-solid fa-circle-info"></i>
+
+            <div>
+                <strong>Phân quyền theo vai trò</strong>
+                <br>
+
+                Hệ thống phân quyền dựa trên vai trò tài khoản:
+                <strong>ADMIN</strong>,
+                <strong>STAFF</strong>,
+                <strong>DRIVER</strong> và
+                <strong>CUSTOMER</strong>.
+                Mỗi vai trò chỉ được phép truy cập các chức năng phù hợp.
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             ROLE CARDS
+        ================================================== -->
+
+        <section class="role-grid">
+
+            <!-- ADMIN -->
+
+            <div class="role-card role-admin">
+
+                <div class="role-card-header">
+
+                    <div class="role-icon">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+
+                    <div>
+                        <h3>Quản trị viên</h3>
+                        <div class="role-code">ADMIN</div>
+                    </div>
+
+                </div>
+
+                <p>
+                    Quản lý tài khoản, phân quyền và toàn bộ
+                    chức năng quản trị hệ thống.
+                </p>
+
+            </div>
+
+
+            <!-- STAFF -->
+
+            <div class="role-card role-staff">
+
+                <div class="role-card-header">
+
+                    <div class="role-icon">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+
+                    <div>
+                        <h3>Nhân viên vận tải</h3>
+                        <div class="role-code">STAFF</div>
+                    </div>
+
+                </div>
+
+                <p>
+                    Quản lý khách hàng, đơn hàng và các nghiệp vụ
+                    vận chuyển được phân công.
+                </p>
+
+            </div>
+
+
+            <!-- DRIVER -->
+
+            <div class="role-card role-driver">
+
+                <div class="role-card-header">
+
+                    <div class="role-icon">
+                        <i class="fa-solid fa-id-card"></i>
+                    </div>
+
+                    <div>
+                        <h3>Tài xế</h3>
+                        <div class="role-code">DRIVER</div>
+                    </div>
+
+                </div>
+
+                <p>
+                    Xem chuyến được phân công và cập nhật
+                    trạng thái giao nhận.
+                </p>
+
+            </div>
+
+
+            <!-- CUSTOMER -->
+
+            <div class="role-card role-customer">
+
+                <div class="role-card-header">
+
+                    <div class="role-icon">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+
+                    <div>
+                        <h3>Khách hàng</h3>
+                        <div class="role-code">CUSTOMER</div>
+                    </div>
+
+                </div>
+
+                <p>
+                    Quản lý thông tin cá nhân, tạo và tra cứu
+                    đơn hàng, theo dõi giao nhận.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- =================================================
+             PERMISSION TABLE
+        ================================================== -->
+
+        <section class="table-card">
+
+            <div class="table-header">
+
+                <h2>
+                    <i class="fa-solid fa-table-list me-2 text-primary"></i>
+                    Ma trận phân quyền
+                </h2>
+
+                <p>
+                    Quyền truy cập được xác định theo vai trò người dùng.
+                </p>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="permission-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Chức năng hệ thống
+                            </th>
+
+                            <th class="role-heading-admin">
+                                <i class="fa-solid fa-user-shield"></i>
+                                ADMIN
+                            </th>
+
+                            <th class="role-heading-staff">
+                                <i class="fa-solid fa-user-tie"></i>
+                                STAFF
+                            </th>
+
+                            <th class="role-heading-driver">
+                                <i class="fa-solid fa-id-card"></i>
+                                DRIVER
+                            </th>
+
+                            <th class="role-heading-customer">
+                                <i class="fa-solid fa-user"></i>
+                                CUSTOMER
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <!-- USER -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Quản lý người dùng
+                                </span>
+
+                                <span class="function-description">
+                                    Thêm, sửa, xóa và quản lý tài khoản
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- PERMISSION -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Phân quyền
+                                </span>
+
+                                <span class="function-description">
+                                    Xem và quản lý quyền theo vai trò
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- CUSTOMER -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Quản lý khách hàng
+                                </span>
+
+                                <span class="function-description">
+                                    Quản lý hồ sơ khách hàng
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- ORDER -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Quản lý đơn hàng
+                                </span>
+
+                                <span class="function-description">
+                                    Tạo, cập nhật và tra cứu đơn hàng
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-view">
+                                    <i class="fa-solid fa-eye"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-view">
+                                    <i class="fa-solid fa-eye"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- DRIVER -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Quản lý tài xế
+                                </span>
+
+                                <span class="function-description">
+                                    Hồ sơ, trạng thái và thông tin tài xế
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- VEHICLE -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Quản lý phương tiện
+                                </span>
+
+                                <span class="function-description">
+                                    Quản lý xe và trạng thái hoạt động
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- TRIP -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Quản lý chuyến vận chuyển
+                                </span>
+
+                                <span class="function-description">
+                                    Tạo và quản lý chuyến vận chuyển
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-view">
+                                    <i class="fa-solid fa-eye"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- ASSIGNMENT -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Phân công vận chuyển
+                                </span>
+
+                                <span class="function-description">
+                                    Phân công tài xế và phương tiện
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- TRACKING -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Theo dõi giao nhận
+                                </span>
+
+                                <span class="function-description">
+                                    Theo dõi trạng thái đơn hàng
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+
+                        <!-- STATISTICS -->
+
+                        <tr>
+
+                            <td>
+
+                                <span class="function-name">
+                                    Thống kê & báo cáo
+                                </span>
+
+                                <span class="function-description">
+                                    Xem số liệu và báo cáo hệ thống
+                                </span>
+
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-yes">
+                                    <i class="fa-solid fa-check"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="permission-no">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </span>
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- Legend -->
+
+            <div class="legend">
+
+                <div class="legend-item">
+
+                    <span class="permission-yes">
+                        <i class="fa-solid fa-check"></i>
+                    </span>
+
+                    Có quyền thực hiện
+
+                </div>
+
+
+                <div class="legend-item">
+
+                    <span class="permission-view">
+                        <i class="fa-solid fa-eye"></i>
+                    </span>
+
+                    Chỉ xem / thao tác giới hạn
+
+                </div>
+
+
+                <div class="legend-item">
+
+                    <span class="permission-no">
+                        <i class="fa-solid fa-xmark"></i>
+                    </span>
+
+                    Không có quyền
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <div class="footer-note">
+            Hệ thống quản lý vận tải và giao nhận hàng hóa
+        </div>
+
+    </main>
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script>
+
+        const API_BASE_URL =
+            'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+
+
+        // ============================================
+        // KIỂM TRA TÀI KHOẢN HIỆN TẠI
+        // ============================================
+
+        async function loadCurrentUser() {
+
+            try {
+
+                const response = await fetch(
+                    `${API_BASE_URL}?route=/api/me`,
+                    {
+                        method: 'GET',
+                        credentials: 'include',
+                        cache: 'no-store'
+                    }
+                );
+
+                const result = await response.json();
+
+                if (!result.success || !result.data) {
+
+                    window.location.href = '../customer/login.html';
+
+                    return;
+                }
+
+                const user = result.data;
+
+
+                // Chỉ ADMIN được vào trang phân quyền
+
+                if (user.role !== 'ADMIN') {
+
+                    alert(
+                        'Bạn không có quyền truy cập trang phân quyền.'
+                    );
+
+                    switch (user.role) {
+
+                        case 'STAFF':
+                            window.location.href =
+                                '../transport/dashboard.html';
+                            break;
+
+                        case 'DRIVER':
+                            window.location.href =
+                                '../driver/dashboard.html';
+                            break;
+
+                        case 'CUSTOMER':
+                            window.location.href =
+                                '../customer/dashboard.html';
+                            break;
+
+                        default:
+                            window.location.href =
+                                '../customer/login.html';
+                    }
+
+                    return;
+                }
+
+
+                // Hiển thị tên admin
+
+                document.getElementById('currentUser').textContent =
+                    user.full_name || user.username || 'Admin';
+
+            } catch (error) {
+
+                console.error(
+                    'Permission page error:',
+                    error
+                );
+
+                window.location.href =
+                    '../customer/login.html';
+            }
+        }
+
+
+        // ============================================
+        // LOGOUT
+        // ============================================
+
+        document
+            .getElementById('logoutBtn')
+            .addEventListener('click', async function () {
+
+                try {
+
+                    await fetch(
+                        `${API_BASE_URL}?route=/api/logout`,
+                        {
+                            method: 'POST',
+                            credentials: 'include'
+                        }
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        'Logout error:',
+                        error
+                    );
+
+                } finally {
+
+                    sessionStorage.removeItem('user');
+
+                    window.location.href =
+                        '../customer/login.html';
+
+                }
+
+            });
+
+
+        // ============================================
+        // INIT
+        // ============================================
+
+        loadCurrentUser();
+
+    </script>
+
 </body>
+
 </html>
