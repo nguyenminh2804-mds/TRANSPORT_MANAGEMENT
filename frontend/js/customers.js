@@ -1,5 +1,43 @@
-const API_BASE_URL =
-    'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+// Customer pages are located in frontend/customer/; resolve relative to the page.
+async function customerRequest(route, options = {}) {
+    const url = new URL('../../backend/public/index.php', window.location.href);
+    url.searchParams.set('route', route);
+    let response;
+    try {
+        response = await fetch(url.href, { ...options, credentials: 'same-origin', cache: 'no-store' });
+    } catch {
+        customerApiError('Không thể kết nối tới máy chủ. Hãy kiểm tra Apache/XAMPP rồi thử lại.');
+        throw new Error('Customer API connection failed');
+    }
+    if (response.status === 401) {
+        window.location.href = 'login.html';
+        throw new Error('Session expired');
+    }
+    let result;
+    try { result = await response.json(); }
+    catch {
+        customerApiError(`Máy chủ trả HTTP ${response.status} nhưng JSON không hợp lệ.`);
+        throw new Error('Invalid customer API JSON');
+    }
+    if (!response.ok || !result || typeof result.success !== 'boolean' || !result.success) {
+        customerApiError(`Yêu cầu thất bại (HTTP ${response.status}). ${response.status < 500 && typeof result?.message === 'string' ? result.message : 'Vui lòng thử lại sau.'}`);
+        throw new Error('Customer API request failed');
+    }
+    return { ...response, json: async () => result };
+}
+
+function customerApiError(message) {
+    let banner = document.getElementById('customerApiError');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'customerApiError';
+        banner.className = 'alert alert-danger m-3';
+        banner.setAttribute('role', 'alert');
+        document.body.prepend(banner);
+    }
+    banner.textContent = message;
+}
+
 
 const welcomeUser = document.getElementById('welcomeUser');
 
@@ -35,18 +73,17 @@ const reloadOrdersBtn =
 
 async function loadUser() {
     try {
-        const response = await fetch(
-            `${API_BASE_URL}?route=/api/me`,
+        const response = await customerRequest('/api/me',
             {
                 method: 'GET',
-                credentials: 'include'
+                credentials: 'same-origin'
             }
         );
 
         const result = await response.json();
 
         if (!result.success) {
-            window.location.href = 'login.html';
+            customerApiError('Không thể tải phiên đăng nhập.');
             return;
         }
 
@@ -55,8 +92,6 @@ async function loadUser() {
 
     } catch (error) {
         console.error('Load user error:', error);
-
-        window.location.href = 'login.html';
     }
 }
 
@@ -67,11 +102,10 @@ async function loadUser() {
 
 async function loadCustomerProfile() {
     try {
-        const response = await fetch(
-            `${API_BASE_URL}?route=/api/customer/profile`,
+        const response = await customerRequest('/api/customer/profile',
             {
                 method: 'GET',
-                credentials: 'include'
+                credentials: 'same-origin'
             }
         );
 
@@ -118,11 +152,10 @@ async function loadOrders() {
     `;
 
     try {
-        const response = await fetch(
-            `${API_BASE_URL}?route=/api/customer/orders`,
+        const response = await customerRequest('/api/customer/orders',
             {
                 method: 'GET',
-                credentials: 'include'
+                credentials: 'same-origin'
             }
         );
 
@@ -242,8 +275,7 @@ trackOrderForm.addEventListener(
 
         try {
 
-            const response = await fetch(
-                `${API_BASE_URL}?route=/api/customer/orders/track`,
+            const response = await customerRequest('/api/customer/orders/track',
                 {
                     method: 'POST',
 
@@ -251,7 +283,7 @@ trackOrderForm.addEventListener(
                         'Content-Type': 'application/json'
                     },
 
-                    credentials: 'include',
+                    credentials: 'same-origin',
 
                     body: JSON.stringify({
                         order_code: code
@@ -353,13 +385,15 @@ logoutBtn.addEventListener(
 
         try {
 
-            await fetch(
-                `${API_BASE_URL}?route=/api/logout`,
+            await customerRequest('/api/logout',
                 {
                     method: 'POST',
-                    credentials: 'include'
+                    credentials: 'same-origin'
                 }
             );
+
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
 
         } catch (error) {
 
@@ -368,12 +402,8 @@ logoutBtn.addEventListener(
                 error
             );
 
-        } finally {
-
-            sessionStorage.removeItem('user');
-
-            window.location.href = 'login.html';
         }
+
     }
 );
 

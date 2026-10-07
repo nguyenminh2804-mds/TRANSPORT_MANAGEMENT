@@ -6,6 +6,9 @@ require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/UserController.php';
 require_once __DIR__ . '/../app/controllers/CustomerController.php';
 require_once __DIR__ . '/../app/controllers/OrderController.php';
+require_once __DIR__ . '/../app/controllers/DriverController.php';
+require_once __DIR__ . '/../app/controllers/VehicleController.php';
+require_once __DIR__ . '/../app/controllers/AssignmentController.php';
 
 $router = new Router();
 
@@ -20,6 +23,14 @@ $authController = new AuthController();
 
 $router->post('/api/login', function () use ($authController) {
     $authController->login();
+});
+
+$router->post('/api/customer/register', function () use ($authController) {
+    $authController->registerCustomer();
+});
+
+$router->post('/api/forgot-password', function () use ($authController) {
+    $authController->forgotPassword();
 });
 
 $router->post('/api/logout', function () use ($authController) {
@@ -191,7 +202,7 @@ $router->delete('/api/customers', function () use ($customerController) {
 
 /*
 |--------------------------------------------------------------------------
-| Orders
+| Orders - Đơn hàng & giao nhận
 |--------------------------------------------------------------------------
 */
 
@@ -239,6 +250,112 @@ $router->post('/api/customer/orders/track', function () use ($orderController) {
 
 $router->post('/api/staff/orders/process', function () use ($orderController) {
     $orderController->process();
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Driver Management - Tài xế
+|--------------------------------------------------------------------------
+|
+| Session và quyền ADMIN/STAFF được xử lý trong DriverController.
+|--------------------------------------------------------------------------
+*/
+
+$driverController = new DriverController();
+
+$router->get('/api/drivers', function () use ($driverController) {
+    $driverController->handle('index');
+});
+
+$router->get('/api/drivers/show', function () use ($driverController) {
+    $driverController->handle('show');
+});
+
+$router->post('/api/drivers', function () use ($driverController) {
+    $driverController->handle('store');
+});
+
+$router->put('/api/drivers', function () use ($driverController) {
+    $driverController->handle('update');
+});
+
+$router->delete('/api/drivers', function () use ($driverController) {
+    $driverController->handle('destroy');
+});
+
+$router->put('/api/drivers/status', function () use ($driverController) {
+    $driverController->handle('status');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Vehicle Management - Phương tiện
+|--------------------------------------------------------------------------
+*/
+
+$vehicleController = new VehicleController();
+
+$router->get('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('index');
+});
+
+$router->get('/api/vehicles/stats', function () use ($vehicleController) {
+    $vehicleController->handle('stats');
+});
+
+$router->get('/api/vehicles/show', function () use ($vehicleController) {
+    $vehicleController->handle('show');
+});
+
+$router->post('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('store');
+});
+
+$router->put('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('update');
+});
+
+$router->delete('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('destroy');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Assignment Management - Phân công
+|--------------------------------------------------------------------------
+*/
+
+$assignmentController = new AssignmentController();
+
+$router->get('/api/assignments', function () use ($assignmentController) {
+    $assignmentController->handle('index');
+});
+
+$router->get('/api/assignments/show', function () use ($assignmentController) {
+    $assignmentController->handle('show');
+});
+
+$router->get('/api/assignments/options', function () use ($assignmentController) {
+    $assignmentController->handle('options');
+});
+
+$router->post('/api/assignments', function () use ($assignmentController) {
+    $assignmentController->handle('store');
+});
+
+$router->put('/api/assignments', function () use ($assignmentController) {
+    $assignmentController->handle('replace');
+});
+
+$router->put('/api/assignments/complete', function () use ($assignmentController) {
+    $assignmentController->handle('complete');
+});
+
+$router->put('/api/assignments/cancel', function () use ($assignmentController) {
+    $assignmentController->handle('cancel');
 });
 
 

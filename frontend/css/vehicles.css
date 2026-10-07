@@ -1,0 +1,7 @@
+.vehicles-management .drivers-metrics { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.vehicles-management table { min-width:850px; }
+.vehicles-management .drivers-badge.maintenance { color:#854d0e; background:#fef9c3; }
+.vehicles-management #deleteVehicle { font-weight:700; }
+@media(max-width:1100px) { .vehicles-management .drivers-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:640px) { .vehicles-management table { min-width:0; } }
+@media(max-width:360px) { .vehicles-management .drivers-metrics { grid-template-columns:1fr; } }
