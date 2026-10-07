@@ -12,6 +12,61 @@ class CustomerController extends Controller
         $this->customerModel = new Customer();
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kiểm tra quyền ADMIN / STAFF
+    |--------------------------------------------------------------------------
+    */
+
+    private function requireManager()
+    {
+        if (empty($_SESSION['user_id'])) {
+            $this->error(
+                'Vui lòng đăng nhập.',
+                401
+            );
+        }
+
+        if (
+            empty($_SESSION['role']) ||
+            !in_array(
+                $_SESSION['role'],
+                ['ADMIN', 'STAFF'],
+                true
+            )
+        ) {
+            $this->error(
+                'Bạn không có quyền thực hiện chức năng này.',
+                403
+            );
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kiểm tra CUSTOMER
+    |--------------------------------------------------------------------------
+    */
+
+    private function requireCustomer()
+    {
+        if (empty($_SESSION['user_id'])) {
+            $this->error(
+                'Vui lòng đăng nhập.',
+                401
+            );
+        }
+
+        if (
+            empty($_SESSION['role']) ||
+            $_SESSION['role'] !== 'CUSTOMER'
+        ) {
+            $this->error(
+                'Chức năng này chỉ dành cho khách hàng.',
+                403
+            );
+        }
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -21,6 +76,8 @@ class CustomerController extends Controller
 
     public function index()
     {
+        $this->requireManager();
+
         $customers = $this->customerModel->getAll();
 
         $this->success(
@@ -28,7 +85,6 @@ class CustomerController extends Controller
             'Lấy danh sách khách hàng thành công'
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -38,6 +94,8 @@ class CustomerController extends Controller
 
     public function show($id)
     {
+        $this->requireManager();
+
         $customer = $this->customerModel
             ->findById($id);
 
@@ -51,7 +109,6 @@ class CustomerController extends Controller
         $this->success($customer);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Get logged-in customer's profile
@@ -60,12 +117,7 @@ class CustomerController extends Controller
 
     public function profile()
     {
-        if (!isset($_SESSION['user_id'])) {
-            $this->error(
-                'Chưa đăng nhập',
-                401
-            );
-        }
+        $this->requireCustomer();
 
         $customer = $this->customerModel
             ->findByUserId(
@@ -85,7 +137,6 @@ class CustomerController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Create customer
@@ -94,6 +145,8 @@ class CustomerController extends Controller
 
     public function store()
     {
+        $this->requireManager();
+
         $data = json_decode(
             file_get_contents('php://input'),
             true
@@ -149,7 +202,6 @@ class CustomerController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Update customer
@@ -158,6 +210,8 @@ class CustomerController extends Controller
 
     public function update($id)
     {
+        $this->requireManager();
+
         $customer = $this->customerModel
             ->findById($id);
 
@@ -223,7 +277,6 @@ class CustomerController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Delete customer
@@ -232,6 +285,8 @@ class CustomerController extends Controller
 
     public function destroy($id)
     {
+        $this->requireManager();
+
         $customer = $this->customerModel
             ->findById($id);
 
