@@ -1,33 +1,22 @@
 <?php
 
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../core/Database.php';
-
 class Order
 {
     private $conn;
     private $table = 'orders';
 
-    public function __construct()
+    public function __construct($db)
     {
-        $database = new Database();
-        $this->conn = $database->connect();
+        $this->conn = $db;
     }
 
-    // Lấy tất cả đơn hàng của một khách hàng
+
+    // ============================================================
+    // UC-DH-01 - Lấy danh sách đơn hàng của khách hàng
+    // ============================================================
     public function getByCustomerId($customerId)
     {
-        $sql = "SELECT
-                    id,
-                    order_code,
-                    customer_id,
-                    pickup_address,
-                    delivery_address,
-                    total_weight,
-                    shipping_fee,
-                    payment_status,
-                    status,
-                    created_at
+        $sql = "SELECT *
                 FROM {$this->table}
                 WHERE customer_id = :customer_id
                 ORDER BY created_at DESC";
@@ -41,22 +30,13 @@ class Order
         return $stmt->fetchAll();
     }
 
-    // Tra cứu một đơn hàng của khách hàng
-    public function findByCustomerAndCode(
-        $customerId,
-        $orderCode
-    ) {
-        $sql = "SELECT
-                    id,
-                    order_code,
-                    customer_id,
-                    pickup_address,
-                    delivery_address,
-                    total_weight,
-                    shipping_fee,
-                    payment_status,
-                    status,
-                    created_at
+
+    // ============================================================
+    // UC-DH-01 - Tìm đơn hàng theo mã đơn của khách hàng
+    // ============================================================
+    public function findByCustomerAndCode($customerId, $orderCode)
+    {
+        $sql = "SELECT *
                 FROM {$this->table}
                 WHERE customer_id = :customer_id
                   AND order_code = :order_code
@@ -72,38 +52,52 @@ class Order
         return $stmt->fetch();
     }
 
-    // Tạo đơn hàng và các sản phẩm trong đơn
+
+    // ============================================================
+    // UC-DH-01 - Tạo đơn hàng
+    // ============================================================
     public function createOrder($customerId, $data)
     {
         try {
+
+            // Bắt đầu transaction
             $this->conn->beginTransaction();
 
-            // Tạo mã đơn hàng
-            $orderCode = 'DH' . date('YmdHis') . rand(100, 999);
+            /*
+             * Tạo mã đơn hàng
+             */
+            $orderCode = 'ORD' . date('YmdHis') . rand(100, 999);
 
-            // Thêm đơn hàng
+            /*
+             * Trạng thái ban đầu của đơn hàng
+             */
+            $initialStatus = 'PENDING';
+
+            /*
+             * Thêm đơn hàng vào bảng orders
+             */
             $sql = "INSERT INTO {$this->table}
-                        (
-                            order_code,
-                            customer_id,
-                            pickup_address,
-                            delivery_address,
-                            total_weight,
-                            shipping_fee,
-                            payment_status,
-                            status
-                        )
+                    (
+                        order_code,
+                        customer_id,
+                        pickup_address,
+                        delivery_address,
+                        total_weight,
+                        shipping_fee,
+                        payment_status,
+                        status
+                    )
                     VALUES
-                        (
-                            :order_code,
-                            :customer_id,
-                            :pickup_address,
-                            :delivery_address,
-                            :total_weight,
-                            :shipping_fee,
-                            :payment_status,
-                            :status
-                        )";
+                    (
+                        :order_code,
+                        :customer_id,
+                        :pickup_address,
+                        :delivery_address,
+                        :total_weight,
+                        :shipping_fee,
+                        :payment_status,
+                        :status
+                    )";
 
             $stmt = $this->conn->prepare($sql);
 
@@ -112,23 +106,33 @@ class Order
                 ':customer_id' => $customerId,
                 ':pickup_address' => $data['pickup_address'],
                 ':delivery_address' => $data['delivery_address'],
-                ':total_weight' => $data['total_weight'] ?? 0,
-                ':shipping_fee' => $data['shipping_fee'] ?? 0,
-                ':payment_status' => 'UNPAID',
-                ':status' => 'PENDING'
+                ':total_weight' => $data['total_weight'],
+                ':shipping_fee' => $data['shipping_fee'],
+                ':payment_status' => $data['payment_status'] ?? 'UNPAID',
+                ':status' => $initialStatus
             ]);
 
+
+            /*
+             * Lấy ID đơn hàng vừa tạo
+             */
             $orderId = $this->conn->lastInsertId();
 
-            // Thêm các sản phẩm trong đơn
-            $itemSql = "INSERT INTO order_items
+
+            // ====================================================
+            // Thêm danh sách sản phẩm trong đơn
+            // ====================================================
+
+            if (!empty($data['items'])) {
+
+                $itemSql = "INSERT INTO order_items
                             (
                                 order_id,
                                 product_name,
                                 quantity,
                                 weight
                             )
-                        VALUES
+                            VALUES
                             (
                                 :order_id,
                                 :product_name,
@@ -136,51 +140,68 @@ class Order
                                 :weight
                             )";
 
-            $itemStmt = $this->conn->prepare($itemSql);
+                $itemStmt = $this->conn->prepare($itemSql);
 
-            foreach ($data['items'] as $item) {
-                $itemStmt->execute([
-                    ':order_id' => $orderId,
-                    ':product_name' => $item['product_name'],
-                    ':quantity' => $item['quantity'],
-                    ':weight' => $item['weight'] ?? 0
-                ]);
+                foreach ($data['items'] as $item) {
+
+                    $itemStmt->execute([
+                        ':order_id' => $orderId,
+                        ':product_name' => $item['product_name'],
+                        ':quantity' => $item['quantity'],
+                        ':weight' => $item['weight']
+                    ]);
+                }
             }
 
-            // Ghi trạng thái ban đầu vào lịch sử
+
+            // ====================================================
+            // Ghi lịch sử trạng thái ban đầu
+            // ====================================================
+
             $historySql = "INSERT INTO order_status_history
-                                (
-                                    order_id,
-                                    old_status,
-                                    new_status,
-                                    note
-                                )
+                           (
+                               order_id,
+                               old_status,
+                               new_status,
+                               note
+                           )
                            VALUES
-                                (
-                                    :order_id,
-                                    NULL,
-                                    :new_status,
-                                    :note
-                                )";
+                           (
+                               :order_id,
+                               :old_status,
+                               :new_status,
+                               :note
+                           )";
 
             $historyStmt = $this->conn->prepare($historySql);
 
             $historyStmt->execute([
                 ':order_id' => $orderId,
-                ':new_status' => 'PENDING',
+                ':old_status' => null,
+                ':new_status' => $initialStatus,
                 ':note' => 'Tạo đơn hàng'
             ]);
 
+
+            // Hoàn tất transaction
             $this->conn->commit();
 
+
+            /*
+             * Trả kết quả cho Controller
+             */
             return [
                 'id' => $orderId,
                 'order_code' => $orderCode,
-                'status' => 'PENDING'
+                'status' => $initialStatus
             ];
+
 
         } catch (Exception $e) {
 
+            /*
+             * Nếu xảy ra lỗi thì rollback
+             */
             if ($this->conn->inTransaction()) {
                 $this->conn->rollBack();
             }
@@ -189,20 +210,13 @@ class Order
         }
     }
 
-    // Lấy thông tin một đơn hàng theo ID
+
+    // ============================================================
+    // UC-DH-02 - Tìm đơn hàng theo ID
+    // ============================================================
     public function findById($orderId)
     {
-        $sql = "SELECT
-                    id,
-                    order_code,
-                    customer_id,
-                    pickup_address,
-                    delivery_address,
-                    total_weight,
-                    shipping_fee,
-                    payment_status,
-                    status,
-                    created_at
+        $sql = "SELECT *
                 FROM {$this->table}
                 WHERE id = :id
                 LIMIT 1";
@@ -216,17 +230,24 @@ class Order
         return $stmt->fetch();
     }
 
-    // Cập nhật trạng thái đơn hàng
+
+    // ============================================================
+    // UC-DH-02 - Cập nhật trạng thái đơn hàng
+    // ============================================================
     public function updateStatus($orderId, $newStatus)
     {
         try {
+
             $this->conn->beginTransaction();
 
-            // Lấy trạng thái hiện tại
-            $sql = "SELECT status
+            /*
+             * Lấy trạng thái hiện tại
+             */
+            $sql = "SELECT id, order_code, status
                     FROM {$this->table}
                     WHERE id = :id
-                    LIMIT 1";
+                    LIMIT 1
+                    FOR UPDATE";
 
             $stmt = $this->conn->prepare($sql);
 
@@ -236,20 +257,27 @@ class Order
 
             $order = $stmt->fetch();
 
+
             if (!$order) {
-                throw new Exception('Không tìm thấy đơn hàng');
+                throw new Exception(
+                    'Không tìm thấy đơn hàng'
+                );
             }
 
-            $oldStatus = $order['status'];
 
-            // Nếu trạng thái không thay đổi
-            if ($oldStatus === $newStatus) {
+            /*
+             * Không cho cập nhật cùng trạng thái
+             */
+            if ($order['status'] === $newStatus) {
                 throw new Exception(
                     'Trạng thái mới giống trạng thái hiện tại'
                 );
             }
 
-            // Cập nhật trạng thái đơn hàng
+
+            /*
+             * Cập nhật trạng thái
+             */
             $updateSql = "UPDATE {$this->table}
                           SET status = :new_status
                           WHERE id = :id";
@@ -261,41 +289,52 @@ class Order
                 ':id' => $orderId
             ]);
 
-            // Ghi lịch sử thay đổi trạng thái
+
+            /*
+             * Ghi lịch sử trạng thái
+             */
             $historySql = "INSERT INTO order_status_history
-                                (
-                                    order_id,
-                                    old_status,
-                                    new_status,
-                                    note
-                                )
+                           (
+                               order_id,
+                               old_status,
+                               new_status,
+                               note
+                           )
                            VALUES
-                                (
-                                    :order_id,
-                                    :old_status,
-                                    :new_status,
-                                    :note
-                                )";
+                           (
+                               :order_id,
+                               :old_status,
+                               :new_status,
+                               :note
+                           )";
 
             $historyStmt = $this->conn->prepare($historySql);
 
             $historyStmt->execute([
                 ':order_id' => $orderId,
-                ':old_status' => $oldStatus,
+                ':old_status' => $order['status'],
                 ':new_status' => $newStatus,
                 ':note' => 'Cập nhật trạng thái đơn hàng'
             ]);
 
+
+            // Hoàn tất transaction
             $this->conn->commit();
 
+
             return [
-                'id' => $orderId,
-                'old_status' => $oldStatus,
+                'id' => $order['id'],
+                'order_code' => $order['order_code'],
+                'old_status' => $order['status'],
                 'new_status' => $newStatus
             ];
 
+
         } catch (Exception $e) {
 
+            /*
+             * Có lỗi -> giữ nguyên trạng thái cũ
+             */
             if ($this->conn->inTransaction()) {
                 $this->conn->rollBack();
             }

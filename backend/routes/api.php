@@ -6,6 +6,7 @@ require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/UserController.php';
 require_once __DIR__ . '/../app/controllers/CustomerController.php';
 require_once __DIR__ . '/../app/controllers/OrderController.php';
+require_once __DIR__ . '/../app/controllers/DeliveryController.php';
 require_once __DIR__ . '/../app/controllers/DriverController.php';
 require_once __DIR__ . '/../app/controllers/VehicleController.php';
 require_once __DIR__ . '/../app/controllers/AssignmentController.php';
@@ -208,6 +209,8 @@ $router->delete('/api/customers', function () use ($customerController) {
 
 $orderController = new OrderController();
 
+$deliveryController = new DeliveryController();
+
 
 /*
 |--------------------------------------------------------------------------
@@ -250,6 +253,17 @@ $router->post('/api/customer/orders/track', function () use ($orderController) {
 
 $router->post('/api/staff/orders/process', function () use ($orderController) {
     $orderController->process();
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Cập nhật trạng thái giao hàng - UC-DH-03
+|--------------------------------------------------------------------------
+*/
+
+$router->put('/api/driver/orders/status', function () use ($deliveryController) {
+    $deliveryController->updateStatus();
 });
 
 
