@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../core/Router.php';
-
+require_once __DIR__ . '/../app/controllers/TripController.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/UserController.php';
 require_once __DIR__ . '/../app/controllers/CustomerController.php';
@@ -305,6 +305,32 @@ $router->put('/api/assignments/complete', function () use ($assignmentController
 
 $router->put('/api/assignments/cancel', function () use ($assignmentController) {
     $assignmentController->handle('cancel');
+});
+
+$tripController = new TripController();
+
+$router->get('/api/trips', function () use ($tripController) {
+    $tripController->handle('index');
+});
+
+$router->get('/api/trips/show', function () use ($tripController) {
+    $tripController->handle('show');
+});
+
+$router->post('/api/trips', function () use ($tripController) {
+    $tripController->handle('store');
+});
+
+$router->put('/api/trips', function () use ($tripController) {
+    $tripController->handle('update');
+});
+
+$router->put('/api/trips/status', function () use ($tripController) {
+    $tripController->handle('status');
+});
+
+$router->delete('/api/trips', function () use ($tripController) {
+    $tripController->handle('destroy');
 });
 
 return $router;

@@ -352,8 +352,6 @@
             font-size: 13px;
 
         }
-
-
         .menu-grid {
 
             display: grid;
@@ -364,38 +362,23 @@
             gap: 18px;
 
         }
-
-
         .menu-card {
-
             background: #ffffff;
-
             border:
                 1px solid #e5e7eb;
-
             border-radius: 14px;
-
             padding: 22px;
-
             text-decoration: none;
-
             color: #1f2937;
-
             display: flex;
-
             align-items: center;
-
             gap: 17px;
-
             transition: 0.2s;
-
             box-shadow:
                 0 3px 12px
                 rgba(0, 0, 0, 0.03);
 
         }
-
-
         .menu-card:hover {
 
             transform:
@@ -408,8 +391,6 @@
                 rgba(37, 99, 235, 0.08);
 
         }
-
-
         .menu-icon {
 
             width: 52px;
@@ -429,8 +410,6 @@
             font-size: 21px;
 
         }
-
-
         .menu-icon.users {
 
             background: #eff6ff;
@@ -438,8 +417,6 @@
             color: #2563eb;
 
         }
-
-
         .menu-icon.permissions {
 
             background: #f5f3ff;
@@ -447,15 +424,13 @@
             color: #7c3aed;
 
         }
-
-
-        .menu-content {
-
-            flex: 1;
-
+        .menu-icon.trips {
+            background: #ecfdf5;
+            color: #059669;
         }
-
-
+        .menu-content {
+            flex: 1;
+        }
         .menu-content h3 {
 
             margin: 0 0 5px;
@@ -465,8 +440,6 @@
             font-weight: 700;
 
         }
-
-
         .menu-content p {
 
             margin: 0;
@@ -476,51 +449,27 @@
             font-size: 13px;
 
             line-height: 1.5;
-
         }
-
-
         .menu-arrow {
-
             color: #9ca3af;
-
         }
-
-
         /* =====================================================
            FOOTER
         ====================================================== */
-
         .dashboard-footer {
-
             margin-top: 25px;
-
             text-align: center;
-
         }
-
-
         .logout-btn {
-
             border: none;
-
             background: transparent;
-
             color: #6b7280;
-
             font-size: 14px;
-
             cursor: pointer;
-
         }
-
-
         .logout-btn:hover {
-
             color: #dc2626;
-
         }
-
 
         /* =====================================================
            RESPONSIVE
@@ -529,25 +478,15 @@
         @media (max-width: 800px) {
 
             .stats-grid {
-
                 grid-template-columns: 1fr;
-
             }
-
-
             .menu-grid {
-
                 grid-template-columns: 1fr;
-
             }
-
-
             .admin-name-wrapper {
 
                 display: none;
-
             }
-
         }
 
     </style>
@@ -569,57 +508,34 @@
             <div
                 class="d-flex justify-content-between align-items-center"
             >
-
-
                 <a
                     href="dashboard.html"
                     class="brand"
                 >
-
                     <span class="brand-icon">
-
                         <i class="fa-solid fa-truck-fast"></i>
-
                     </span>
-
                     Quản lý vận tải
-
                 </a>
-
-
                 <div class="admin-info">
-
-
                     <div class="admin-name-wrapper">
-
                         <div class="admin-name" id="adminName">
                             Admin
                         </div>
-
                         <div class="admin-role">
                             Quản trị viên
                         </div>
-
                     </div>
-
 
                     <div class="admin-avatar">
 
                         <i class="fa-solid fa-user-shield"></i>
 
                     </div>
-
-
                 </div>
-
-
             </div>
-
         </div>
-
     </nav>
-
-
     <!-- =====================================================
          MAIN
     ====================================================== -->
@@ -766,14 +682,12 @@
                         <h3>
                             Quản lý người dùng
                         </h3>
-
                         <p>
                             Quản lý tài khoản, vai trò
                             và trạng thái người dùng.
                         </p>
 
                     </div>
-
 
                     <div class="menu-arrow">
 
@@ -787,32 +701,26 @@
 
 
                 <!-- PERMISSIONS -->
-
                 <a
                     href="permissions.html"
                     class="menu-card"
                 >
-
                     <div class="menu-icon permissions">
 
                         <i class="fa-solid fa-user-shield"></i>
 
                     </div>
 
-
                     <div class="menu-content">
 
                         <h3>
                             Phân quyền
                         </h3>
-
                         <p>
                             Xem và quản lý quyền truy cập
                             theo từng vai trò.
                         </p>
-
                     </div>
-
 
                     <div class="menu-arrow">
 
@@ -828,7 +736,19 @@
             </div>
 
         </section>
-
+        
+        <a href="../transport/trips.html" class="menu-card">
+            <div class="menu-icon trips">
+                <i class="fa-solid fa-route"></i>
+            </div>
+            <div class="menu-content">
+                <h3>Quản lý chuyến xe</h3>
+                <p>Giám sát toàn bộ các chuyến vận chuyển và hành trình xe trong hệ thống.</p>
+            </div>
+            <div class="menu-arrow">
+                <i class="fa-solid fa-chevron-right"></i>
+            </div>
+        </a>
 
         <!-- =================================================
              LOGOUT
@@ -902,47 +822,32 @@ function adminApiError(message) {
     }
     banner.textContent = message;
 }
-
-
-
         /*
         |--------------------------------------------------------------------------
         | Load current user
         |--------------------------------------------------------------------------
         */
-
         async function loadCurrentUser()
         {
-
             try
             {
-
                 const response =
                     await adminRequest('/api/me',
                         {
                             method: 'GET',
-
                             credentials: 'same-origin'
                         }
                     );
-
-
                 const result =
                     await response.json();
-
-
                 if (!result.success) {
                     adminApiError('Không thể tải phiên đăng nhập.');
 
                     return;
 
                 }
-
-
                 const user =
                     result.data;
-
-
                 /*
                 |--------------------------------------------------------------------------
                 | Chỉ ADMIN được vào dashboard này
@@ -954,22 +859,15 @@ function adminApiError(message) {
 
                     switch (user.role)
                     {
-
                         case 'STAFF':
-
                             window.location.href =
                                 '../transport/dashboard.html';
-
                             return;
-
-
                         case 'DRIVER':
 
                             window.location.href =
                                 '../driver/dashboard.html';
-
                             return;
-
 
                         case 'CUSTOMER':
 
@@ -977,18 +875,12 @@ function adminApiError(message) {
                                 '../customer/dashboard.html';
 
                             return;
-
-
                         default:
                             adminApiError('Vai trò tài khoản không hợp lệ.');
-
                             return;
-
                     }
 
                 }
-
-
                 document.getElementById(
                     'adminName'
                 ).textContent =
@@ -1014,8 +906,6 @@ function adminApiError(message) {
             }
 
         }
-
-
         /*
         |--------------------------------------------------------------------------
         | Load users statistics
@@ -1081,16 +971,13 @@ function adminApiError(message) {
                 ).textContent =
                     admins;
 
-
                 document.getElementById(
                     'activeUsers'
                 ).textContent =
                     active;
-
             }
             catch (error)
             {
-
                 console.error(
                     'Load statistics error:',
                     error
@@ -1099,28 +986,22 @@ function adminApiError(message) {
             }
 
         }
-
-
         /*
         |--------------------------------------------------------------------------
         | Logout
         |--------------------------------------------------------------------------
         */
-
         document.getElementById(
             'logoutBtn'
         ).addEventListener(
             'click',
             async function ()
             {
-
                 try
                 {
-
                     await adminRequest('/api/logout',
                         {
                             method: 'POST',
-
                             credentials: 'same-origin'
                         }
                     );
@@ -1128,7 +1009,6 @@ function adminApiError(message) {
                 sessionStorage.removeItem(
                     'user'
                 );
-
 
                 window.location.href =
                     '../customer/login.html';
@@ -1142,29 +1022,20 @@ function adminApiError(message) {
                     );
 
                 }
-
-
-
-
             }
         );
-
-
         /*
         |--------------------------------------------------------------------------
         | Init
         |--------------------------------------------------------------------------
         */
-
         document.addEventListener(
             'DOMContentLoaded',
             function ()
             {
-
                 loadCurrentUser();
 
                 loadStatistics();
-
             }
         );
 
