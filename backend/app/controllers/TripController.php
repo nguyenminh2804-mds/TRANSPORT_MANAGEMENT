@@ -17,14 +17,21 @@ class TripController {
 
     public function create() {
         $data = json_decode(file_get_contents("php://input"));
-        // Kiểm tra vài trường cơ bản không được trống
         if (!empty($data->driver_name) && !empty($data->start_location) && !empty($data->goods_name)) {
             $trip = new Trip($this->db);
-            if ($trip->createTrip($data)) {
-                echo json_encode(["status" => "success", "message" => "Tạo chuyến vận chuyển thành công!"]);
-            } else {
-                echo json_encode(["status" => "error", "message" => "Lỗi DB: Không thể tạo chuyến."]);
+            
+            // Dùng Try-Catch để bắt lỗi CSDL nếu có
+            try {
+                if ($trip->createTrip($data)) {
+                    echo json_encode(["status" => "success", "message" => "Tạo chuyến vận chuyển thành công!"]);
+                } else {
+                    echo json_encode(["status" => "error", "message" => "Lỗi DB: Không thể tạo chuyến."]);
+                }
+            } catch (PDOException $e) {
+                // Trả về thẳng thông báo lỗi của CSDL để dễ sửa
+                echo json_encode(["status" => "error", "message" => "Lỗi MySQL: " . $e->getMessage()]);
             }
+
         } else {
             echo json_encode(["status" => "error", "message" => "Vui lòng nhập đầy đủ thông tin."]);
         }

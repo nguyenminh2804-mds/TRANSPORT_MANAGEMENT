@@ -13,8 +13,9 @@ class Trip {
     }
 
     public function createTrip($data) {
-        $query = "INSERT INTO trips (driver_name, driver_phone, vehicle_plate, start_location, end_location, goods_name, goods_value, weight, receiver_name, receiver_phone, status) 
-                  VALUES (:dname, :dphone, :vplate, :start, :end, :gname, :gvalue, :weight, :rname, :rphone, 'PLANNED')";
+        // Thay NULL bằng 1 để vượt qua ràng buộc NOT NULL của cơ sở dữ liệu
+        $query = "INSERT INTO trips (driver_id, vehicle_id, driver_name, driver_phone, vehicle_plate, start_location, end_location, goods_name, goods_value, weight, receiver_name, receiver_phone, status) 
+                  VALUES (1, 1, :dname, :dphone, :vplate, :start, :end, :gname, :gvalue, :weight, :rname, :rphone, 'PLANNED')";
         
         $stmt = $this->conn->prepare($query);
         return $stmt->execute([
@@ -30,7 +31,6 @@ class Trip {
             ':rphone' => $data->receiver_phone
         ]);
     }
-
     public function trackTrip($trip_id) {
         $query = "SELECT * FROM trips WHERE id = :id";
         $stmt = $this->conn->prepare($query);

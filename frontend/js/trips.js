@@ -46,12 +46,17 @@ document.getElementById('createTripForm').addEventListener('submit', function(e)
     })
     .then(res => res.json())
     .then(data => {
-        document.getElementById('msg').innerText = data.message;
+        const msgEl = document.getElementById('msg');
+        msgEl.innerText = data.message;
+        
         if(data.status === 'success') {
+            msgEl.style.color = 'green';
             document.getElementById('createTripForm').reset();
             loadTrips(); 
+        } else {
+            msgEl.style.color = 'red'; // Đổi màu đỏ nếu có lỗi
         }
-        setTimeout(() => document.getElementById('msg').innerText = '', 3000);
+        setTimeout(() => msgEl.innerText = '', 5000);
     });
 });
 
