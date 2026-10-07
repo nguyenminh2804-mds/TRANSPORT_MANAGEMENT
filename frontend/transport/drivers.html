@@ -3,9 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drivers</title>
+    <title>Quản lý tài xế - Quản lý vận tải</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/common.css?v=d1454f41a43b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/customer.css?v=921343b48d30">
+    <link rel="stylesheet" href="../css/transport.css?v=e059e844b2db">
+    <link rel="stylesheet" href="../css/drivers.css?v=54c368497b09">
+    <link rel="stylesheet" href="../css/drivers-management.css?v=2c863f6fcd05">
+    <script src="../js/drivers.js?v=a57dca29ede8" defer></script>
 </head>
-<body>
-    <h1>Drivers</h1>
+<body class="drivers-page drivers-management">
+    <header class="drivers-header"><div class="drivers-container drivers-row">
+        <a href="dashboard.html" class="drivers-brand"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> <span>Quản lý vận tải</span></a>
+        <div class="drivers-row drivers-user"><span class="drivers-avatar" aria-hidden="true"><i class="fa-solid fa-user"></i></span><span id="currentUser">Đang kiểm tra phiên…</span><button id="logoutButton" type="button"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Đăng xuất</button></div>
+    </div></header>
+    <main class="drivers-container">
+        <nav class="drivers-breadcrumb" aria-label="Điều hướng"><a id="staffOverview" href="dashboard.html" hidden><i class="fa-solid fa-house" aria-hidden="true"></i> Trang tổng quan</a><i id="staffOverviewSeparator" class="fa-solid fa-chevron-right" aria-hidden="true" hidden></i><span aria-current="page">Quản lý tài xế</span></nav>
+        <div class="drivers-row drivers-title customer-orders-page-header"><div><h1><span class="drivers-heading-icon"><i class="fa-solid fa-id-card" aria-hidden="true"></i></span>Quản lý tài xế</h1><p>Thông tin hồ sơ, giấy phép lái xe và trạng thái làm việc.</p></div><button id="addButton" type="button" class="drivers-primary" disabled><i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm tài xế</button></div>
+        <div id="pageMessage" role="status" aria-live="polite"></div>
+        <section class="drivers-metrics" aria-label="Thống kê toàn bộ tài xế" aria-live="polite">
+            <div class="customer-order-summary-card"><div class="customer-summary-icon total" aria-hidden="true"><i class="fa-solid fa-users"></i></div><div><span>Tổng tài xế</span><strong id="totalDrivers">—</strong></div></div>
+            <div class="customer-order-summary-card"><div class="customer-summary-icon delivering" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div><div><span>Đang rảnh</span><strong id="availableDrivers">—</strong></div></div>
+            <div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-truck"></i></div><div><span>Đang thực hiện chuyến</span><strong id="busyDrivers">—</strong></div></div>
+            <div class="customer-order-summary-card"><div class="customer-summary-icon drivers-icon-inactive" aria-hidden="true"><i class="fa-solid fa-user-slash"></i></div><div><span>Ngừng làm việc</span><strong id="inactiveDrivers">—</strong></div></div>
+        </section>
+        <p id="statsMessage" class="drivers-note" role="status">Đang tải thống kê…</p>
+        <section class="customer-orders-card drivers-list-card" aria-labelledby="listHeading">
+            <div class="drivers-row drivers-list-heading customer-orders-card-header"><div><h2 id="listHeading"><i class="fa-solid fa-address-book" aria-hidden="true"></i>Danh sách tài xế</h2><p>Tra cứu hồ sơ và quản lý trạng thái làm việc</p></div><button id="refreshButton" class="customer-refresh-btn" type="button"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Làm mới</button></div>
+            <form id="filterForm" class="drivers-filters">
+                <label for="search">Tìm kiếm<input type="search" id="search" maxlength="150" placeholder="Mã, họ tên, điện thoại hoặc số GPLX"></label>
+                <label for="statusFilter">Lọc trạng thái<select id="statusFilter"><option value="">Tất cả trạng thái</option><option value="available">Đang rảnh</option><option value="on_trip">Đang thực hiện chuyến</option><option value="inactive">Ngừng làm việc</option></select></label>
+                <button type="submit" class="drivers-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</button><button id="resetFilter" type="button"><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i> Xóa bộ lọc</button>
+            </form>
+            <div class="drivers-results"><p id="resultCount" role="status">Đang kiểm tra phiên đăng nhập…</p><button id="listRetry" type="button" hidden><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Thử lại</button></div>
+            <div class="drivers-table-wrap"><table class="customer-orders-table"><caption class="visually-hidden">Hồ sơ và thao tác quản lý tài xế</caption><thead><tr><th scope="col">Mã tài xế</th><th scope="col">Họ tên</th><th scope="col">Điện thoại</th><th scope="col">Số GPLX</th><th scope="col">Hạng</th><th scope="col">Hết hạn GPLX</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead><tbody id="driverRows"><tr><td colspan="8" class="drivers-empty">Đang kiểm tra phiên đăng nhập…</td></tr></tbody></table></div>
+        </section>
+        <p class="drivers-note">Tài xế có phân công hoặc chuyến đang hiệu lực không thể đổi trạng thái. Hồ sơ có lịch sử phân công/chuyến hoặc đang thực hiện chuyến không thể xóa.</p>
+    </main>
+    <dialog id="driverDialog" aria-labelledby="dialogTitle"><form id="driverForm" novalidate>
+        <div class="drivers-row drivers-dialog-header"><h2 id="dialogTitle">Thêm tài xế</h2><button type="button" id="closeDialog" aria-label="Đóng"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <p id="driverCode" class="drivers-dialog-description"></p>
+        <p id="requiredNote" class="drivers-dialog-description">Các trường có dấu * là bắt buộc.</p>
+        <dl id="driverDetails" class="drivers-details" hidden></dl>
+        <div id="formMessage" role="alert" aria-live="assertive"></div>
+        <div id="driverFields" class="drivers-form-grid">
+            <h3 class="drivers-full drivers-form-heading">Thông tin hồ sơ</h3>
+            <label>Mã tài xế *<input name="driver_code" aria-describedby="error-driver_code" required maxlength="50" placeholder="Ví dụ TX001"><small id="error-driver_code" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Họ tên *<input name="full_name" aria-describedby="error-full_name" required maxlength="150" autocomplete="name"><small id="error-full_name" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Số điện thoại *<input name="phone" aria-describedby="error-phone" type="tel" required maxlength="16" pattern="\+?[0-9]{9,15}" autocomplete="tel"><small id="error-phone" class="drivers-field-error" aria-live="polite"></small></label>
+            <label class="drivers-full">Địa chỉ<input name="address" aria-describedby="error-address" maxlength="255" autocomplete="street-address"><small id="error-address" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Số GPLX *<input name="license_number" aria-describedby="error-license_number" required maxlength="50"><small id="error-license_number" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Hạng GPLX *<input name="license_class" aria-describedby="error-license_class" required maxlength="30" list="licenseSuggestions"><datalist id="licenseSuggestions"><option value="B"><option value="C"><option value="D"><option value="C1"><option value="CE"></datalist><small id="error-license_class" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Ngày hết hạn GPLX<input name="license_expiry" aria-describedby="error-license_expiry" type="date" min="1000-01-01" max="9999-12-31"><small id="error-license_expiry" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Trạng thái *<select name="status" aria-describedby="error-status"><option value="available">Đang rảnh</option><option value="on_trip">Đang thực hiện chuyến</option><option value="inactive">Ngừng làm việc</option></select><small id="error-status" class="drivers-field-error" aria-live="polite"></small></label>
+            <label id="linkedAccountField" hidden>ID tài khoản tài xế (tùy chọn)<input name="user_id" disabled aria-describedby="error-user_id" type="text" inputmode="numeric" pattern="[1-9][0-9]{0,19}" maxlength="20"><small>Chỉ liên kết tài khoản DRIVER đang hoạt động. Có thể để trống.</small><small id="error-user_id" class="drivers-field-error" aria-live="polite"></small></label>
+            <fieldset id="accountFields" class="drivers-full drivers-account-grid">
+                <legend>Thông tin tài khoản đăng nhập</legend>
+                <p class="drivers-full drivers-note">Tạo đồng thời tài khoản DRIVER đang hoạt động và liên kết với hồ sơ này.</p>
+                <label>Tên đăng nhập *<input name="username" required maxlength="50" autocomplete="off" spellcheck="false" aria-describedby="error-username"><small id="error-username" class="drivers-field-error" aria-live="polite"></small></label>
+                <label>Mật khẩu khởi tạo *<input name="password" type="password" required maxlength="72" autocomplete="new-password" aria-describedby="passwordHelp error-password"><small id="passwordHelp">Không được để trống, tối đa 72 byte UTF-8. Ký tự có dấu có thể dùng nhiều byte.</small><small id="error-password" class="drivers-field-error" aria-live="polite"></small></label>
+            </fieldset>
+        </div>
+        <div class="drivers-actions"><button id="cancelDialog" type="button">Hủy</button><button id="saveButton" class="drivers-primary" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Lưu tài xế</button></div>
+    </form></dialog>
+    <dialog id="statusDialog" aria-label="Cập nhật trạng thái"><form id="statusForm"><h2>Cập nhật trạng thái</h2><p id="statusDriver"></p><div id="statusMessage" role="alert"></div><label>Trạng thái<select id="newStatus"><option value="available">Đang rảnh</option><option value="on_trip">Đang thực hiện chuyến</option><option value="inactive">Ngừng làm việc</option></select></label><div class="drivers-actions"><button id="closeStatus" type="button">Đóng</button><button id="statusSaveButton" type="submit" class="drivers-primary">Cập nhật</button></div></form></dialog>
+    <dialog id="deleteDialog" aria-labelledby="deleteTitle" aria-describedby="deleteDescription">
+        <div class="drivers-row drivers-dialog-header"><h2 id="deleteTitle"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Xóa tài xế</h2><button id="closeDelete" type="button" aria-label="Đóng"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <div class="drivers-delete-body"><p id="deleteDriver"></p><p id="deleteDescription">Bạn có chắc muốn xóa hồ sơ này? Thao tác không thể hoàn tác. Hệ thống sẽ từ chối nếu tài xế đang thực hiện chuyến hoặc có lịch sử phân công/chuyến.</p><div id="deleteMessage" role="alert"></div></div>
+        <div class="drivers-actions"><button id="cancelDelete" type="button" autofocus>Hủy</button><button id="confirmDelete" type="button" class="drivers-delete-confirm"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Xóa tài xế</button></div>
+    </dialog>
 </body>
 </html>

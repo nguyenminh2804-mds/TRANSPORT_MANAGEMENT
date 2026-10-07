@@ -7,6 +7,21 @@ class AuthController extends Controller
 {
     private $userModel;
 
+    // Giữ nguyên module User; chỉ chuyển lỗi database thành phản hồi JSON.
+    private function findAccount($method, $value)
+    {
+        try {
+            return $this->userModel->$method($value);
+        } catch (PDOException $e) {
+            error_log('Account integration: ' . $e->getMessage());
+            if ((int)($e->errorInfo[1] ?? 0) === 1146) {
+                $this->error('Chưa có bảng users trong database. Cần schema tài khoản chính thức trước khi đăng nhập hoặc quản lý tài xế.', 503);
+            }
+            $this->error('Không thể đọc tài khoản. Kiểm tra kết nối và schema module users.', 500);
+        }
+    }
+
+
     public function __construct()
     {
         $this->userModel = new User();
@@ -20,6 +35,7 @@ class AuthController extends Controller
 
     public function login()
     {
+        header('Cache-Control: no-store, private');
         $data = json_decode(
             file_get_contents('php://input'),
             true
@@ -37,8 +53,7 @@ class AuthController extends Controller
             );
         }
 
-        $user = $this->userModel
-            ->findByUsername($username);
+        $user = $this->findAccount('findByUsername', $username);
 
         if (!$user) {
             $this->error(
@@ -82,6 +97,7 @@ class AuthController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
@@ -109,6 +125,7 @@ class AuthController extends Controller
 
     public function logout()
     {
+        header('Cache-Control: no-store, private');
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {
@@ -143,6 +160,7 @@ class AuthController extends Controller
 
     public function me()
     {
+        header('Cache-Control: no-store, private');
         if (!isset($_SESSION['user_id'])) {
             $this->error(
                 'Chưa đăng nhập',
@@ -150,14 +168,17 @@ class AuthController extends Controller
             );
         }
 
-        $user = $this->userModel
-            ->findById($_SESSION['user_id']);
+        $user = $this->findAccount('findById', $_SESSION['user_id']);
 
         if (!$user) {
             $this->error(
-                'Không tìm thấy người dùng',
-                404
+                'Phiên đăng nhập không còn hợp lệ',
+                401
             );
+        }
+
+        if ((int)$user['status'] !== 1) {
+            $this->error('Tài khoản đã bị khóa', 403);
         }
 
         unset($user['password']);

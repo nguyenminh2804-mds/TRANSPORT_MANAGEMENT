@@ -1,0 +1,110 @@
+/* Driver only. Reuse the existing customer orders components and palette. */
+.drivers-management main.drivers-container { padding-top:28px; padding-bottom:40px; }
+.drivers-management .drivers-brand { display:flex; align-items:center; gap:12px; }
+.drivers-management .drivers-brand i { font-size:25px; }
+.drivers-management .drivers-user { justify-content:flex-end; }
+.drivers-management .drivers-avatar { width:36px; height:36px; border-radius:50%; display:grid; place-items:center; background:#fff; color:#2563eb; }
+.drivers-management .drivers-breadcrumb { display:flex; gap:12px; align-items:center; flex-wrap:wrap; font-size:13px; margin:0; }
+.drivers-management .drivers-breadcrumb a { text-decoration:none; }
+.drivers-management .drivers-breadcrumb > i { font-size:10px; }
+.drivers-management .drivers-title { margin:26px 0 25px; align-items:flex-end; gap:20px; }
+.drivers-management .drivers-title h1 { display:flex; align-items:center; gap:13px; font-size:32px; font-weight:750; line-height:1.25; margin:0 0 7px; }
+.drivers-management .drivers-heading-icon { display:grid; place-items:center; width:48px; height:48px; flex-shrink:0; border-radius:14px; background:#edf4ff; color:#2563eb; }
+.drivers-management .drivers-heading-icon i { font-size:24px; margin:0; }
+.drivers-management .drivers-title p { font-size:15px; }
+.drivers-management button { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; font-size:14px; border-radius:9px; transition:background .15s ease; }
+.drivers-management button i { margin:0; }
+.drivers-management button:disabled { cursor:not-allowed; }
+.drivers-management .drivers-metrics { gap:20px; }
+.drivers-management .customer-order-summary-card { min-width:0; gap:14px; padding:22px 20px; }
+.drivers-management .drivers-metrics span { display:block; color:#718096; font-size:13px; margin-bottom:5px; }
+.drivers-management .drivers-metrics strong { font-size:25px; font-weight:750; margin:0; }
+.drivers-management .drivers-metrics i { color:inherit; }
+.drivers-management .drivers-icon-inactive { background:#f1f5f9; color:#64748b; }
+.drivers-management #statsMessage { font-size:13px; margin:12px 0 24px; }
+.drivers-management .drivers-list-heading { margin:0; padding:22px 25px; gap:16px; }
+.drivers-management h2 { font-size:18px; font-weight:700; line-height:1.4; }
+.drivers-management .drivers-list-heading h2 { margin:0 0 5px; }
+.drivers-management .drivers-list-heading p { margin:0; font-size:13px; color:#8994a5; }
+.drivers-management .drivers-filters { padding:22px 25px; background:#f8faff; border-bottom:1px solid #edf0f5; gap:12px; }
+.drivers-management label { font-size:13px; gap:7px; }
+.drivers-management input,.drivers-management select { min-width:0; min-height:42px; font-size:14px; border-color:#d8e1ef; }
+.drivers-management input:disabled,.drivers-management select:disabled { background:#f1f5f9; color:#526078; }
+.drivers-management .drivers-filters label:first-child { flex:1 1 280px; }
+.drivers-management .drivers-filters label:nth-child(2) { flex:0 1 225px; }
+.drivers-management .drivers-results { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 25px; }
+.drivers-management #resultCount { margin:0; font-size:13px; }
+.drivers-management [hidden] { display:none !important; }
+.drivers-management .drivers-table-wrap { border:0; border-radius:0; }
+.drivers-management table { min-width:1020px; table-layout:auto; }
+.drivers-management th { padding:15px 16px; background:#f8faff; text-transform:uppercase; font-size:12px; color:#64748b; }
+.drivers-management td { padding:17px 16px; font-size:14px; color:#374151; vertical-align:middle; }
+.drivers-management td:first-child { font-weight:700; }
+.drivers-management .drivers-row-actions { min-width:194px; max-width:220px; gap:6px; }
+.drivers-management .drivers-row-actions button { padding:6px 9px; min-height:34px; font-size:12px; gap:5px; }
+.drivers-management .drivers-row-actions .drivers-danger { background:#fff5f5; border-color:#fecaca; }
+.drivers-management .drivers-row-actions .drivers-danger:hover { background:#fee2e2; }
+.drivers-management .drivers-badge { white-space:normal; line-height:1.4; }
+.drivers-management .drivers-empty { padding:44px 20px; color:#718096; font-size:14px; }
+.drivers-management .drivers-empty.loading::after { content:""; display:block; margin:16px auto 0; width:24px; height:24px; border:3px solid #dbeafe; border-top-color:#2563eb; border-radius:50%; animation:drivers-spin .8s linear infinite; }
+@keyframes drivers-spin { to { transform:rotate(360deg); } }
+.drivers-management dialog { padding:0; width:min(720px,calc(100% - 32px)); max-height:90dvh; overflow:auto; }
+.drivers-management .drivers-dialog-header { padding:20px 24px; border-bottom:1px solid #edf0f5; gap:12px; }
+.drivers-management .drivers-dialog-header > button { width:36px; min-height:36px; padding:0; flex-shrink:0; }
+.drivers-management .drivers-dialog-description { color:#718096; margin:16px 24px 0; font-size:13px; line-height:1.6; }
+.drivers-management #formMessage { margin:16px 24px 0; }
+.drivers-management #formMessage:empty { margin:0; }
+.drivers-management .drivers-form-grid { margin:20px 24px 24px; gap:18px; grid-template-columns:repeat(2,minmax(0,1fr)); }
+.drivers-management .drivers-actions { padding:16px 24px; margin:0; border-top:1px solid #edf0f5; position:sticky; bottom:0; background:#fff; z-index:1; }
+.drivers-management .drivers-details { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 24px; padding:8px 24px 24px; margin:0; }
+.drivers-management .drivers-details > div { padding:14px 0; border-bottom:1px solid #edf0f5; min-width:0; }
+.drivers-management .drivers-details dt { color:#718096; font-size:12px; font-weight:500; margin-bottom:6px; }
+.drivers-management .drivers-details dd { margin:0; color:#172033; font-size:14px; font-weight:600; overflow-wrap:anywhere; }
+.drivers-management .drivers-delete-body { padding:20px 24px; font-size:14px; line-height:1.7; }
+.drivers-management #deleteDriver { font-weight:700; color:#172033; }
+.drivers-management #deleteDescription { color:#718096; margin:0; }
+.drivers-management #deleteTitle i { color:#dc2626; margin-right:8px; }
+.drivers-management .drivers-delete-confirm { background:#dc2626; border-color:#dc2626; color:white; }
+.drivers-management .drivers-delete-confirm:hover { background:#b91c1c; }
+.drivers-management #statusForm > h2,.drivers-management #statusForm > p,.drivers-management #statusForm > label,.drivers-management #statusMessage:not(:empty) { margin:20px 24px; }
+@media(max-width:1100px) { .drivers-management .drivers-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:640px) {
+    .drivers-management main.drivers-container { padding-top:22px; }
+    .drivers-management .drivers-header > div { gap:16px; }
+    .drivers-management .drivers-user { justify-content:flex-start; width:100%; gap:10px; }
+    .drivers-management #currentUser { flex:1; min-width:0; overflow-wrap:anywhere; font-size:13px; }
+    .drivers-management .drivers-title { margin:24px 0; align-items:flex-start; }
+    .drivers-management .drivers-title h1 { font-size:26px; gap:10px; }
+    .drivers-management .drivers-heading-icon { width:42px; height:42px; }
+    .drivers-management .drivers-title p { font-size:14px; line-height:1.6; }
+    .drivers-management .drivers-metrics { gap:12px; }
+    .drivers-management .customer-order-summary-card { padding:16px 12px; min-height:106px; gap:10px; }
+    .drivers-management .customer-summary-icon { width:36px; height:36px; min-width:36px; font-size:16px; border-radius:10px; }
+    .drivers-management .drivers-metrics span { font-size:12px; }
+    .drivers-management .drivers-list-heading,.drivers-management .drivers-filters { padding:18px 16px; }
+    .drivers-management .drivers-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .drivers-management .drivers-results { padding:12px 16px; }
+    .drivers-management table { min-width:0; }
+    .drivers-management tr { padding:16px; margin:0; }
+    .drivers-management td { padding:7px 0; font-size:13px; }
+    .drivers-management td:first-child { padding-bottom:12px; }
+    .drivers-management td:last-child { grid-template-columns:1fr; margin-top:8px; padding-top:12px; border-top:1px solid #edf0f5; }
+    .drivers-management td:last-child::before { display:none; }
+    .drivers-management .drivers-row-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); min-width:0; max-width:none; width:100%; gap:8px; }
+    .drivers-management .drivers-row-actions button { min-height:40px; }
+    .drivers-management .drivers-form-grid { grid-template-columns:minmax(0,1fr); margin:18px 18px 24px; }
+    .drivers-management .drivers-dialog-header { padding:18px; }
+    .drivers-management .drivers-dialog-description { margin-left:18px; margin-right:18px; }
+    .drivers-management .drivers-details { grid-template-columns:minmax(0,1fr); padding:8px 18px 24px; }
+    .drivers-management .drivers-actions { padding:14px 18px; }
+    .drivers-management .drivers-delete-body { padding:18px; }
+}
+@media(max-width:360px) { .drivers-management .drivers-metrics { grid-template-columns:1fr; } .drivers-management .drivers-filters { grid-template-columns:1fr; } .drivers-management .drivers-title h1 { font-size:24px; } }
+@media(prefers-reduced-motion:reduce) { .drivers-management .drivers-empty.loading::after { animation:none; } }
+
+/* Account creation is shown only for new Driver profiles. */
+.drivers-management .drivers-form-heading { font-size:15px; font-weight:700; margin:0; }
+.drivers-management .drivers-account-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; min-width:0; border:0; border-top:1px solid #edf0f5; padding:20px 0 0; margin:4px 0 0; }
+.drivers-management .drivers-account-grid legend { float:none; font-size:15px; font-weight:700; margin:0 0 12px; }
+.drivers-management .drivers-account-grid p { margin:0; font-size:13px; }
+@media(max-width:640px) { .drivers-management .drivers-account-grid { grid-template-columns:minmax(0,1fr); } }
