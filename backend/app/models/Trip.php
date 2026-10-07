@@ -6,37 +6,33 @@ class Trip {
         $this->conn = $db;
     }
 
-    // Lấy danh sách chuyến
     public function getAllTrips() {
-        $query = "SELECT t.id, t.start_location, t.end_location, t.status, 
-                         d.name as driver_name, v.license_plate 
-                  FROM trips t 
-                  LEFT JOIN drivers d ON t.driver_id = d.id 
-                  LEFT JOIN vehicles v ON t.vehicle_id = v.id 
-                  ORDER BY t.id DESC";
+        // Lấy dữ liệu trực tiếp từ bảng trips
+        $query = "SELECT * FROM trips ORDER BY id DESC";
         return $this->conn->query($query);
     }
 
-    // Tạo chuyến mới
-    public function createTrip($driver_id, $vehicle_id, $start, $end) {
-        $query = "INSERT INTO trips (driver_id, vehicle_id, start_location, end_location, status) 
-                  VALUES (:driver, :vehicle, :start, :end, 'PLANNED')";
+    public function createTrip($data) {
+        $query = "INSERT INTO trips (driver_name, driver_phone, vehicle_plate, start_location, end_location, goods_name, goods_value, weight, receiver_name, receiver_phone, status) 
+                  VALUES (:dname, :dphone, :vplate, :start, :end, :gname, :gvalue, :weight, :rname, :rphone, 'PLANNED')";
+        
         $stmt = $this->conn->prepare($query);
         return $stmt->execute([
-            ':driver' => $driver_id,
-            ':vehicle' => $vehicle_id,
-            ':start' => $start,
-            ':end' => $end
+            ':dname' => $data->driver_name,
+            ':dphone' => $data->driver_phone,
+            ':vplate' => $data->vehicle_plate,
+            ':start' => $data->start_location,
+            ':end' => $data->end_location,
+            ':gname' => $data->goods_name,
+            ':gvalue' => $data->goods_value,
+            ':weight' => $data->weight,
+            ':rname' => $data->receiver_name,
+            ':rphone' => $data->receiver_phone
         ]);
     }
 
-    // Theo dõi chi tiết 1 chuyến
     public function trackTrip($trip_id) {
-        $query = "SELECT t.*, d.name as driver_name, d.phone, v.license_plate 
-                  FROM trips t 
-                  LEFT JOIN drivers d ON t.driver_id = d.id 
-                  LEFT JOIN vehicles v ON t.vehicle_id = v.id 
-                  WHERE t.id = :id";
+        $query = "SELECT * FROM trips WHERE id = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([':id' => $trip_id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);

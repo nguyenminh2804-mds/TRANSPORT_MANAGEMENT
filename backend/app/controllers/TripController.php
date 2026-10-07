@@ -8,7 +8,6 @@ class TripController {
         $this->db = $dbConnection;
     }
 
-    // Hiển thị danh sách
     public function index() {
         $trip = new Trip($this->db);
         $result = $trip->getAllTrips();
@@ -16,22 +15,21 @@ class TripController {
         echo json_encode(["status" => "success", "data" => $trips]);
     }
 
-    // Xử lý tạo chuyến
     public function create() {
         $data = json_decode(file_get_contents("php://input"));
-        if (!empty($data->driver_id) && !empty($data->vehicle_id) && !empty($data->start_location)) {
+        // Kiểm tra vài trường cơ bản không được trống
+        if (!empty($data->driver_name) && !empty($data->start_location) && !empty($data->goods_name)) {
             $trip = new Trip($this->db);
-            if ($trip->createTrip($data->driver_id, $data->vehicle_id, $data->start_location, $data->end_location)) {
-                echo json_encode(["status" => "success", "message" => "Tạo chuyến thành công!"]);
+            if ($trip->createTrip($data)) {
+                echo json_encode(["status" => "success", "message" => "Tạo chuyến vận chuyển thành công!"]);
             } else {
-                echo json_encode(["status" => "error", "message" => "Không thể tạo chuyến."]);
+                echo json_encode(["status" => "error", "message" => "Lỗi DB: Không thể tạo chuyến."]);
             }
         } else {
-            echo json_encode(["status" => "error", "message" => "Vui lòng nhập đủ thông tin."]);
+            echo json_encode(["status" => "error", "message" => "Vui lòng nhập đầy đủ thông tin."]);
         }
     }
 
-    // Xử lý theo dõi
     public function track() {
         $id = isset($_GET['id']) ? $_GET['id'] : die();
         $trip = new Trip($this->db);
