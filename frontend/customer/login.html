@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Đăng nhập - Quản lý vận tải</title>
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <!-- Common CSS -->
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css"
+    >
+
+
+    <!-- Customer CSS -->
+
+    <link
+        rel="stylesheet"
+        href="../css/customer.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<div class="customer-login-page">
+
+
+    <div class="customer-login-card">
+
+
+        <!-- =========================================
+             LOGO
+        ========================================== -->
+
+        <div class="customer-login-logo">
+
+            <i class="fa-solid fa-truck-fast"></i>
+
+        </div>
+
+
+        <!-- =========================================
+             TITLE
+        ========================================== -->
+
+        <h1 class="customer-login-title">
+
+            Quản lý vận tải
+
+        </h1>
+
+
+        <p class="customer-login-subtitle">
+
+            Đăng nhập để quản lý và theo dõi
+            đơn hàng của bạn
+
+        </p>
+
+
+        <!-- =========================================
+             LOGIN FORM
+        ========================================== -->
+
+        <form id="loginForm">
+
+
+            <!-- USERNAME -->
+
+            <div class="mb-3">
+
+                <label
+                    for="username"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-user me-1 text-primary"></i>
+
+                    Tên đăng nhập
+
+                </label>
+
+
+                <input
+                    type="text"
+                    class="form-control customer-login-input"
+                    id="username"
+                    placeholder="Nhập tên đăng nhập"
+                    autocomplete="username"
+                    required
+                >
+
+            </div>
+
+
+            <!-- PASSWORD -->
+
+            <div class="mb-3">
+
+                <label
+                    for="password"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-lock me-1 text-primary"></i>
+
+                    Mật khẩu
+
+                </label>
+
+
+                <input
+                    type="password"
+                    class="form-control customer-login-input"
+                    id="password"
+                    placeholder="Nhập mật khẩu"
+                    autocomplete="current-password"
+                    required
+                >
+
+            </div>
+
+
+            <!-- MESSAGE -->
+
+            <div
+                id="loginMessage"
+                class="mb-3"
+            ></div>
+
+
+            <!-- LOGIN BUTTON -->
+
+            <button
+                type="submit"
+                class="btn customer-btn-primary w-100 py-2"
+            >
+
+                <i class="fa-solid fa-right-to-bracket me-2"></i>
+
+                Đăng nhập
+
+            </button>
+
+
+        </form>
+
+
+        <!-- =========================================
+             FOOTER
+        ========================================== -->
+
+        <div class="text-center mt-4">
+
+            <small class="text-muted">
+
+                <i class="fa-solid fa-shield-halved me-1"></i>
+
+                Hệ thống quản lý vận tải và giao nhận
+
+            </small>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<!-- =============================================
+     JAVASCRIPT
+============================================= -->
+
+<script src="../js/auth.js"></script>
+
+
+</body>
+
+</html>
