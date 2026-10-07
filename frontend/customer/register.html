@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Đăng ký - Quản lý vận tải</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/customer.css"
+    >
+
+</head>
+
+
+<body>
+
+<div class="customer-login-page">
+
+    <div class="customer-login-card">
+
+
+        <!-- Logo -->
+
+        <div class="customer-login-logo">
+
+            <i class="fa-solid fa-user-plus"></i>
+
+        </div>
+
+
+        <!-- Title -->
+
+        <h1 class="customer-login-title">
+
+            Tạo tài khoản
+
+        </h1>
+
+
+        <p class="customer-login-subtitle">
+
+            Đăng ký tài khoản khách hàng
+
+        </p>
+
+
+        <!-- Form -->
+
+        <form id="registerForm">
+
+
+            <!-- Username -->
+
+            <div class="mb-3">
+
+                <label
+                    for="username"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-user me-1 text-primary"></i>
+
+                    Tên đăng nhập
+
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control customer-login-input"
+                    id="username"
+                    placeholder="Nhập tên đăng nhập"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Full name -->
+
+            <div class="mb-3">
+
+                <label
+                    for="fullName"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-id-card me-1 text-primary"></i>
+
+                    Họ và tên
+
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control customer-login-input"
+                    id="fullName"
+                    placeholder="Nhập họ và tên"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Phone -->
+
+            <div class="mb-3">
+
+                <label
+                    for="phone"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-phone me-1 text-primary"></i>
+
+                    Số điện thoại
+
+                </label>
+
+                <input
+                    type="tel"
+                    class="form-control customer-login-input"
+                    id="phone"
+                    placeholder="Nhập số điện thoại"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Email -->
+
+            <div class="mb-3">
+
+                <label
+                    for="email"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-envelope me-1 text-primary"></i>
+
+                    Email
+
+                </label>
+
+                <input
+                    type="email"
+                    class="form-control customer-login-input"
+                    id="email"
+                    placeholder="Nhập email"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Address -->
+
+            <div class="mb-3">
+
+                <label
+                    for="address"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-location-dot me-1 text-primary"></i>
+
+                    Địa chỉ
+
+                </label>
+
+                <input
+                    type="text"
+                    class="form-control customer-login-input"
+                    id="address"
+                    placeholder="Nhập địa chỉ"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Password -->
+
+            <div class="mb-3">
+
+                <label
+                    for="password"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-lock me-1 text-primary"></i>
+
+                    Mật khẩu
+
+                </label>
+
+                <input
+                    type="password"
+                    class="form-control customer-login-input"
+                    id="password"
+                    placeholder="Ít nhất 6 ký tự"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Confirm -->
+
+            <div class="mb-3">
+
+                <label
+                    for="confirmPassword"
+                    class="customer-login-label"
+                >
+
+                    <i class="fa-solid fa-lock me-1 text-primary"></i>
+
+                    Xác nhận mật khẩu
+
+                </label>
+
+                <input
+                    type="password"
+                    class="form-control customer-login-input"
+                    id="confirmPassword"
+                    placeholder="Nhập lại mật khẩu"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Message -->
+
+            <div
+                id="registerMessage"
+                class="mb-3"
+            ></div>
+
+
+            <!-- Button -->
+
+            <button
+                type="submit"
+                class="btn customer-btn-primary w-100 py-2"
+            >
+
+                <i class="fa-solid fa-user-plus me-2"></i>
+
+                Đăng ký
+
+            </button>
+
+
+        </form>
+
+
+        <!-- Login -->
+
+        <div class="text-center mt-4">
+
+            <a
+                href="login.html"
+                class="text-decoration-none"
+            >
+
+                <i class="fa-solid fa-arrow-left me-1"></i>
+
+                Đã có tài khoản? Đăng nhập
+
+            </a>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script src="../js/register.js"></script>
+
+</body>
+
+</html>

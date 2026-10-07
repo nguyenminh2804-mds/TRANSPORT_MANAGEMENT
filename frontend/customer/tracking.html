@@ -2,613 +2,448 @@
 <html lang="vi">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Theo dõi đơn hàng - Quản lý vận tải</title>
 
+    <!-- Bootstrap -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
         rel="stylesheet"
     >
 
+    <!-- Font Awesome -->
     <link
         rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     >
 
+    <!-- Common CSS -->
+    <link
+        rel="stylesheet"
+        href="../css/common.css"
+    >
+
+    <!-- Customer CSS -->
+    <link
+        rel="stylesheet"
+        href="../css/customer.css"
+    >
+
     <style>
 
-        * {
-            box-sizing: border-box;
+        /* =========================================================
+           TRACKING PAGE
+        ========================================================= */
+
+        .customer-tracking-page-header {
+            margin-bottom: 28px;
         }
 
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
-            color: #172033;
+        .customer-tracking-page-header h1 {
+            margin-bottom: 8px;
         }
 
-        /* =========================
-           NAVBAR
-        ========================= */
-
-        .topbar {
-            height: 82px;
-            background: linear-gradient(
-                135deg,
-                #1d4ed8,
-                #2563eb
-            );
-            color: white;
-            box-shadow:
-                0 4px 15px rgba(37, 99, 235, 0.2);
+        .customer-tracking-page-header p {
+            margin-bottom: 0;
+            color: #718096;
         }
 
-        .topbar-inner {
-            max-width: 1280px;
-            height: 100%;
-            margin: auto;
-            padding: 0 25px;
 
+        /* =========================================================
+           SEARCH
+        ========================================================= */
+
+        .customer-tracking-search-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        }
+
+        .customer-tracking-search-form {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-
-            color: white;
-            text-decoration: none;
-
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        .brand i {
-            font-size: 28px;
-        }
-
-        .user-area {
-            display: flex;
-            align-items: center;
             gap: 14px;
         }
 
-        .avatar {
-            width: 46px;
-            height: 46px;
-
-            border-radius: 50%;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            background: rgba(255,255,255,0.18);
-
-            font-size: 18px;
-        }
-
-        #welcomeUser {
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .logout-btn {
-            height: 42px;
-            padding: 0 17px;
-
-            border: none;
-            border-radius: 8px;
-
-            background: white;
-            color: #172033;
-
-            font-weight: 600;
-
-            cursor: pointer;
-        }
-
-        .logout-btn:hover {
-            background: #f1f5f9;
-        }
-
-
-        /* =========================
-           MAIN
-        ========================= */
-
-        .page {
-            max-width: 1280px;
-            margin: auto;
-            padding: 55px 25px;
-        }
-
-        .page-title {
-            margin-bottom: 30px;
-        }
-
-        .page-title h1 {
-            margin: 0 0 8px;
-
-            font-size: 34px;
-            font-weight: 750;
-        }
-
-        .page-title p {
-            margin: 0;
-
-            color: #718096;
-            font-size: 16px;
-        }
-
-
-        /* =========================
-           SEARCH CARD
-        ========================= */
-
-        .search-card {
-            overflow: hidden;
-
-            background: white;
-
-            border: 1px solid #e2e8f0;
-            border-radius: 18px;
-
-            box-shadow:
-                0 8px 25px rgba(31, 52, 89, 0.06);
-        }
-
-        .search-header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-
-            padding: 25px;
-
-            border-bottom: 1px solid #edf0f5;
-        }
-
-        .search-icon {
-            width: 50px;
-            height: 50px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 14px;
-
-            color: #2563eb;
-            background: #edf4ff;
-
-            font-size: 20px;
-        }
-
-        .search-header h2 {
-            margin: 0 0 5px;
-
-            font-size: 19px;
-            font-weight: 700;
-        }
-
-        .search-header p {
-            margin: 0;
-
-            color: #718096;
-            font-size: 14px;
-        }
-
-        .search-body {
-            padding: 30px;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 12px;
-        }
-
-        .input-box {
-            position: relative;
+        .customer-tracking-input {
             flex: 1;
-        }
-
-        .input-box i {
-            position: absolute;
-
-            left: 17px;
-            top: 50%;
-
-            transform: translateY(-50%);
-
-            color: #2563eb;
-        }
-
-        .input-box input {
-            width: 100%;
-            height: 52px;
-
-            padding: 0 18px 0 48px;
-
-            border: 1px solid #d8e1ef;
+            min-width: 0;
+            height: 56px;
+            border: 1px solid #dbe3ef;
             border-radius: 10px;
-
+            padding: 0 18px;
+            font-size: 16px;
+            color: #1e293b;
             outline: none;
-
-            font-size: 15px;
+            transition: 0.2s;
         }
 
-        .input-box input:focus {
+        .customer-tracking-input:focus {
             border-color: #2563eb;
-
-            box-shadow:
-                0 0 0 3px rgba(37,99,235,0.1);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
         }
 
-        .search-btn {
-            height: 52px;
-
-            padding: 0 25px;
-
+        .customer-tracking-search-btn {
+            height: 56px;
+            padding: 0 28px;
             border: none;
             border-radius: 10px;
-
-            color: white;
             background: #2563eb;
-
-            font-size: 15px;
+            color: #ffffff;
             font-weight: 600;
-
-            cursor: pointer;
+            font-size: 16px;
+            white-space: nowrap;
+            transition: 0.2s;
         }
 
-        .search-btn:hover {
+        .customer-tracking-search-btn:hover {
             background: #1d4ed8;
         }
 
+        .customer-tracking-search-btn.is-loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
 
-        /* =========================
+
+        /* =========================================================
            MESSAGE
-        ========================= */
+        ========================================================= */
 
-        #trackingMessage {
-            margin-top: 15px;
-        }
-
-        .message {
-            padding: 14px 17px;
-
+        .customer-tracking-message {
+            margin-top: 16px;
+            padding: 13px 16px;
             border-radius: 10px;
-
+            display: none;
             font-size: 14px;
         }
 
-        .message.error {
-            color: #b91c1c;
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-        }
-
-        .message.info {
-            color: #1d4ed8;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-        }
-
-
-        /* =========================
-           RESULT
-        ========================= */
-
-        #trackingResult {
-            margin-top: 25px;
-        }
-
-        .result-card {
-            overflow: hidden;
-
-            background: white;
-
-            border: 1px solid #e2e8f0;
-            border-radius: 18px;
-
-            box-shadow:
-                0 8px 25px rgba(31, 52, 89, 0.06);
-        }
-
-        .result-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-
-            padding: 25px;
-
-            background: #f8faff;
-
-            border-bottom: 1px solid #edf0f5;
-        }
-
-        .result-label {
+        .customer-tracking-message.success {
             display: block;
-
-            margin-bottom: 5px;
-
-            color: #8994a5;
-            font-size: 13px;
+            background: #dcfce7;
+            color: #166534;
         }
 
-        .result-header h2 {
-            margin: 0;
-
-            font-size: 24px;
-            font-weight: 750;
-        }
-
-        .status {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-
-            padding: 8px 14px;
-
-            border-radius: 20px;
-
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .status.warning {
-            color: #92400e;
-            background: #fef3c7;
-        }
-
-        .status.info {
-            color: #0369a1;
-            background: #e0f2fe;
-        }
-
-        .status.primary {
-            color: #1d4ed8;
-            background: #dbeafe;
-        }
-
-        .status.success {
-            color: #047857;
-            background: #d1fae5;
-        }
-
-        .status.danger {
-            color: #b91c1c;
+        .customer-tracking-message.error {
+            display: block;
             background: #fee2e2;
+            color: #991b1b;
         }
 
 
-        /* =========================
-           INFO
-        ========================= */
+        /* =========================================================
+           RESULT
+        ========================================================= */
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+        .customer-tracking-result {
+            display: none;
         }
 
-        .info-item {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-
-            padding: 22px 25px;
-
-            border-bottom: 1px solid #edf0f5;
+        .customer-tracking-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
         }
 
-        .info-icon {
-            width: 44px;
-            height: 44px;
-            min-width: 44px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 11px;
-
-            color: #2563eb;
-            background: #edf4ff;
-        }
-
-        .info-label {
-            display: block;
-
-            margin-bottom: 4px;
-
-            color: #8994a5;
-            font-size: 12px;
-        }
-
-        .info-value {
-            display: block;
-
-            color: #172033;
-
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-
-        /* =========================
-           TIMELINE
-        ========================= */
-
-        .timeline-area {
-            padding: 28px;
-
-            background: #fafbfe;
-        }
-
-        .timeline-area h3 {
-            margin: 0 0 28px;
-
-            font-size: 17px;
-        }
-
-        .timeline {
+        .customer-tracking-card-header {
+            padding: 26px 28px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
-
-            position: relative;
-        }
-
-        .timeline-line {
-            position: absolute;
-
-            top: 20px;
-            left: 8%;
-            right: 8%;
-
-            height: 3px;
-
-            background: #e2e8f0;
-        }
-
-        .timeline-step {
-            position: relative;
-            z-index: 1;
-
-            width: 20%;
-
-            text-align: center;
-
-            color: #94a3b8;
-
-            font-size: 12px;
-        }
-
-        .timeline-icon {
-            width: 40px;
-            height: 40px;
-
-            margin: 0 auto 9px;
-
-            display: flex;
             align-items: center;
-            justify-content: center;
-
-            border-radius: 50%;
-
-            color: #94a3b8;
-            background: #e2e8f0;
-
-            border: 3px solid white;
+            gap: 20px;
         }
 
-        .timeline-step.active {
-            color: #2563eb;
+        .customer-tracking-code-label {
+            display: block;
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 4px;
         }
 
-        .timeline-step.active .timeline-icon {
-            color: white;
-            background: #2563eb;
+        .customer-tracking-code {
+            font-size: 30px;
+            font-weight: 700;
+            color: #0f172a;
         }
 
-
-        /* =========================
-           BACK
-        ========================= */
-
-        .back {
-            margin-top: 25px;
-        }
-
-        .back a {
+        .customer-tracking-status {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-
             padding: 10px 16px;
-
-            border: 1px solid #d8e1ef;
-            border-radius: 9px;
-
-            color: #2563eb;
-            background: white;
-
-            text-decoration: none;
-
+            border-radius: 999px;
             font-size: 14px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+
+        /* =========================================================
+           STATUS COLORS
+        ========================================================= */
+
+        .tracking-status-pending {
+            background: #fff7ed;
+            color: #c2410c;
+        }
+
+        .tracking-status-confirmed {
+            background: #eff6ff;
+            color: #1d4ed8;
+        }
+
+        .tracking-status-picking {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .tracking-status-delivering {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .tracking-status-delivered {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .tracking-status-cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .tracking-status-unknown {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+
+        /* =========================================================
+           INFO GRID
+        ========================================================= */
+
+        .customer-tracking-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .customer-tracking-info-item {
+            padding: 24px 28px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .customer-tracking-info-item:nth-child(odd) {
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .customer-tracking-info-label {
+            display: block;
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 7px;
+        }
+
+        .customer-tracking-info-value {
+            color: #0f172a;
+            font-size: 16px;
             font-weight: 600;
         }
 
-        .back a:hover {
-            background: #f5f8ff;
+
+        /* =========================================================
+           TIMELINE
+        ========================================================= */
+
+        .customer-tracking-timeline-section {
+            padding: 28px;
+        }
+
+        .customer-tracking-section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 30px;
+        }
+
+        .customer-tracking-section-title i {
+            color: #2563eb;
+        }
+
+        .customer-tracking-timeline {
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            padding: 0 10px;
+        }
+
+        .customer-tracking-line {
+            position: absolute;
+            top: 18px;
+            left: 9%;
+            right: 9%;
+            height: 4px;
+            background: #e2e8f0;
+            z-index: 0;
+        }
+
+        .customer-tracking-line-active {
+            position: absolute;
+            top: 18px;
+            left: 9%;
+            height: 4px;
+            background: #2563eb;
+            z-index: 1;
+            transition: width 0.3s ease;
+        }
+
+        .tracking-step {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .tracking-step-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            border: 3px solid #ffffff;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .tracking-step.active .tracking-step-icon {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .tracking-step.completed .tracking-step-icon {
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .tracking-step.current .tracking-step-icon {
+            box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.12);
+        }
+
+        .tracking-step-label {
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .tracking-step.active .tracking-step-label,
+        .tracking-step.completed .tracking-step-label,
+        .tracking-step.current .tracking-step-label {
+            color: #2563eb;
+            font-weight: 600;
         }
 
 
-        /* =========================
-           MOBILE
-        ========================= */
+        /* =========================================================
+           SYSTEM STATUS
+        ========================================================= */
+
+        .customer-tracking-system-status {
+            margin-top: 24px;
+            padding: 14px 16px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .customer-tracking-system-status strong {
+            color: #334155;
+        }
+
+
+        /* =========================================================
+           BACK
+        ========================================================= */
+
+        .customer-tracking-back {
+            margin-top: 24px;
+        }
+
+        .customer-tracking-back a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border: 1px solid #dbe3ef;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .customer-tracking-back a:hover {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+
+        /* =========================================================
+           RESPONSIVE
+        ========================================================= */
 
         @media (max-width: 768px) {
 
-            .topbar {
-                height: auto;
-                padding: 15px 0;
-            }
-
-            .topbar-inner {
-                gap: 15px;
-            }
-
-            .user-area {
-                gap: 7px;
-            }
-
-            #welcomeUser {
-                display: none;
-            }
-
-            .page {
-                padding: 35px 15px;
-            }
-
-            .page-title h1 {
-                font-size: 28px;
-            }
-
-            .search-form {
+            .customer-tracking-search-form {
                 flex-direction: column;
             }
 
-            .search-btn {
+            .customer-tracking-search-btn {
                 width: 100%;
             }
 
-            .info-grid {
+            .customer-tracking-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .customer-tracking-info-grid {
                 grid-template-columns: 1fr;
             }
 
-            .result-header {
-                align-items: flex-start;
-                gap: 15px;
-                flex-direction: column;
+            .customer-tracking-info-item:nth-child(odd) {
+                border-right: none;
             }
 
-            .timeline {
+            .customer-tracking-timeline {
                 overflow-x: auto;
-                gap: 20px;
+                padding-bottom: 10px;
+                min-width: 650px;
             }
 
-            .timeline-line {
-                display: none;
-            }
-
-            .timeline-step {
-                min-width: 100px;
+            .customer-tracking-timeline-wrapper {
+                overflow-x: auto;
             }
         }
 
@@ -617,20 +452,20 @@
 </head>
 
 
-<body>
+<body class="customer-page">
 
 
-<!-- =====================================================
+<!-- =========================================================
      NAVBAR
-===================================================== -->
+========================================================= -->
 
-<header class="topbar">
+<nav class="customer-navbar">
 
-    <div class="topbar-inner">
+    <div class="container d-flex justify-content-between align-items-center">
 
         <a
             href="dashboard.html"
-            class="brand"
+            class="customer-brand"
         >
 
             <i class="fa-solid fa-truck-fast"></i>
@@ -642,23 +477,25 @@
         </a>
 
 
-        <div class="user-area">
+        <div class="customer-user">
 
-            <div class="avatar">
+            <div class="customer-avatar">
+
                 <i class="fa-solid fa-user"></i>
+
             </div>
 
             <span id="welcomeUser">
-                Nguyễn Văn Test
+                Xin chào
             </span>
 
             <button
                 type="button"
                 id="logoutBtn"
-                class="logout-btn"
+                class="btn customer-logout"
             >
 
-                <i class="fa-solid fa-right-from-bracket"></i>
+                <i class="fa-solid fa-right-from-bracket me-2"></i>
 
                 Đăng xuất
 
@@ -668,107 +505,387 @@
 
     </div>
 
-</header>
+</nav>
 
 
-<!-- =====================================================
+<!-- =========================================================
      MAIN
-===================================================== -->
+========================================================= -->
 
-<main class="page">
+<main class="container py-5">
 
 
-    <div class="page-title">
+    <!-- PAGE TITLE -->
 
-        <h1>
-            Theo dõi đơn hàng
-        </h1>
+    <div class="customer-tracking-page-header">
 
-        <p>
-            Kiểm tra trạng thái và thông tin vận chuyển của đơn hàng
-        </p>
+        <div>
+
+            <h1>
+                Theo dõi đơn hàng
+            </h1>
+
+            <p>
+                Nhập mã đơn hàng để xem thông tin và trạng thái vận chuyển.
+            </p>
+
+        </div>
 
     </div>
 
 
-    <!-- SEARCH -->
+    <!-- =====================================================
+         SEARCH
+    ====================================================== -->
 
-    <section class="search-card">
+    <section class="customer-tracking-search-card">
 
-        <div class="search-header">
+        <form
+            id="trackingForm"
+            class="customer-tracking-search-form"
+        >
 
-            <div class="search-icon">
-
-                <i class="fa-solid fa-magnifying-glass"></i>
-
-            </div>
-
-            <div>
-
-                <h2>
-                    Tra cứu vận đơn
-                </h2>
-
-                <p>
-                    Nhập mã đơn hàng để xem trạng thái
-                </p>
-
-            </div>
-
-        </div>
-
-
-        <div class="search-body">
-
-            <form
-                id="trackingForm"
-                class="search-form"
+            <input
+                type="text"
+                id="orderCodeInput"
+                class="customer-tracking-input"
+                placeholder="Nhập mã đơn hàng, ví dụ: DH001"
+                autocomplete="off"
             >
 
-                <div class="input-box">
+            <button
+                type="submit"
+                id="trackingBtn"
+                class="customer-tracking-search-btn"
+            >
 
-                    <i class="fa-solid fa-box"></i>
+                <i class="fa-solid fa-magnifying-glass me-2"></i>
 
-                    <input
-                        type="text"
-                        id="trackingCode"
-                        placeholder="Nhập mã đơn hàng, ví dụ: DH001"
-                        autocomplete="off"
-                        required
+                Tra cứu
+
+            </button>
+
+        </form>
+
+
+        <div
+            id="trackingMessage"
+            class="customer-tracking-message"
+        ></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         RESULT
+    ====================================================== -->
+
+    <section
+        id="trackingResult"
+        class="customer-tracking-result"
+    >
+
+        <div class="customer-tracking-card">
+
+
+            <!-- HEADER -->
+
+            <div class="customer-tracking-card-header">
+
+                <div>
+
+                    <span class="customer-tracking-code-label">
+                        Mã đơn hàng
+                    </span>
+
+                    <div
+                        id="resultOrderCode"
+                        class="customer-tracking-code"
                     >
+                        -
+                    </div>
 
                 </div>
 
 
-                <button
-                    type="submit"
-                    class="search-btn"
+                <div
+                    id="resultStatus"
+                    class="customer-tracking-status tracking-status-unknown"
                 >
 
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <i class="fa-solid fa-circle-question"></i>
 
-                    Tra cứu
+                    Không xác định
 
-                </button>
+                </div>
 
-            </form>
+            </div>
 
 
-            <div id="trackingMessage"></div>
+            <!-- =================================================
+                 INFORMATION
+            ================================================== -->
+
+            <div class="customer-tracking-info-grid">
+
+
+                <div class="customer-tracking-info-item">
+
+                    <span class="customer-tracking-info-label">
+                        Địa chỉ lấy hàng
+                    </span>
+
+                    <div
+                        id="resultPickup"
+                        class="customer-tracking-info-value"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="customer-tracking-info-item">
+
+                    <span class="customer-tracking-info-label">
+                        Địa chỉ giao hàng
+                    </span>
+
+                    <div
+                        id="resultDelivery"
+                        class="customer-tracking-info-value"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="customer-tracking-info-item">
+
+                    <span class="customer-tracking-info-label">
+                        Khối lượng
+                    </span>
+
+                    <div
+                        id="resultWeight"
+                        class="customer-tracking-info-value"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="customer-tracking-info-item">
+
+                    <span class="customer-tracking-info-label">
+                        Phí vận chuyển
+                    </span>
+
+                    <div
+                        id="resultShippingFee"
+                        class="customer-tracking-info-value"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="customer-tracking-info-item">
+
+                    <span class="customer-tracking-info-label">
+                        Thanh toán
+                    </span>
+
+                    <div
+                        id="resultPayment"
+                        class="customer-tracking-info-value"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+
+                <div class="customer-tracking-info-item">
+
+                    <span class="customer-tracking-info-label">
+                        Ngày tạo đơn
+                    </span>
+
+                    <div
+                        id="resultCreatedAt"
+                        class="customer-tracking-info-value"
+                    >
+                        -
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 TIMELINE
+            ================================================== -->
+
+            <div class="customer-tracking-timeline-section">
+
+                <div class="customer-tracking-section-title">
+
+                    <i class="fa-solid fa-route"></i>
+
+                    <span>
+                        Hành trình đơn hàng
+                    </span>
+
+                </div>
+
+
+                <div class="customer-tracking-timeline-wrapper">
+
+                    <div
+                        id="trackingTimeline"
+                        class="customer-tracking-timeline"
+                    >
+
+                        <div class="customer-tracking-line"></div>
+
+                        <div
+                            id="timelineActiveLine"
+                            class="customer-tracking-line-active"
+                        ></div>
+
+
+                        <!-- STEP 1 -->
+
+                        <div
+                            class="tracking-step"
+                            data-status="PENDING"
+                        >
+
+                            <div class="tracking-step-icon">
+
+                                <i class="fa-solid fa-clock"></i>
+
+                            </div>
+
+                            <div class="tracking-step-label">
+                                Chờ xử lý
+                            </div>
+
+                        </div>
+
+
+                        <!-- STEP 2 -->
+
+                        <div
+                            class="tracking-step"
+                            data-status="CONFIRMED"
+                        >
+
+                            <div class="tracking-step-icon">
+
+                                <i class="fa-solid fa-circle-check"></i>
+
+                            </div>
+
+                            <div class="tracking-step-label">
+                                Đã xác nhận
+                            </div>
+
+                        </div>
+
+
+                        <!-- STEP 3 -->
+
+                        <div
+                            class="tracking-step"
+                            data-status="PICKING_UP"
+                        >
+
+                            <div class="tracking-step-icon">
+
+                                <i class="fa-solid fa-box"></i>
+
+                            </div>
+
+                            <div class="tracking-step-label">
+                                Đang lấy hàng
+                            </div>
+
+                        </div>
+
+
+                        <!-- STEP 4 -->
+
+                        <div
+                            class="tracking-step"
+                            data-status="DELIVERING"
+                        >
+
+                            <div class="tracking-step-icon">
+
+                                <i class="fa-solid fa-truck"></i>
+
+                            </div>
+
+                            <div class="tracking-step-label">
+                                Đang giao hàng
+                            </div>
+
+                        </div>
+
+
+                        <!-- STEP 5 -->
+
+                        <div
+                            class="tracking-step"
+                            data-status="DELIVERED"
+                        >
+
+                            <div class="tracking-step-icon">
+
+                                <i class="fa-solid fa-house-circle-check"></i>
+
+                            </div>
+
+                            <div class="tracking-step-label">
+                                Đã giao hàng
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    id="systemStatus"
+                    class="customer-tracking-system-status"
+                >
+
+                    <strong>Trạng thái hệ thống:</strong>
+
+                    Chưa có dữ liệu
+
+                </div>
+
+            </div>
 
         </div>
 
     </section>
 
 
-    <!-- RESULT -->
+    <!-- =====================================================
+         BACK
+    ====================================================== -->
 
-    <section id="trackingResult"></section>
-
-
-    <!-- BACK -->
-
-    <div class="back">
+    <div class="customer-tracking-back">
 
         <a href="dashboard.html">
 
@@ -780,8 +897,13 @@
 
     </div>
 
+
 </main>
 
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
 
 <script>
 
@@ -789,30 +911,53 @@ const API_BASE_URL =
     'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
 
 
-const trackingForm =
-    document.getElementById('trackingForm');
+/*
+|--------------------------------------------------------------------------
+| DOM Ready
+|--------------------------------------------------------------------------
+*/
 
-const trackingCode =
-    document.getElementById('trackingCode');
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
 
-const trackingMessage =
-    document.getElementById('trackingMessage');
+        loadCurrentUser();
 
-const trackingResult =
-    document.getElementById('trackingResult');
+        setupTracking();
 
-const welcomeUser =
-    document.getElementById('welcomeUser');
-
-const logoutBtn =
-    document.getElementById('logoutBtn');
+        setupLogout();
 
 
-// =====================================================
-// LOAD USER
-// =====================================================
+        // Nếu URL có ?code=DH001 thì tự tra cứu
 
-async function loadUser() {
+        const params = new URLSearchParams(
+            window.location.search
+        );
+
+        const code = params.get('code');
+
+        if (code) {
+
+            const input =
+                document.getElementById('orderCodeInput');
+
+            input.value = code;
+
+            trackOrder(code);
+
+        }
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Load current user
+|--------------------------------------------------------------------------
+*/
+
+async function loadCurrentUser() {
 
     try {
 
@@ -827,17 +972,23 @@ async function loadUser() {
         const result =
             await response.json();
 
+
         if (!result.success) {
 
             window.location.href =
                 'login.html';
 
             return;
+
         }
 
-        welcomeUser.textContent =
+
+        document.getElementById(
+            'welcomeUser'
+        ).textContent =
             result.data.full_name ||
             result.data.username;
+
 
     } catch (error) {
 
@@ -846,431 +997,368 @@ async function loadUser() {
             error
         );
 
+        window.location.href =
+            'login.html';
+
     }
+
 }
 
 
-// =====================================================
-// TRACK
-// =====================================================
+/*
+|--------------------------------------------------------------------------
+| Setup tracking
+|--------------------------------------------------------------------------
+*/
 
-trackingForm.addEventListener(
-    'submit',
-    async function (event) {
+function setupTracking() {
 
-        event.preventDefault();
-
-        const code =
-            trackingCode.value.trim();
+    const form =
+        document.getElementById(
+            'trackingForm'
+        );
 
 
-        if (!code) {
+    form.addEventListener(
+        'submit',
+        async event => {
 
-            trackingMessage.innerHTML = `
-                <div class="message error">
-                    <i class="fa-solid fa-circle-xmark"></i>
-                    Vui lòng nhập mã đơn hàng.
-                </div>
-            `;
+            event.preventDefault();
 
-            return;
+
+            const input =
+                document.getElementById(
+                    'orderCodeInput'
+                );
+
+
+            const orderCode =
+                input.value.trim();
+
+
+            if (!orderCode) {
+
+                showMessage(
+                    'Vui lòng nhập mã đơn hàng.',
+                    'error'
+                );
+
+                input.focus();
+
+                return;
+
+            }
+
+
+            await trackOrder(orderCode);
+
         }
+    );
+
+}
 
 
-        trackingMessage.innerHTML = `
-            <div class="message info">
-                <i class="fa-solid fa-spinner fa-spin"></i>
-                Đang tra cứu đơn hàng...
-            </div>
-        `;
+/*
+|--------------------------------------------------------------------------
+| Track order
+|--------------------------------------------------------------------------
+*/
 
-        trackingResult.innerHTML = '';
+async function trackOrder(orderCode) {
+
+    const button =
+        document.getElementById(
+            'trackingBtn'
+        );
 
 
-        try {
+    button.classList.add(
+        'is-loading'
+    );
 
-            const response = await fetch(
+
+    button.innerHTML =
+        '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tra cứu';
+
+
+    hideResult();
+
+
+    try {
+
+        const response =
+            await fetch(
                 `${API_BASE_URL}?route=/api/customer/orders/track`,
                 {
                     method: 'POST',
+
+                    credentials: 'include',
 
                     headers: {
                         'Content-Type':
                             'application/json'
                     },
 
-                    credentials: 'include',
-
                     body: JSON.stringify({
-                        order_code: code
+                        order_code:
+                            orderCode
                     })
                 }
             );
 
 
-            const result =
-                await response.json();
+        const result =
+            await response.json();
 
 
-            console.log(
-                'Tracking response:',
-                result
+        if (!result.success) {
+
+            showMessage(
+                result.message ||
+                'Không tìm thấy đơn hàng.',
+                'error'
             );
 
-
-            if (!result.success) {
-
-                trackingMessage.innerHTML = `
-                    <div class="message error">
-                        <i class="fa-solid fa-circle-xmark"></i>
-                        ${result.message}
-                    </div>
-                `;
-
-                return;
-            }
-
-
-            trackingMessage.innerHTML = '';
-
-            renderResult(
-                result.data
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                'Tracking error:',
-                error
-            );
-
-
-            trackingMessage.innerHTML = `
-                <div class="message error">
-
-                    <i class="fa-solid fa-circle-xmark"></i>
-
-                    Không thể kết nối đến máy chủ.
-
-                    <br>
-
-                    <small>
-                        ${error.message}
-                    </small>
-
-                </div>
-            `;
+            return;
 
         }
+
+
+        const order =
+            result.data;
+
+
+        showMessage(
+            'Tra cứu đơn hàng thành công.',
+            'success'
+        );
+
+
+        renderOrder(order);
+
+
+    } catch (error) {
+
+        console.error(
+            'Tracking error:',
+            error
+        );
+
+
+        showMessage(
+            'Không thể kết nối đến máy chủ.',
+            'error'
+        );
+
+
+    } finally {
+
+        button.classList.remove(
+            'is-loading'
+        );
+
+
+        button.innerHTML =
+            '<i class="fa-solid fa-magnifying-glass me-2"></i>Tra cứu';
 
     }
-);
-
-
-// =====================================================
-// RENDER RESULT
-// =====================================================
-
-function renderResult(order) {
-
-    const status =
-        getStatus(order.status);
-
-
-    trackingResult.innerHTML = `
-
-        <div class="result-card">
-
-
-            <div class="result-header">
-
-                <div>
-
-                    <span class="result-label">
-                        Mã đơn hàng
-                    </span>
-
-                    <h2>
-                        ${order.order_code || '-'}
-                    </h2>
-
-                </div>
-
-
-                <span class="status ${status.className}">
-
-                    <i class="${status.icon}"></i>
-
-                    ${status.label}
-
-                </span>
-
-            </div>
-
-
-            <div class="info-grid">
-
-
-                <div class="info-item">
-
-                    <div class="info-icon">
-                        <i class="fa-solid fa-location-dot"></i>
-                    </div>
-
-                    <div>
-
-                        <span class="info-label">
-                            Địa chỉ lấy hàng
-                        </span>
-
-                        <span class="info-value">
-                            ${order.pickup_address || '-'}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <div class="info-icon">
-                        <i class="fa-solid fa-location-dot"></i>
-                    </div>
-
-                    <div>
-
-                        <span class="info-label">
-                            Địa chỉ giao hàng
-                        </span>
-
-                        <span class="info-value">
-                            ${order.delivery_address || '-'}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <div class="info-icon">
-                        <i class="fa-solid fa-weight-hanging"></i>
-                    </div>
-
-                    <div>
-
-                        <span class="info-label">
-                            Khối lượng
-                        </span>
-
-                        <span class="info-value">
-                            ${order.total_weight || 0} kg
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <div class="info-icon">
-                        <i class="fa-solid fa-money-bill-wave"></i>
-                    </div>
-
-                    <div>
-
-                        <span class="info-label">
-                            Phí vận chuyển
-                        </span>
-
-                        <span class="info-value">
-                            ${formatMoney(order.shipping_fee)}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <div class="info-icon">
-                        <i class="fa-solid fa-credit-card"></i>
-                    </div>
-
-                    <div>
-
-                        <span class="info-label">
-                            Thanh toán
-                        </span>
-
-                        <span class="info-value">
-                            ${formatPayment(order.payment_status)}
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="info-item">
-
-                    <div class="info-icon">
-                        <i class="fa-solid fa-calendar"></i>
-                    </div>
-
-                    <div>
-
-                        <span class="info-label">
-                            Ngày tạo đơn
-                        </span>
-
-                        <span class="info-value">
-                            ${formatDate(order.created_at)}
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="timeline-area">
-
-                <h3>
-
-                    <i class="fa-solid fa-route"></i>
-
-                    Hành trình đơn hàng
-
-                </h3>
-
-
-                <div class="timeline">
-
-                    <div class="timeline-line"></div>
-
-                    ${renderTimeline(order.status)}
-
-                </div>
-
-            </div>
-
-        </div>
-
-    `;
-}
-
-
-// =====================================================
-// STATUS
-// =====================================================
-
-function getStatus(status) {
-
-    const map = {
-
-        PENDING: {
-            label: 'Chờ xử lý',
-            className: 'warning',
-            icon: 'fa-solid fa-clock'
-        },
-
-        CONFIRMED: {
-            label: 'Đã xác nhận',
-            className: 'info',
-            icon: 'fa-solid fa-circle-check'
-        },
-
-        PICKING_UP: {
-            label: 'Đang lấy hàng',
-            className: 'info',
-            icon: 'fa-solid fa-box'
-        },
-
-        DELIVERING: {
-            label: 'Đang giao hàng',
-            className: 'primary',
-            icon: 'fa-solid fa-truck'
-        },
-
-        DELIVERED: {
-            label: 'Đã giao hàng',
-            className: 'success',
-            icon: 'fa-solid fa-check'
-        },
-
-        CANCELLED: {
-            label: 'Đã hủy',
-            className: 'danger',
-            icon: 'fa-solid fa-xmark'
-        }
-
-    };
-
-
-    return map[status] || {
-
-        label:
-            status || 'Không xác định',
-
-        className:
-            'info',
-
-        icon:
-            'fa-solid fa-circle-question'
-    };
 
 }
 
 
-// =====================================================
-// TIMELINE
-// =====================================================
+/*
+|--------------------------------------------------------------------------
+| Render order
+|--------------------------------------------------------------------------
+*/
 
-function renderTimeline(status) {
+function renderOrder(order) {
 
-    const steps = [
+    document.getElementById(
+        'resultOrderCode'
+    ).textContent =
+        order.order_code || '-';
 
-        {
-            key: 'PENDING',
-            label: 'Chờ xử lý',
-            icon: 'fa-clock'
+
+    document.getElementById(
+        'resultPickup'
+    ).textContent =
+        order.pickup_address || '-';
+
+
+    document.getElementById(
+        'resultDelivery'
+    ).textContent =
+        order.delivery_address || '-';
+
+
+    document.getElementById(
+        'resultWeight'
+    ).textContent =
+        `${order.total_weight || 0} kg`;
+
+
+    document.getElementById(
+        'resultShippingFee'
+    ).textContent =
+        formatCurrency(
+            order.shipping_fee
+        );
+
+
+    document.getElementById(
+        'resultPayment'
+    ).textContent =
+        getPaymentLabel(
+            order.payment_status
+        );
+
+
+    document.getElementById(
+        'resultCreatedAt'
+    ).textContent =
+        formatDate(
+            order.created_at
+        );
+
+
+    updateStatus(
+        order.status
+    );
+
+
+    document.getElementById(
+        'systemStatus'
+    ).innerHTML =
+        `<strong>Trạng thái hệ thống:</strong> ${
+            order.status ||
+            'Không có status'
+        }`;
+
+
+    document.getElementById(
+        'trackingResult'
+    ).style.display =
+        'block';
+
+
+    // Cuộn tới kết quả
+
+    setTimeout(
+        () => {
+
+            document.getElementById(
+                'trackingResult'
+            ).scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+
         },
+        100
+    );
 
-        {
-            key: 'CONFIRMED',
-            label: 'Đã xác nhận',
-            icon: 'fa-circle-check'
-        },
-
-        {
-            key: 'PICKING_UP',
-            label: 'Đang lấy hàng',
-            icon: 'fa-box'
-        },
-
-        {
-            key: 'DELIVERING',
-            label: 'Đang giao hàng',
-            icon: 'fa-truck'
-        },
-
-        {
-            key: 'DELIVERED',
-            label: 'Đã giao hàng',
-            icon: 'fa-house-circle-check'
-        }
-
-    ];
+}
 
 
-    const currentIndex = {
+/*
+|--------------------------------------------------------------------------
+| Normalize status
+|--------------------------------------------------------------------------
+|
+| DB hiện tại dùng IN_TRANSIT.
+| Frontend dùng DELIVERING để hiển thị "Đang giao hàng".
+|
+*/
+
+function normalizeStatus(status) {
+
+    if (!status) {
+        return '';
+    }
+
+
+    const value =
+        String(status)
+            .trim()
+            .toUpperCase();
+
+
+    const aliases = {
+
+        IN_TRANSIT: 'DELIVERING',
+
+        IN_DELIVERY: 'DELIVERING',
+
+        SHIPPING: 'DELIVERING',
+
+        SHIPPED: 'DELIVERING'
+
+    };
+
+
+    return aliases[value] || value;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Update status
+|--------------------------------------------------------------------------
+*/
+
+function updateStatus(status) {
+
+    const normalizedStatus =
+        normalizeStatus(status);
+
+
+    const statusInfo =
+        getStatusInfo(
+            normalizedStatus
+        );
+
+
+    const statusElement =
+        document.getElementById(
+            'resultStatus'
+        );
+
+
+    statusElement.className =
+        `customer-tracking-status ${statusInfo.className}`;
+
+
+    statusElement.innerHTML =
+        `<i class="${statusInfo.icon}"></i>
+         ${statusInfo.label}`;
+
+
+    updateTimeline(
+        normalizedStatus
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Timeline
+|--------------------------------------------------------------------------
+*/
+
+function updateTimeline(status) {
+
+    const steps =
+        Array.from(
+            document.querySelectorAll(
+                '.tracking-step'
+            )
+        );
+
+
+    const statusOrder = {
 
         PENDING: 0,
 
@@ -1282,86 +1370,245 @@ function renderTimeline(status) {
 
         DELIVERED: 4
 
-    }[status];
+    };
 
 
-    return steps.map(
+    const currentIndex =
+        statusOrder[status] ?? -1;
+
+
+    steps.forEach(
         (step, index) => {
 
-            const active =
-                currentIndex !== undefined &&
-                index <= currentIndex;
+            step.classList.remove(
+                'active',
+                'completed',
+                'current'
+            );
 
 
-            return `
+            if (currentIndex >= 0) {
 
-                <div class="
-                    timeline-step
-                    ${active ? 'active' : ''}
-                ">
+                if (index < currentIndex) {
 
-                    <div class="timeline-icon">
+                    step.classList.add(
+                        'completed'
+                    );
 
-                        <i class="
-                            fa-solid
-                            ${step.icon}
-                        "></i>
+                }
 
-                    </div>
 
-                    <span>
-                        ${step.label}
-                    </span>
+                if (index === currentIndex) {
 
-                </div>
+                    step.classList.add(
+                        'active',
+                        'current'
+                    );
 
-            `;
+                }
+
+            }
 
         }
-    ).join('');
+    );
+
+
+    const activeLine =
+        document.getElementById(
+            'timelineActiveLine'
+        );
+
+
+    if (currentIndex <= 0) {
+
+        activeLine.style.width =
+            '0%';
+
+    } else {
+
+        /*
+         * Timeline từ 9% tới 91%.
+         * Có 4 khoảng tương ứng 0 -> 4.
+         */
+
+        const percentage =
+            (currentIndex / 4) * 82;
+
+
+        activeLine.style.width =
+            `${percentage}%`;
+
+    }
 
 }
 
 
-// =====================================================
-// PAYMENT
-// =====================================================
+/*
+|--------------------------------------------------------------------------
+| Status info
+|--------------------------------------------------------------------------
+*/
 
-function formatPayment(status) {
+function getStatusInfo(status) {
 
-    const map = {
+    const statuses = {
 
-        PAID: 'Đã thanh toán',
+        PENDING: {
 
-        UNPAID: 'Chưa thanh toán',
+            label: 'Chờ xử lý',
 
-        PENDING: 'Chờ thanh toán'
+            className:
+                'tracking-status-pending',
+
+            icon:
+                'fa-solid fa-clock'
+
+        },
+
+
+        CONFIRMED: {
+
+            label: 'Đã xác nhận',
+
+            className:
+                'tracking-status-confirmed',
+
+            icon:
+                'fa-solid fa-circle-check'
+
+        },
+
+
+        PICKING_UP: {
+
+            label: 'Đang lấy hàng',
+
+            className:
+                'tracking-status-picking',
+
+            icon:
+                'fa-solid fa-box'
+
+        },
+
+
+        DELIVERING: {
+
+            label: 'Đang giao hàng',
+
+            className:
+                'tracking-status-delivering',
+
+            icon:
+                'fa-solid fa-truck'
+
+        },
+
+
+        DELIVERED: {
+
+            label: 'Đã giao hàng',
+
+            className:
+                'tracking-status-delivered',
+
+            icon:
+                'fa-solid fa-house-circle-check'
+
+        },
+
+
+        CANCELLED: {
+
+            label: 'Đã hủy',
+
+            className:
+                'tracking-status-cancelled',
+
+            icon:
+                'fa-solid fa-circle-xmark'
+
+        }
 
     };
 
-    return map[status] || status || '-';
+
+    return statuses[status] || {
+
+        label: 'Không xác định',
+
+        className:
+            'tracking-status-unknown',
+
+        icon:
+            'fa-solid fa-circle-question'
+
+    };
 
 }
 
 
-// =====================================================
-// MONEY
-// =====================================================
+/*
+|--------------------------------------------------------------------------
+| Payment label
+|--------------------------------------------------------------------------
+*/
 
-function formatMoney(value) {
+function getPaymentLabel(status) {
 
-    return Number(
-        value || 0
-    ).toLocaleString(
+    const paymentStatuses = {
+
+        PAID:
+            'Đã thanh toán',
+
+        UNPAID:
+            'Chưa thanh toán',
+
+        PENDING:
+            'Chờ thanh toán',
+
+        COD:
+            'Thanh toán khi nhận hàng'
+
+    };
+
+
+    if (!status) {
+        return '-';
+    }
+
+
+    return paymentStatuses[
+        String(status).toUpperCase()
+    ] || status;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Currency
+|--------------------------------------------------------------------------
+*/
+
+function formatCurrency(value) {
+
+    const amount =
+        Number(value || 0);
+
+
+    return amount.toLocaleString(
         'vi-VN'
     ) + ' VNĐ';
 
 }
 
 
-// =====================================================
-// DATE
-// =====================================================
+/*
+|--------------------------------------------------------------------------
+| Date
+|--------------------------------------------------------------------------
+*/
 
 function formatDate(value) {
 
@@ -1369,62 +1616,136 @@ function formatDate(value) {
         return '-';
     }
 
+
     const date =
         new Date(value);
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
+
+    if (Number.isNaN(
+        date.getTime()
+    )) {
+
         return value;
+
     }
 
-    return date.toLocaleDateString(
+
+    return date.toLocaleString(
         'vi-VN'
     );
 
 }
 
 
-// =====================================================
-// LOGOUT
-// =====================================================
+/*
+|--------------------------------------------------------------------------
+| Message
+|--------------------------------------------------------------------------
+*/
 
-logoutBtn.addEventListener(
-    'click',
-    async function () {
+function showMessage(
+    message,
+    type
+) {
 
-        try {
+    const element =
+        document.getElementById(
+            'trackingMessage'
+        );
 
-            await fetch(
-                `${API_BASE_URL}?route=/api/logout`,
-                {
-                    method: 'POST',
-                    credentials: 'include'
-                }
+
+    element.className =
+        `customer-tracking-message ${type}`;
+
+
+    element.innerHTML =
+        message;
+
+}
+
+
+function hideMessage() {
+
+    const element =
+        document.getElementById(
+            'trackingMessage'
+        );
+
+
+    element.className =
+        'customer-tracking-message';
+
+
+    element.innerHTML =
+        '';
+
+}
+
+
+function hideResult() {
+
+    document.getElementById(
+        'trackingResult'
+    ).style.display =
+        'none';
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Logout
+|--------------------------------------------------------------------------
+*/
+
+function setupLogout() {
+
+    const logoutBtn =
+        document.getElementById(
+            'logoutBtn'
+        );
+
+
+    logoutBtn.addEventListener(
+        'click',
+        async () => {
+
+            try {
+
+                await fetch(
+                    `${API_BASE_URL}?route=/api/logout`,
+                    {
+                        method: 'POST',
+                        credentials: 'include'
+                    }
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Logout error:',
+                    error
+                );
+
+            }
+
+
+            sessionStorage.removeItem(
+                'user'
             );
 
-        } catch (error) {
 
-            console.error(error);
+            window.location.href =
+                'login.html';
 
         }
+    );
 
-        window.location.href =
-            'login.html';
-
-    }
-);
-
-
-// =====================================================
-// INIT
-// =====================================================
-
-loadUser();
+}
 
 </script>
 
+
 </body>
+
 </html>

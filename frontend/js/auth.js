@@ -7,8 +7,11 @@ const loginMessage = document.getElementById('loginMessage');
 loginForm.addEventListener('submit', async function (event) {
     event.preventDefault();
 
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value;
+    const username =
+        document.getElementById('username').value.trim();
+
+    const password =
+        document.getElementById('password').value;
 
     loginMessage.innerHTML = '';
 
@@ -17,10 +20,13 @@ loginForm.addEventListener('submit', async function (event) {
             `${API_BASE_URL}?route=/api/login`,
             {
                 method: 'POST',
+
                 headers: {
                     'Content-Type': 'application/json'
                 },
+
                 credentials: 'include',
+
                 body: JSON.stringify({
                     username: username,
                     password: password
@@ -30,30 +36,124 @@ loginForm.addEventListener('submit', async function (event) {
 
         const result = await response.json();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Đăng nhập thất bại
+        |--------------------------------------------------------------------------
+        */
+
         if (!result.success) {
             loginMessage.innerHTML = `
                 <div class="alert alert-danger">
                     ${result.message}
                 </div>
             `;
+
             return;
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Lưu thông tin user
+        |--------------------------------------------------------------------------
+        */
 
         sessionStorage.setItem(
             'user',
             JSON.stringify(result.data)
         );
 
-        if (result.data.role === 'CUSTOMER') {
-            window.location.href = 'dashboard.html';
-        } else if (result.data.role === 'ADMIN') {
-            window.location.href = '../admin/dashboard.html';
-        } else {
-            window.location.href = '../transport/dashboard.html';
+        /*
+        |--------------------------------------------------------------------------
+        | Phân quyền và chuyển trang
+        |--------------------------------------------------------------------------
+        */
+
+        const role = result.data.role;
+
+        switch (role) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | ADMIN
+            |--------------------------------------------------------------------------
+            */
+
+            case 'ADMIN':
+
+                window.location.href =
+                    '../admin/dashboard.html';
+
+                break;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | STAFF
+            |--------------------------------------------------------------------------
+            */
+
+            case 'STAFF':
+
+                window.location.href =
+                    '../transport/dashboard.html';
+
+                break;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | DRIVER
+            |--------------------------------------------------------------------------
+            */
+
+            case 'DRIVER':
+
+                window.location.href =
+                    '../driver/dashboard.html';
+
+                break;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | CUSTOMER
+            |--------------------------------------------------------------------------
+            */
+
+            case 'CUSTOMER':
+
+                window.location.href =
+                    'dashboard.html';
+
+                break;
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | ROLE KHÔNG HỢP LỆ
+            |--------------------------------------------------------------------------
+            */
+
+            default:
+
+                loginMessage.innerHTML = `
+                    <div class="alert alert-danger">
+                        Vai trò tài khoản không hợp lệ.
+                    </div>
+                `;
+
+                sessionStorage.removeItem('user');
+
+                break;
         }
 
     } catch (error) {
-        console.error('Login error:', error);
+
+        console.error(
+            'Login error:',
+            error
+        );
 
         loginMessage.innerHTML = `
             <div class="alert alert-danger">

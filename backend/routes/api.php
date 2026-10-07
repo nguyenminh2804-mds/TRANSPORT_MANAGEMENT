@@ -22,6 +22,14 @@ $router->post('/api/login', function () use ($authController) {
     $authController->login();
 });
 
+$router->post('/api/customer/register', function () use ($authController) {
+    $authController->registerCustomer();
+});
+
+$router->post('/api/forgot-password', function () use ($authController) {
+    $authController->forgotPassword();
+});
+
 $router->post('/api/logout', function () use ($authController) {
     $authController->logout();
 });
@@ -206,7 +214,15 @@ $router->post('/api/customer/orders/track', function () use ($orderController) {
 });
 
 
-/* Driver management: session and ADMIN/STAFF checks are enforced by DriverController. */
+/*
+|--------------------------------------------------------------------------
+| Driver Management
+|--------------------------------------------------------------------------
+|
+| Session and ADMIN/STAFF authorization are handled by DriverController.
+|--------------------------------------------------------------------------
+*/
+
 $driverController = new DriverController();
 
 $router->get('/api/drivers', function () use ($driverController) {
@@ -232,5 +248,6 @@ $router->delete('/api/drivers', function () use ($driverController) {
 $router->put('/api/drivers/status', function () use ($driverController) {
     $driverController->handle('status');
 });
+
 
 return $router;
