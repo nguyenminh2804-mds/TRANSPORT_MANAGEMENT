@@ -9,6 +9,7 @@ require_once __DIR__ . '/../app/controllers/OrderController.php';
 
 $router = new Router();
 
+
 /*
 |--------------------------------------------------------------------------
 | Authentication
@@ -190,18 +191,54 @@ $router->delete('/api/customers', function () use ($customerController) {
 
 /*
 |--------------------------------------------------------------------------
-| Customer Orders
+| Orders
 |--------------------------------------------------------------------------
 */
 
 $orderController = new OrderController();
 
+
+/*
+|--------------------------------------------------------------------------
+| Lấy danh sách đơn hàng của khách hàng
+|--------------------------------------------------------------------------
+*/
+
 $router->get('/api/customer/orders', function () use ($orderController) {
     $orderController->myOrders();
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| Tạo đơn hàng - UC-DH-01
+|--------------------------------------------------------------------------
+*/
+
+$router->post('/api/customer/orders', function () use ($orderController) {
+    $orderController->create();
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Tra cứu đơn hàng
+|--------------------------------------------------------------------------
+*/
+
 $router->post('/api/customer/orders/track', function () use ($orderController) {
     $orderController->track();
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| Xử lý đơn hàng - UC-DH-02
+|--------------------------------------------------------------------------
+*/
+
+$router->post('/api/staff/orders/process', function () use ($orderController) {
+    $orderController->process();
 });
 
 
