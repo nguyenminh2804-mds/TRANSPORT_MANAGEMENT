@@ -66,7 +66,8 @@ foreach (['PLANNED','IN_PROGRESS','COMPLETED','CANCELLED'] as $status) {
     rejected(fn() => Driver::assertChangeAllowed(['status'=>'available'], [], null, true, [['status'=>$status]]), 409);
 }
 foreach (['PLANNED','IN_PROGRESS'] as $status) {
-    rejected(fn() => Driver::assertChangeAllowed(['status'=>'on_trip'], [], 'available', false, [['status'=>$status]]), 409);
+    Driver::assertChangeAllowed(['status'=>'on_trip'], [], 'available', false, [['status'=>$status]]);
+    check(true, 'Trip status alone does not reserve resources');
 }
 Driver::assertChangeAllowed(['status'=>'available'], [], 'inactive', false, [['status'=>'COMPLETED']]);
 check(true, 'Completed direct trip allows status update');
@@ -155,8 +156,8 @@ check($db->writes===[], 'Active assignment blocks status before write');
 $updated=$memory->change('42',array_merge($data,['status'=>'on_trip','full_name'=>'Hồ sơ mới']));
 check($updated['full_name']==='Hồ sơ mới' && $updated['status']==='on_trip', 'Active profile edit preserves status');
 [$memory,$db]=memoryModel(array_merge($data,['driver_id'=>'42']),[],[['id'=>1,'status'=>'PLANNED']]);
-rejected(fn()=>$memory->change('42',null,'inactive'),409);
-check($db->writes===[], 'Direct active trip blocks status');
+$memory->change('42',null,'inactive');
+check(count($db->writes)>0, 'Trip alone no longer reserves resources');
 [$memory,$db]=memoryModel(array_merge($data,['driver_id'=>'42']),[],[['id'=>1,'status'=>'COMPLETED']]);
 rejected(fn()=>$memory->change('42',null,null,true),409);
 check($db->writes===[], 'Direct trip history blocks delete');

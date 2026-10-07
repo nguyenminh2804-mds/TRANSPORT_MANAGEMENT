@@ -1,0 +1,20 @@
+/* Shared transport navigation. No page-specific navigation selectors. */
+.drivers-page .transport-nav { margin:0; padding:8px; border:1px solid #e5eaf2; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(23,32,51,.05); }
+.transport-nav .transport-nav__items { display:flex; flex-wrap:wrap; align-items:stretch; gap:8px; list-style:none; margin:0; padding:0; }
+.transport-nav .transport-nav__item { display:flex; min-width:0; }
+.transport-nav .transport-nav__link { display:flex; align-items:center; gap:8px; min-height:44px; padding:10px 14px; border-radius:8px; color:#526078; text-decoration:none; font-size:14px; font-weight:600; line-height:1.5; overflow-wrap:anywhere; }
+.transport-nav a.transport-nav__link:hover { background:#edf4ff; color:#1d4ed8; }
+.transport-nav .transport-nav__link[aria-current="page"] { color:#fff; background:#2563eb; }
+.transport-nav .transport-nav__link[aria-disabled="true"] { color:#718096; background:#f5f7fb; font-weight:500; }
+.transport-nav .transport-nav__link i { flex-shrink:0; }
+.transport-dashboard .transport-dashboard-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.transport-dashboard .transport-dashboard-card { min-width:0; }
+.transport-dashboard .transport-dashboard-card h2 { margin-bottom:10px; }
+.transport-dashboard .transport-dashboard-card p { color:#718096; line-height:1.6; }
+.transport-dashboard .transport-dashboard-card a { display:inline-flex; min-height:44px; align-items:center; gap:8px; font-weight:600; text-decoration:none; }
+@media(max-width:640px) {
+ .transport-nav .transport-nav__item { flex:1 1 calc(50% - 8px); }
+ .transport-nav .transport-nav__link { width:100%; padding:10px; font-size:13px; }
+ .transport-dashboard .transport-dashboard-cards { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:360px) { .transport-nav .transport-nav__item { flex-basis:100%; } }

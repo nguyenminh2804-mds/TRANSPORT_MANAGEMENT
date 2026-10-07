@@ -14,7 +14,7 @@ class Driver
 
     private function selectSql()
     {
-        return "SELECT d.*, EXISTS(SELECT 1 FROM assignments a WHERE a.driver_id=d.driver_id AND a.status='assigned') AS has_active_assignment, EXISTS(SELECT 1 FROM trips t WHERE t.driver_id=d.driver_id AND t.status IN ('PLANNED','IN_PROGRESS')) AS has_active_trip FROM drivers d";
+        return "SELECT d.*, EXISTS(SELECT 1 FROM assignments a WHERE a.driver_id=d.driver_id AND a.status='assigned') AS has_active_assignment, EXISTS(SELECT 1 FROM assignments a WHERE a.driver_id=d.driver_id AND a.status='assigned') AS has_active_trip FROM drivers d";
     }
 
     private function normalize($driver)
@@ -117,11 +117,6 @@ class Driver
     {
         if ($delete && ($assignments || $trips || $driver['status'] === 'on_trip')) {
             throw new DomainException('Không thể xóa tài xế đang thực hiện chuyến hoặc có lịch sử phân công/chuyến. Hãy dùng trạng thái Ngừng làm việc khi phù hợp.', 409);
-        }
-        foreach ($trips as $trip) {
-            if (in_array($trip['status'], ['PLANNED', 'IN_PROGRESS'], true) && $targetStatus !== null && $targetStatus !== $driver['status']) {
-                throw new DomainException('Không thể đổi trạng thái thủ công khi tài xế còn chuyến PLANNED/IN_PROGRESS tham chiếu trực tiếp.', 409);
-            }
         }
         foreach ($assignments as $assignment) {
             if ($assignment['status'] === 'assigned' && $targetStatus !== null && $targetStatus !== $driver['status']) {

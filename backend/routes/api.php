@@ -7,6 +7,8 @@ require_once __DIR__ . '/../app/controllers/UserController.php';
 require_once __DIR__ . '/../app/controllers/CustomerController.php';
 require_once __DIR__ . '/../app/controllers/OrderController.php';
 require_once __DIR__ . '/../app/controllers/DriverController.php';
+require_once __DIR__ . '/../app/controllers/VehicleController.php';
+require_once __DIR__ . '/../app/controllers/AssignmentController.php';
 
 $router = new Router();
 
@@ -249,5 +251,60 @@ $router->put('/api/drivers/status', function () use ($driverController) {
     $driverController->handle('status');
 });
 
+$vehicleController = new VehicleController();
+
+$router->get('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('index');
+});
+
+$router->get('/api/vehicles/stats', function () use ($vehicleController) {
+    $vehicleController->handle('stats');
+});
+
+$router->get('/api/vehicles/show', function () use ($vehicleController) {
+    $vehicleController->handle('show');
+});
+
+$router->post('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('store');
+});
+
+$router->put('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('update');
+});
+
+$router->delete('/api/vehicles', function () use ($vehicleController) {
+    $vehicleController->handle('destroy');
+});
+
+$assignmentController = new AssignmentController();
+
+$router->get('/api/assignments', function () use ($assignmentController) {
+    $assignmentController->handle('index');
+});
+
+$router->get('/api/assignments/show', function () use ($assignmentController) {
+    $assignmentController->handle('show');
+});
+
+$router->get('/api/assignments/options', function () use ($assignmentController) {
+    $assignmentController->handle('options');
+});
+
+$router->post('/api/assignments', function () use ($assignmentController) {
+    $assignmentController->handle('store');
+});
+
+$router->put('/api/assignments', function () use ($assignmentController) {
+    $assignmentController->handle('replace');
+});
+
+$router->put('/api/assignments/complete', function () use ($assignmentController) {
+    $assignmentController->handle('complete');
+});
+
+$router->put('/api/assignments/cancel', function () use ($assignmentController) {
+    $assignmentController->handle('cancel');
+});
 
 return $router;

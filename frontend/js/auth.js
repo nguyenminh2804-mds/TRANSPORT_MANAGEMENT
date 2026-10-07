@@ -1,164 +1,106 @@
-const API_BASE_URL =
-    'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+const API_BASE_URL = new URL(
+    '../../backend/public/index.php',
+    window.location.href
+);
+API_BASE_URL.searchParams.set('route', '/api/login');
 
 const loginForm = document.getElementById('loginForm');
 const loginMessage = document.getElementById('loginMessage');
+const submitButton = loginForm?.querySelector?.('button[type="submit"]') ?? null;
+let loginPending = false;
 
-loginForm.addEventListener('submit', async function (event) {
-    event.preventDefault();
+function showLoginMessage(text) {
+    if (!loginMessage) return;
 
-    const username =
-        document.getElementById('username').value.trim();
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger';
+    alert.textContent = text;
+    loginMessage.replaceChildren(alert);
+}
 
-    const password =
-        document.getElementById('password').value;
+if (loginForm && loginMessage) {
+    loginForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        if (loginPending) return;
 
-    loginMessage.innerHTML = '';
+        const username = document.getElementById('username')?.value.trim() ?? '';
+        const password = document.getElementById('password')?.value ?? '';
+        loginMessage.replaceChildren();
 
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}?route=/api/login`,
-            {
-                method: 'POST',
-
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-
-                credentials: 'include',
-
-                body: JSON.stringify({
-                    username: username,
-                    password: password
-                })
-            }
-        );
-
-        const result = await response.json();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Đăng nhập thất bại
-        |--------------------------------------------------------------------------
-        */
-
-        if (!result.success) {
-            loginMessage.innerHTML = `
-                <div class="alert alert-danger">
-                    ${result.message}
-                </div>
-            `;
-
+        if (!username || !password) {
+            showLoginMessage('Vui lòng nhập đầy đủ tài khoản và mật khẩu.');
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Lưu thông tin user
-        |--------------------------------------------------------------------------
-        */
+        loginPending = true;
+        if (submitButton) submitButton.disabled = true;
 
-        sessionStorage.setItem(
-            'user',
-            JSON.stringify(result.data)
-        );
+        try {
+            let response;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Phân quyền và chuyển trang
-        |--------------------------------------------------------------------------
-        */
+            try {
+                response = await fetch(API_BASE_URL.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    body: JSON.stringify({ username, password })
+                });
+            } catch (error) {
+                console.error('Login connection error:', error);
+                showLoginMessage(
+                    'Không thể kết nối tới máy chủ. Hãy kiểm tra Apache/XAMPP rồi thử lại.'
+                );
+                return;
+            }
 
-        const role = result.data.role;
+            let result;
 
-        switch (role) {
+            try {
+                result = await response.json();
+            } catch {
+                showLoginMessage(
+                    `Máy chủ trả HTTP ${response.status} nhưng phản hồi không hợp lệ.`
+                );
+                return;
+            }
 
-            /*
-            |--------------------------------------------------------------------------
-            | ADMIN
-            |--------------------------------------------------------------------------
-            */
+            if (!response.ok || !result?.success) {
+                showLoginMessage(
+                    result?.message || `Đăng nhập thất bại (HTTP ${response.status}).`
+                );
+                return;
+            }
 
-            case 'ADMIN':
+            const role = result.data?.role;
+            const destinations = {
+                ADMIN: '../admin/dashboard.html',
+                STAFF: '../transport/dashboard.html',
+                DRIVER: '../driver/dashboard.html',
+                CUSTOMER: 'dashboard.html'
+            };
 
-                window.location.href =
-                    '../admin/dashboard.html';
+            if (!role || !destinations[role]) {
+                showLoginMessage('Vai trò tài khoản không hợp lệ.');
+                return;
+            }
 
-                break;
+            try {
+                sessionStorage.setItem('user', JSON.stringify(result.data));
+            } catch (error) {
+                console.warn('Không lưu được thông tin giao diện:', error);
+            }
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | STAFF
-            |--------------------------------------------------------------------------
-            */
-
-            case 'STAFF':
-
-                window.location.href =
-                    '../transport/dashboard.html';
-
-                break;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | DRIVER
-            |--------------------------------------------------------------------------
-            */
-
-            case 'DRIVER':
-
-                window.location.href =
-                    '../driver/dashboard.html';
-
-                break;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | CUSTOMER
-            |--------------------------------------------------------------------------
-            */
-
-            case 'CUSTOMER':
-
-                window.location.href =
-                    'dashboard.html';
-
-                break;
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | ROLE KHÔNG HỢP LỆ
-            |--------------------------------------------------------------------------
-            */
-
-            default:
-
-                loginMessage.innerHTML = `
-                    <div class="alert alert-danger">
-                        Vai trò tài khoản không hợp lệ.
-                    </div>
-                `;
-
-                sessionStorage.removeItem('user');
-
-                break;
+            window.location.href = destinations[role];
+        } catch (error) {
+            console.error('Login error:', error);
+            showLoginMessage('Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.');
+        } finally {
+            loginPending = false;
+            if (submitButton) submitButton.disabled = false;
         }
-
-    } catch (error) {
-
-        console.error(
-            'Login error:',
-            error
-        );
-
-        loginMessage.innerHTML = `
-            <div class="alert alert-danger">
-                Không thể kết nối đến máy chủ.
-            </div>
-        `;
-    }
-});
+    });
+}

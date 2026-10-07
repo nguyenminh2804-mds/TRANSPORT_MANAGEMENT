@@ -3,9 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vehicles</title>
+    <title>Quản lý phương tiện - Quản lý vận tải</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/common.css?v=d1454f41a43b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/customer.css?v=921343b48d30">
+    <link rel="stylesheet" href="../css/transport.css?v=e059e844b2db">
+    <link rel="stylesheet" href="../css/drivers.css?v=54c368497b09">
+    <link rel="stylesheet" href="../css/drivers-management.css?v=2c863f6fcd05">
+    <script src="../js/vehicles.js?v=vehicle-1" defer></script>
+    <link rel="stylesheet" href="../css/vehicles.css?v=vehicle-1">
+    <link rel="stylesheet" href="../css/transport-navigation.css?v=8e7ebdb54c1b">
 </head>
-<body>
-    <h1>Vehicles</h1>
-</body>
-</html>
+<body class="drivers-page drivers-management vehicles-management">
+    <header class="drivers-header"><div class="drivers-container drivers-row">
+        <a href="dashboard.html" class="drivers-brand"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> <span>Quản lý vận tải</span></a>
+        <div class="drivers-row drivers-user"><span class="drivers-avatar" aria-hidden="true"><i class="fa-solid fa-user"></i></span><span id="currentUser">Đang kiểm tra phiên…</span><button id="logoutButton" type="button"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Đăng xuất</button></div>
+    </div></header>
+<main class="drivers-container">
+    <nav class="transport-nav" aria-label="Chức năng nhân viên">
+      <ul class="transport-nav__items">
+        <li class="transport-nav__item"><a class="transport-nav__link" href="dashboard.html"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Tổng quan</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="drivers.html"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>Quản lý tài xế</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="vehicles.html" aria-current="page"><i class="fa-solid fa-truck" aria-hidden="true"></i><span>Quản lý phương tiện</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="assignment.html"><i class="fa-solid fa-route" aria-hidden="true"></i><span>Phân công</span></a></li>
+      </ul>
+    </nav>
+<div class="drivers-row drivers-title customer-orders-page-header"><div><h1><span class="drivers-heading-icon"><i class="fa-solid fa-truck" aria-hidden="true"></i></span>Quản lý phương tiện</h1><p>Hồ sơ phương tiện, tải trọng và trạng thái sử dụng.</p></div><button id="addButton" type="button" class="drivers-primary" disabled><i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm phương tiện</button></div>
+<div id="pageMessage" role="status" aria-live="polite"></div>
+<section class="drivers-metrics" aria-label="Thống kê toàn bộ phương tiện" aria-live="polite"><div class="customer-order-summary-card"><div class="customer-summary-icon total" aria-hidden="true"><i class="fa-solid fa-truck"></i></div><div><span>Tổng phương tiện</span><strong id="metric-total">—</strong></div></div>
+<div class="customer-order-summary-card"><div class="customer-summary-icon delivering" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div><div><span>Sẵn sàng</span><strong id="metric-available">—</strong></div></div>
+<div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-route"></i></div><div><span>Đang thực hiện chuyến</span><strong id="metric-on_trip">—</strong></div></div>
+<div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-screwdriver-wrench"></i></div><div><span>Bảo trì</span><strong id="metric-maintenance">—</strong></div></div>
+<div class="customer-order-summary-card"><div class="customer-summary-icon drivers-icon-inactive" aria-hidden="true"><i class="fa-solid fa-ban"></i></div><div><span>Ngừng sử dụng</span><strong id="metric-inactive">—</strong></div></div>
+</section><p id="statsMessage" class="drivers-note" role="status">Đang kiểm tra phiên…</p>
+<section class="customer-orders-card drivers-list-card" aria-labelledby="listHeading"><div class="drivers-row drivers-list-heading customer-orders-card-header"><div><h2 id="listHeading"><i class="fa-solid fa-truck" aria-hidden="true"></i> Danh sách phương tiện</h2><p>Tra cứu biển số, loại xe và hãng xe</p></div><button id="refreshButton" class="customer-refresh-btn" type="button" disabled><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Làm mới</button></div>
+<form id="filterForm" class="drivers-filters"><label for="search">Tìm kiếm<input type="search" id="search" maxlength="150" placeholder="Biển số, loại xe hoặc hãng xe"></label><label for="statusFilter">Lọc trạng thái<select id="statusFilter"><option value="">Tất cả trạng thái</option><option value="available">Sẵn sàng</option><option value="on_trip">Đang thực hiện chuyến</option><option value="maintenance">Bảo trì</option><option value="inactive">Ngừng sử dụng</option></select></label><button id="searchButton" type="submit" class="drivers-primary" disabled><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</button><button id="resetFilter" type="button" disabled><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i> Xóa bộ lọc</button></form>
+<div class="drivers-results"><p id="resultCount" role="status">Đang kiểm tra phiên đăng nhập…</p><button id="listRetry" type="button" hidden>Thử lại</button></div>
+<div class="drivers-table-wrap"><table class="customer-orders-table"><caption class="visually-hidden">Danh sách và thao tác quản lý phương tiện</caption><thead><tr><th scope="col">Biển số</th><th scope="col">Loại xe</th><th scope="col">Hãng xe</th><th scope="col">Tải trọng (kg)</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead><tbody id="vehicleRows"><tr><td colspan="6" class="drivers-empty">Đang kiểm tra phiên đăng nhập…</td></tr></tbody></table></div></section>
+<p class="drivers-note">Không xóa phương tiện có lịch sử chuyến/phân công hoặc đang thực hiện chuyến. Không đổi trạng thái thủ công khi còn phân công hoạt động. Tải trọng được lưu theo đơn vị kg; hệ thống không tự đồng bộ trạng thái chuyến/phân công.</p>
+</main>
+<dialog id="vehicleDialog" aria-labelledby="dialogTitle"><form id="vehicleForm" novalidate><div class="drivers-row drivers-dialog-header"><h2 id="dialogTitle">Thêm phương tiện</h2><button type="button" id="closeDialog" aria-label="Đóng"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div><p id="requiredNote" class="drivers-dialog-description">Trường có dấu * là bắt buộc. Biển số được viết hoa và bỏ khoảng trắng.</p><div id="formMessage" role="alert" aria-live="assertive"></div><dl id="vehicleDetails" class="drivers-details" hidden></dl><div id="vehicleFields" class="drivers-form-grid"><label>Biển số *<input name="license_plate" required maxlength="50" placeholder="Ví dụ 51C-123.45" autocomplete="off" aria-describedby="error-license_plate"><small id="error-license_plate" class="drivers-field-error" aria-live="polite"></small></label>
+<label>Loại xe *<input name="vehicle_type" required maxlength="100" placeholder="Ví dụ Xe tải" aria-describedby="error-vehicle_type"><small id="error-vehicle_type" class="drivers-field-error" aria-live="polite"></small></label>
+<label>Hãng xe<input name="brand" maxlength="100" aria-describedby="error-brand"><small id="error-brand" class="drivers-field-error" aria-live="polite"></small></label>
+<label>Tải trọng (kg) *<input name="capacity" type="number" required min="0.01" max="99999999.99" step="0.01" inputmode="decimal" aria-describedby="error-capacity"><small id="error-capacity" class="drivers-field-error" aria-live="polite"></small></label>
+<label>Trạng thái *<select name="status" aria-describedby="error-status"><option value="available">Sẵn sàng</option><option value="on_trip">Đang thực hiện chuyến</option><option value="maintenance">Bảo trì</option><option value="inactive">Ngừng sử dụng</option></select><small id="error-status" class="drivers-field-error" aria-live="polite"></small></label></div><div class="drivers-actions"><button id="cancelDialog" type="button">Đóng</button><button id="saveButton" class="drivers-primary" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Lưu phương tiện</button></div></form></dialog>
+<dialog id="deleteDialog" aria-labelledby="deleteTitle" aria-describedby="deleteDescription"><div class="drivers-row drivers-dialog-header"><h2 id="deleteTitle"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Xóa phương tiện</h2><button id="closeDelete" type="button" aria-label="Đóng"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div><div class="drivers-delete-body"><p id="deleteVehicle"></p><p id="deleteDescription">Bạn có chắc muốn xóa hồ sơ này? Thao tác không thể hoàn tác. Hệ thống từ chối nếu phương tiện có lịch sử chuyến/phân công hoặc đang thực hiện chuyến.</p><div id="deleteMessage" role="alert"></div></div><div class="drivers-actions"><button id="cancelDelete" type="button" autofocus>Hủy</button><button id="confirmDelete" type="button" class="drivers-delete-confirm"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Xóa phương tiện</button></div></dialog>
+</body></html>

@@ -1,0 +1,8 @@
+.assignments-management textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid #d8e1ef; border-radius:8px; font:inherit; resize:vertical; }
+.assignments-management .drivers-row-actions { max-width:260px; }
+.assignments-management .drivers-badge.completed { background:#dcfce7; color:#166534; }
+.assignments-management .drivers-badge.cancelled { background:#f1f5f9; color:#526078; }
+
+.assignments-management .drivers-badge { display:inline-flex; align-items:center; gap:6px; }
+.assignments-management .drivers-badge i { color:inherit; flex-shrink:0; }
+.assignments-management label > span i { margin-right:5px; color:#2563eb; }
