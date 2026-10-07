@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Dev Mode - Transport Management</title>
+</head>
+<body style="padding: 50px; font-family: sans-serif; text-align: center;">
+    <h2>Môi trường Phát triển (Dev Mode)</h2>
+    <button onclick="loginMock()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; background: #4361ee; color: #fff; border: none; border-radius: 5px;">
+        Vào thẳng Dashboard Quản lý (STAFF)
+    </button>
+
+    <script>
+        function loginMock() {
+            localStorage.setItem('role', 'STAFF');
+            localStorage.setItem('user_name', 'Nhân viên Test');
+            // Chuyển hướng thẳng vào module vận tải
+            window.location.href = 'transport/dashboard.html';
+        }
+    </script>
+</body>
+</html>
