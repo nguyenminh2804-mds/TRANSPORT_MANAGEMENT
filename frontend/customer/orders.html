@@ -1,11 +1,1053 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Đơn hàng của tôi - Quản lý vận tải</title>
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Font Awesome -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <!-- CSS -->
+
+    <link
+        rel="stylesheet"
+        href="../css/common.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/customer.css"
+    >
+
 </head>
-<body>
-    <h1>Orders</h1>
+
+
+<body class="customer-page">
+
+
+<!-- =========================================================
+     NAVBAR
+========================================================= -->
+
+<nav class="customer-navbar">
+
+    <div class="container d-flex justify-content-between align-items-center">
+
+
+        <!-- Brand -->
+
+        <a
+            href="dashboard.html"
+            class="customer-brand"
+        >
+
+            <i class="fa-solid fa-truck-fast"></i>
+
+            <span>
+                Quản lý vận tải
+            </span>
+
+        </a>
+
+
+        <!-- User -->
+
+        <div class="customer-user">
+
+            <div class="customer-avatar">
+
+                <i class="fa-solid fa-user"></i>
+
+            </div>
+
+            <span id="welcomeUser">
+                Xin chào
+            </span>
+
+            <button
+                type="button"
+                id="logoutBtn"
+                class="btn customer-logout"
+            >
+
+                <i class="fa-solid fa-right-from-bracket me-2"></i>
+
+                Đăng xuất
+
+            </button>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main class="container py-5">
+
+
+    <!-- PAGE TITLE -->
+
+    <div class="customer-orders-page-header">
+
+        <div>
+
+            <h1>
+                Đơn hàng của tôi
+            </h1>
+
+            <p>
+                Quản lý và theo dõi tất cả đơn hàng của bạn
+            </p>
+
+        </div>
+
+
+        <button
+            type="button"
+            id="reloadOrdersBtn"
+            class="customer-refresh-btn"
+        >
+
+            <i class="fa-solid fa-rotate"></i>
+
+            Làm mới
+
+        </button>
+
+    </div>
+
+
+    <!-- =====================================================
+         SUMMARY
+    ====================================================== -->
+
+    <section class="customer-order-summary">
+
+
+        <!-- Total -->
+
+        <div class="customer-order-summary-card">
+
+            <div class="customer-summary-icon total">
+
+                <i class="fa-solid fa-box"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+                    Tổng số đơn
+                </span>
+
+                <strong id="totalOrders">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Delivering -->
+
+        <div class="customer-order-summary-card">
+
+            <div class="customer-summary-icon delivering">
+
+                <i class="fa-solid fa-truck"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+                    Đang giao
+                </span>
+
+                <strong id="shippingOrders">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Pending -->
+
+        <div class="customer-order-summary-card">
+
+            <div class="customer-summary-icon pending">
+
+                <i class="fa-solid fa-clock"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+                    Chờ xử lý
+                </span>
+
+                <strong id="pendingOrders">
+                    0
+                </strong>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         ORDERS TABLE
+    ====================================================== -->
+
+    <section class="customer-orders-card">
+
+
+        <!-- Header -->
+
+        <div class="customer-orders-card-header">
+
+            <div>
+
+                <h2>
+
+                    <i class="fa-solid fa-boxes-stacked"></i>
+
+                    Danh sách đơn hàng
+
+                </h2>
+
+                <p>
+                    Các đơn hàng được tạo bởi tài khoản của bạn
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- Table -->
+
+        <div class="customer-orders-table-wrapper">
+
+            <table class="customer-orders-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Mã đơn
+                        </th>
+
+                        <th>
+                            Nơi lấy
+                        </th>
+
+                        <th>
+                            Nơi giao
+                        </th>
+
+                        <th>
+                            Khối lượng
+                        </th>
+
+                        <th>
+                            Phí vận chuyển
+                        </th>
+
+                        <th>
+                            Thanh toán
+                        </th>
+
+                        <th>
+                            Trạng thái
+                        </th>
+
+                        <th>
+                            Ngày tạo
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="ordersTableBody">
+
+                    <tr>
+
+                        <td
+                            colspan="8"
+                            class="customer-orders-loading"
+                        >
+
+                            <div class="customer-loading-spinner"></div>
+
+                            Đang tải dữ liệu...
+
+                        </td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         BACK
+    ====================================================== -->
+
+    <div class="customer-page-back">
+
+        <a href="dashboard.html">
+
+            <i class="fa-solid fa-arrow-left"></i>
+
+            Quay lại Dashboard
+
+        </a>
+
+    </div>
+
+</main>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+========================================================= -->
+
+<script>
+
+const API_BASE_URL =
+    'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+
+
+document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+
+        loadCurrentUser();
+
+        loadOrders();
+
+        setupLogout();
+
+        setupReload();
+
+    }
+);
+
+
+/*
+|--------------------------------------------------------------------------
+| Load current user
+|--------------------------------------------------------------------------
+*/
+
+async function loadCurrentUser() {
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}?route=/api/me`,
+            {
+                method: 'GET',
+                credentials: 'include'
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (!result.success) {
+
+            window.location.href =
+                'login.html';
+
+            return;
+        }
+
+
+        document.getElementById(
+            'welcomeUser'
+        ).textContent =
+            result.data.full_name;
+
+    } catch (error) {
+
+        console.error(
+            'Load user error:',
+            error
+        );
+
+        window.location.href =
+            'login.html';
+
+    }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Load orders
+|--------------------------------------------------------------------------
+*/
+
+async function loadOrders() {
+
+    const tableBody =
+        document.getElementById(
+            'ordersTableBody'
+        );
+
+
+    tableBody.innerHTML = `
+
+        <tr>
+
+            <td
+                colspan="8"
+                class="customer-orders-loading"
+            >
+
+                <div class="customer-loading-spinner"></div>
+
+                Đang tải dữ liệu...
+
+            </td>
+
+        </tr>
+
+    `;
+
+
+    try {
+
+        const response = await fetch(
+            `${API_BASE_URL}?route=/api/customer/orders`,
+            {
+                method: 'GET',
+                credentials: 'include'
+            }
+        );
+
+
+        const result =
+            await response.json();
+
+
+        if (!result.success) {
+
+            tableBody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="8"
+                        class="customer-orders-empty"
+                    >
+
+                        <i class="fa-solid fa-circle-exclamation"></i>
+
+                        <span>
+                            ${result.message || 'Không thể tải đơn hàng.'}
+                        </span>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+        }
+
+
+        const orders =
+            result.data || [];
+
+
+        updateSummary(orders);
+
+
+        if (orders.length === 0) {
+
+            tableBody.innerHTML = `
+
+                <tr>
+
+                    <td
+                        colspan="8"
+                        class="customer-orders-empty"
+                    >
+
+                        <div class="customer-empty-icon">
+
+                            <i class="fa-solid fa-box-open"></i>
+
+                        </div>
+
+                        <strong>
+                            Chưa có đơn hàng
+                        </strong>
+
+                        <span>
+                            Hiện tại tài khoản của bạn chưa có đơn hàng nào.
+                        </span>
+
+                    </td>
+
+                </tr>
+
+            `;
+
+            return;
+        }
+
+
+        tableBody.innerHTML = '';
+
+
+        orders.forEach(
+            order => {
+
+                const row =
+                    document.createElement('tr');
+
+
+                const status =
+                    getStatusInfo(
+                        order.status
+                    );
+
+
+                const payment =
+                    getPaymentInfo(
+                        order.payment_status
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+
+                        <span class="customer-order-code">
+
+                            ${order.order_code || '-'}
+
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="customer-address-cell">
+
+                            <i class="fa-solid fa-location-dot"></i>
+
+                            <span>
+                                ${order.pickup_address || '-'}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="customer-address-cell">
+
+                            <i class="fa-solid fa-location-dot"></i>
+
+                            <span>
+                                ${order.delivery_address || '-'}
+                            </span>
+
+                        </div>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="customer-table-number">
+
+                            ${order.total_weight || 0} kg
+
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <strong class="customer-fee">
+
+                            ${formatCurrency(order.shipping_fee)}
+
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="
+                            customer-payment-badge
+                            ${payment.className}
+                        ">
+
+                            ${payment.label}
+
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="
+                            customer-status-badge
+                            ${status.className}
+                        ">
+
+                            <i class="${status.icon}"></i>
+
+                            ${status.label}
+
+                        </span>
+
+                    </td>
+
+
+                    <td>
+
+                        <span class="customer-date">
+
+                            ${formatDate(order.created_at)}
+
+                        </span>
+
+                    </td>
+
+                `;
+
+
+                tableBody.appendChild(row);
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            'Load orders error:',
+            error
+        );
+
+
+        tableBody.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="8"
+                    class="customer-orders-empty"
+                >
+
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+
+                    <strong>
+                        Không thể tải danh sách đơn hàng
+                    </strong>
+
+                    <span>
+                        Vui lòng thử làm mới trang.
+                    </span>
+
+                </td>
+
+            </tr>
+
+        `;
+
+    }
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Update summary
+|--------------------------------------------------------------------------
+*/
+
+function updateSummary(orders) {
+
+    const total =
+        orders.length;
+
+
+    const delivering =
+        orders.filter(
+            order =>
+                order.status === 'DELIVERING'
+        ).length;
+
+
+    const pending =
+        orders.filter(
+            order =>
+                order.status === 'PENDING'
+        ).length;
+
+
+    document.getElementById(
+        'totalOrders'
+    ).textContent =
+        total;
+
+
+    document.getElementById(
+        'shippingOrders'
+    ).textContent =
+        delivering;
+
+
+    document.getElementById(
+        'pendingOrders'
+    ).textContent =
+        pending;
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Status
+|--------------------------------------------------------------------------
+*/
+
+function getStatusInfo(status) {
+
+    const statuses = {
+
+        PENDING: {
+
+            label: 'Chờ xử lý',
+
+            className: 'status-pending',
+
+            icon: 'fa-solid fa-clock'
+
+        },
+
+        CONFIRMED: {
+
+            label: 'Đã xác nhận',
+
+            className: 'status-confirmed',
+
+            icon: 'fa-solid fa-circle-check'
+
+        },
+
+        PICKING_UP: {
+
+            label: 'Đang lấy hàng',
+
+            className: 'status-picking',
+
+            icon: 'fa-solid fa-box'
+
+        },
+
+        DELIVERING: {
+
+            label: 'Đang giao',
+
+            className: 'status-delivering',
+
+            icon: 'fa-solid fa-truck'
+
+        },
+
+        DELIVERED: {
+
+            label: 'Đã giao',
+
+            className: 'status-delivered',
+
+            icon: 'fa-solid fa-check'
+
+        },
+
+        CANCELLED: {
+
+            label: 'Đã hủy',
+
+            className: 'status-cancelled',
+
+            icon: 'fa-solid fa-xmark'
+
+        }
+
+    };
+
+
+    return statuses[status] || {
+
+        label: status || 'Không xác định',
+
+        className: 'status-unknown',
+
+        icon: 'fa-solid fa-circle-question'
+
+    };
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Payment
+|--------------------------------------------------------------------------
+*/
+
+function getPaymentInfo(status) {
+
+    const payments = {
+
+        PAID: {
+
+            label: 'Đã thanh toán',
+
+            className: 'payment-paid'
+
+        },
+
+        UNPAID: {
+
+            label: 'Chưa thanh toán',
+
+            className: 'payment-unpaid'
+
+        },
+
+        PENDING: {
+
+            label: 'Chờ thanh toán',
+
+            className: 'payment-pending'
+
+        }
+
+    };
+
+
+    return payments[status] || {
+
+        label: status || 'Không xác định',
+
+        className: 'payment-unknown'
+
+    };
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Currency
+|--------------------------------------------------------------------------
+*/
+
+function formatCurrency(value) {
+
+    return Number(
+        value || 0
+    ).toLocaleString(
+        'vi-VN'
+    ) + ' VND';
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Date
+|--------------------------------------------------------------------------
+*/
+
+function formatDate(value) {
+
+    if (!value) {
+
+        return '-';
+
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    return date.toLocaleDateString(
+        'vi-VN'
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Reload
+|--------------------------------------------------------------------------
+*/
+
+function setupReload() {
+
+    const button =
+        document.getElementById(
+            'reloadOrdersBtn'
+        );
+
+
+    button.addEventListener(
+        'click',
+        async () => {
+
+            button.classList.add(
+                'is-loading'
+            );
+
+
+            await loadOrders();
+
+
+            button.classList.remove(
+                'is-loading'
+            );
+
+        }
+    );
+
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Logout
+|--------------------------------------------------------------------------
+*/
+
+function setupLogout() {
+
+    const logoutBtn =
+        document.getElementById(
+            'logoutBtn'
+        );
+
+
+    logoutBtn.addEventListener(
+        'click',
+        async () => {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API_BASE_URL}?route=/api/logout`,
+                        {
+                            method: 'POST',
+                            credentials: 'include'
+                        }
+                    );
+
+
+                const result =
+                    await response.json();
+
+
+                if (result.success) {
+
+                    window.location.href =
+                        'login.html';
+
+                } else {
+
+                    alert(
+                        result.message ||
+                        'Đăng xuất thất bại'
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    'Logout error:',
+                    error
+                );
+
+                alert(
+                    'Không thể kết nối đến máy chủ'
+                );
+
+            }
+
+        }
+    );
+
+}
+
+</script>
+
+
 </body>
+
 </html>
