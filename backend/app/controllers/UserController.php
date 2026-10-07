@@ -12,7 +12,12 @@ class UserController extends Controller
         $this->userModel = new User();
     }
 
-    // Lấy danh sách người dùng
+    /*
+    |--------------------------------------------------------------------------
+    | Lấy danh sách người dùng
+    |--------------------------------------------------------------------------
+    */
+
     public function index()
     {
         $users = $this->userModel->getAll();
@@ -23,21 +28,37 @@ class UserController extends Controller
         );
     }
 
-    // Lấy thông tin một người dùng
+
+    /*
+    |--------------------------------------------------------------------------
+    | Lấy thông tin một người dùng
+    |--------------------------------------------------------------------------
+    */
+
     public function show($id)
     {
         $user = $this->userModel->findById($id);
 
         if (!$user) {
-            $this->error('Không tìm thấy người dùng', 404);
+            $this->error(
+                'Không tìm thấy người dùng',
+                404
+            );
         }
 
+        // Không trả password về frontend
         unset($user['password']);
 
         $this->success($user);
     }
 
-    // Thêm người dùng
+
+    /*
+    |--------------------------------------------------------------------------
+    | Thêm người dùng
+    |--------------------------------------------------------------------------
+    */
+
     public function store()
     {
         $data = json_decode(
@@ -45,11 +66,31 @@ class UserController extends Controller
             true
         );
 
-        $username = trim($data['username'] ?? '');
+        $username = trim(
+            $data['username'] ?? ''
+        );
+
         $password = $data['password'] ?? '';
-        $fullName = trim($data['full_name'] ?? '');
+
+        $fullName = trim(
+            $data['full_name'] ?? ''
+        );
+
         $role = $data['role'] ?? 'CUSTOMER';
-        $status = $data['status'] ?? 'ACTIVE';
+
+        // users.status là TINYINT:
+        // 1 = hoạt động
+        // 0 = bị khóa
+        $status = isset($data['status'])
+            ? (int)$data['status']
+            : 1;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate
+        |--------------------------------------------------------------------------
+        */
 
         if (
             $username === '' ||
@@ -61,12 +102,59 @@ class UserController extends Controller
             );
         }
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate role
+        |--------------------------------------------------------------------------
+        */
+
+        $allowedRoles = [
+            'ADMIN',
+            'STAFF',
+            'DRIVER',
+            'CUSTOMER'
+        ];
+
+        if (!in_array($role, $allowedRoles, true)) {
+            $this->error(
+                'Vai trò không hợp lệ'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate status
+        |--------------------------------------------------------------------------
+        */
+
+        if ($status !== 0 && $status !== 1) {
+            $this->error(
+                'Trạng thái tài khoản không hợp lệ'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Kiểm tra username
+        |--------------------------------------------------------------------------
+        */
+
         if ($this->userModel->findByUsername($username)) {
             $this->error(
                 'Tên đăng nhập đã tồn tại',
                 409
             );
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Tạo user
+        |--------------------------------------------------------------------------
+        */
 
         $created = $this->userModel->create([
             'username' => $username,
@@ -76,6 +164,7 @@ class UserController extends Controller
             'status' => $status
         ]);
 
+
         if (!$created) {
             $this->error(
                 'Không thể tạo người dùng',
@@ -83,13 +172,20 @@ class UserController extends Controller
             );
         }
 
+
         $this->success(
             [],
             'Tạo người dùng thành công'
         );
     }
 
-    // Cập nhật người dùng
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cập nhật người dùng
+    |--------------------------------------------------------------------------
+    */
+
     public function update($id)
     {
         $user = $this->userModel->findById($id);
@@ -101,24 +197,79 @@ class UserController extends Controller
             );
         }
 
+
         $data = json_decode(
             file_get_contents('php://input'),
             true
         );
 
-        $fullName = trim($data['full_name'] ?? '');
+
+        $fullName = trim(
+            $data['full_name'] ?? ''
+        );
+
         $role = $data['role'] ?? '';
-        $status = $data['status'] ?? '';
+
+        $status = isset($data['status'])
+            ? (int)$data['status']
+            : -1;
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate
+        |--------------------------------------------------------------------------
+        */
 
         if (
             $fullName === '' ||
             $role === '' ||
-            $status === ''
+            $status === -1
         ) {
             $this->error(
                 'Vui lòng nhập đầy đủ thông tin'
             );
         }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate role
+        |--------------------------------------------------------------------------
+        */
+
+        $allowedRoles = [
+            'ADMIN',
+            'STAFF',
+            'DRIVER',
+            'CUSTOMER'
+        ];
+
+        if (!in_array($role, $allowedRoles, true)) {
+            $this->error(
+                'Vai trò không hợp lệ'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate status
+        |--------------------------------------------------------------------------
+        */
+
+        if ($status !== 0 && $status !== 1) {
+            $this->error(
+                'Trạng thái tài khoản không hợp lệ'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update
+        |--------------------------------------------------------------------------
+        */
 
         $updated = $this->userModel->update(
             $id,
@@ -129,6 +280,7 @@ class UserController extends Controller
             ]
         );
 
+
         if (!$updated) {
             $this->error(
                 'Không thể cập nhật người dùng',
@@ -136,13 +288,20 @@ class UserController extends Controller
             );
         }
 
+
         $this->success(
             [],
             'Cập nhật người dùng thành công'
         );
     }
 
-    // Xóa người dùng
+
+    /*
+    |--------------------------------------------------------------------------
+    | Xóa người dùng
+    |--------------------------------------------------------------------------
+    */
+
     public function destroy($id)
     {
         $user = $this->userModel->findById($id);
@@ -154,7 +313,9 @@ class UserController extends Controller
             );
         }
 
+
         $deleted = $this->userModel->delete($id);
+
 
         if (!$deleted) {
             $this->error(
@@ -162,6 +323,7 @@ class UserController extends Controller
                 500
             );
         }
+
 
         $this->success(
             [],

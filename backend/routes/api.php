@@ -20,6 +20,13 @@ $authController = new AuthController();
 $router->post('/api/login', function () use ($authController) {
     $authController->login();
 });
+$router->post('/api/customer/register', function () use ($authController) {
+    $authController->registerCustomer();
+});
+
+$router->post('/api/forgot-password', function () use ($authController) {
+    $authController->forgotPassword();
+});
 
 $router->post('/api/logout', function () use ($authController) {
     $authController->logout();

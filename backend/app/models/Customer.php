@@ -146,4 +146,39 @@ class Customer
             ':id' => $id
         ]);
     }
+    // Tìm khách hàng theo email
+public function findByEmail($email)
+{
+    $sql = "SELECT *
+            FROM {$this->table}
+            WHERE email = :email
+            LIMIT 1";
+
+    $stmt = $this->conn->prepare($sql);
+
+    $stmt->execute([
+        ':email' => $email
+    ]);
+
+    return $stmt->fetch();
+}
+
+
+// Tìm khách hàng theo số điện thoại
+public function findByPhone($phone)
+{
+    $sql = "SELECT *
+            FROM {$this->table}
+            WHERE phone = :phone
+            LIMIT 1";
+
+    $stmt = $this->conn->prepare($sql);
+
+    $stmt->execute([
+        ':phone' => $phone
+    ]);
+
+    return $stmt->fetch();
+}
+
 }
