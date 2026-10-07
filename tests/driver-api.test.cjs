@@ -222,8 +222,18 @@ async function frontendChecks() {
     assert.equal(get('addButton').disabled, false);
     assert.equal(get('driverRows').children.length, 3);
     assert.equal(redirects.length, 0);
-    assert.equal(get('staffOverview').hidden, false);
-    assert.equal(get('staffOverviewSeparator').hidden, false);
+    // All transport pages share one navigation; only aria-current differs.
+    let canonicalNavigation;
+    for (const page of ['dashboard', 'drivers', 'vehicles', 'assignment']) {
+        const html = fs.readFileSync(path.join(root, 'frontend/transport', page + '.html'), 'utf8');
+        const navigation = html.match(/<nav class="transport-nav"[\s\S]*?<\/nav>/)[0];
+        assert.equal((navigation.match(/aria-current="page"/g) || []).length, 1);
+        assert.ok(navigation.includes('href="' + page + '.html" aria-current="page"'));
+        const canonical = navigation.replace(' aria-current="page"', '');
+        if (canonicalNavigation) assert.equal(canonical, canonicalNavigation);
+        canonicalNavigation = canonical;
+        assert.ok(html.includes('../css/transport-navigation.css?v='));
+    }
     // Re-execute as a fresh load: /api/me must be read again before CRUD is enabled.
     const meBefore = requests.filter(request=>request.url.searchParams.get('route')==='/api/me').length;
     vm.runInNewContext(fs.readFileSync(path.join(root, 'frontend/js/drivers.js'), 'utf8'), sandbox);

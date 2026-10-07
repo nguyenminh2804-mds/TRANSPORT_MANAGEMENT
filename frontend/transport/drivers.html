@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="../css/transport.css?v=e059e844b2db">
     <link rel="stylesheet" href="../css/drivers.css?v=54c368497b09">
     <link rel="stylesheet" href="../css/drivers-management.css?v=2c863f6fcd05">
-    <script src="../js/drivers.js?v=a57dca29ede8" defer></script>
+    <script src="../js/drivers.js?v=8f364f9b963c" defer></script>
+    <link rel="stylesheet" href="../css/transport-navigation.css?v=8e7ebdb54c1b">
 </head>
 <body class="drivers-page drivers-management">
     <header class="drivers-header"><div class="drivers-container drivers-row">
@@ -19,7 +20,14 @@
         <div class="drivers-row drivers-user"><span class="drivers-avatar" aria-hidden="true"><i class="fa-solid fa-user"></i></span><span id="currentUser">Đang kiểm tra phiên…</span><button id="logoutButton" type="button"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Đăng xuất</button></div>
     </div></header>
     <main class="drivers-container">
-        <nav class="drivers-breadcrumb" aria-label="Điều hướng"><a id="staffOverview" href="dashboard.html" hidden><i class="fa-solid fa-house" aria-hidden="true"></i> Trang tổng quan</a><i id="staffOverviewSeparator" class="fa-solid fa-chevron-right" aria-hidden="true" hidden></i><span aria-current="page">Quản lý tài xế</span></nav>
+            <nav class="transport-nav" aria-label="Chức năng nhân viên">
+      <ul class="transport-nav__items">
+        <li class="transport-nav__item"><a class="transport-nav__link" href="dashboard.html"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Tổng quan</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="drivers.html" aria-current="page"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>Quản lý tài xế</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="vehicles.html"><i class="fa-solid fa-truck" aria-hidden="true"></i><span>Quản lý phương tiện</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="assignment.html"><i class="fa-solid fa-route" aria-hidden="true"></i><span>Phân công</span></a></li>
+      </ul>
+    </nav>
         <div class="drivers-row drivers-title customer-orders-page-header"><div><h1><span class="drivers-heading-icon"><i class="fa-solid fa-id-card" aria-hidden="true"></i></span>Quản lý tài xế</h1><p>Thông tin hồ sơ, giấy phép lái xe và trạng thái làm việc.</p></div><button id="addButton" type="button" class="drivers-primary" disabled><i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm tài xế</button></div>
         <div id="pageMessage" role="status" aria-live="polite"></div>
         <section class="drivers-metrics" aria-label="Thống kê toàn bộ tài xế" aria-live="polite">
@@ -39,7 +47,7 @@
             <div class="drivers-results"><p id="resultCount" role="status">Đang kiểm tra phiên đăng nhập…</p><button id="listRetry" type="button" hidden><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Thử lại</button></div>
             <div class="drivers-table-wrap"><table class="customer-orders-table"><caption class="visually-hidden">Hồ sơ và thao tác quản lý tài xế</caption><thead><tr><th scope="col">Mã tài xế</th><th scope="col">Họ tên</th><th scope="col">Điện thoại</th><th scope="col">Số GPLX</th><th scope="col">Hạng</th><th scope="col">Hết hạn GPLX</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead><tbody id="driverRows"><tr><td colspan="8" class="drivers-empty">Đang kiểm tra phiên đăng nhập…</td></tr></tbody></table></div>
         </section>
-        <p class="drivers-note">Tài xế có phân công hoặc chuyến đang hiệu lực không thể đổi trạng thái. Hồ sơ có lịch sử phân công/chuyến hoặc đang thực hiện chuyến không thể xóa.</p>
+        <p class="drivers-note">Tài xế có phân công đang hiệu lực không thể đổi trạng thái. Hồ sơ có lịch sử phân công/chuyến hoặc đang thực hiện chuyến không thể xóa.</p>
     </main>
     <dialog id="driverDialog" aria-labelledby="dialogTitle"><form id="driverForm" novalidate>
         <div class="drivers-row drivers-dialog-header"><h2 id="dialogTitle">Thêm tài xế</h2><button type="button" id="closeDialog" aria-label="Đóng"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>

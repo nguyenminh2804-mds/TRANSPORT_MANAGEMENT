@@ -342,14 +342,10 @@
         $('statsMessage').textContent = 'Đang kiểm tra phiên đăng nhập…';
         ready = false;
         $('addButton').disabled = true;
-        $('staffOverview').hidden = true;
-        $('staffOverviewSeparator').hidden = true;
         try {
             const user = await api('/api/me');
             if (!['ADMIN', 'STAFF'].includes(user.role) || Number(user.status) !== 1) throw new Error('Tài khoản cần quyền ADMIN hoặc STAFF và đang hoạt động.');
             $('currentUser').textContent = user.full_name;
-            $('staffOverview').hidden = false;
-            $('staffOverviewSeparator').hidden = false;
             ready = true;
             $('addButton').disabled = false;
             await refresh();

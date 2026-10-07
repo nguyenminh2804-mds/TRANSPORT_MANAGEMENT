@@ -2,29 +2,41 @@
 
 require_once __DIR__ . '/../../core/Controller.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Customer.php';
 
 class AuthController extends Controller
 {
     private $userModel;
+    private $customerModel;
 
-    // Giữ nguyên module User; chỉ chuyển lỗi database thành phản hồi JSON.
+    /**
+     * Tìm tài khoản và xử lý lỗi database.
+     */
     private function findAccount($method, $value)
     {
         try {
             return $this->userModel->$method($value);
         } catch (PDOException $e) {
             error_log('Account integration: ' . $e->getMessage());
+
             if ((int)($e->errorInfo[1] ?? 0) === 1146) {
-                $this->error('Chưa có bảng users trong database. Cần schema tài khoản chính thức trước khi đăng nhập hoặc quản lý tài xế.', 503);
+                $this->error(
+                    'Chưa có bảng users trong database. Cần schema tài khoản chính thức trước khi đăng nhập hoặc quản lý tài xế.',
+                    503
+                );
             }
-            $this->error('Không thể đọc tài khoản. Kiểm tra kết nối và schema module users.', 500);
+
+            $this->error(
+                'Không thể đọc tài khoản. Kiểm tra kết nối và schema module users.',
+                500
+            );
         }
     }
-
 
     public function __construct()
     {
         $this->userModel = new User();
+        $this->customerModel = new Customer();
     }
 
     /*
@@ -36,6 +48,7 @@ class AuthController extends Controller
     public function login()
     {
         header('Cache-Control: no-store, private');
+
         $data = json_decode(
             file_get_contents('php://input'),
             true
@@ -53,12 +66,311 @@ class AuthController extends Controller
             );
         }
 
-        $user = $this->findAccount('findByUsername', $username);
+        $user = $this->findAccount(
+            'findByUsername',
+            $username
+        );
 
         if (!$user) {
             $this->error(
                 'Tài khoản hoặc mật khẩu không đúng',
                 401
+            );
+        }
+
+        if ((int)$user['status'] !== 1) {
+            $this->error(
+                'Tài khoản đã bị khóa',
+                403
+            );
+        }
+
+        if (!password_verify(
+            $password,
+            $user['password']
+        )) {
+            $this->error(
+                'Tài khoản hoặc mật khẩu không đúng',
+                401
+            );
+        }
+
+        session_regenerate_id(true);
+
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
+
+        unset($user['password']);
+
+        $this->success(
+            $user,
+            'Đăng nhập thành công'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Register
+    |--------------------------------------------------------------------------
+    */
+
+    public function registerCustomer()
+    {
+        $data = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
+
+        $username = trim(
+            $data['username'] ?? ''
+        );
+
+        $password = $data['password'] ?? '';
+
+        $confirmPassword = $data['confirm_password'] ?? '';
+
+        $fullName = trim(
+            $data['full_name'] ?? ''
+        );
+
+        $phone = trim(
+            $data['phone'] ?? ''
+        );
+
+        $email = trim(
+            $data['email'] ?? ''
+        );
+
+        $address = trim(
+            $data['address'] ?? ''
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $username === '' ||
+            $password === '' ||
+            $confirmPassword === '' ||
+            $fullName === '' ||
+            $phone === '' ||
+            $email === '' ||
+            $address === ''
+        ) {
+            $this->error(
+                'Vui lòng nhập đầy đủ thông tin'
+            );
+        }
+
+        if (strlen($username) < 4) {
+            $this->error(
+                'Tên đăng nhập phải có ít nhất 4 ký tự'
+            );
+        }
+
+        if (strlen($password) < 6) {
+            $this->error(
+                'Mật khẩu phải có ít nhất 6 ký tự'
+            );
+        }
+
+        if ($password !== $confirmPassword) {
+            $this->error(
+                'Mật khẩu xác nhận không khớp'
+            );
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->error(
+                'Email không hợp lệ'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check username
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $this->userModel
+                ->findByUsername($username)
+        ) {
+            $this->error(
+                'Tên đăng nhập đã tồn tại',
+                409
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check customer email / phone
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $this->customerModel
+                ->findByEmail($email)
+        ) {
+            $this->error(
+                'Email đã được sử dụng',
+                409
+            );
+        }
+
+        if (
+            $this->customerModel
+                ->findByPhone($phone)
+        ) {
+            $this->error(
+                'Số điện thoại đã được sử dụng',
+                409
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create user
+        |--------------------------------------------------------------------------
+        */
+
+        $createdUser = $this->userModel->create([
+            'username' => $username,
+            'password' => $password,
+            'full_name' => $fullName,
+            'role' => 'CUSTOMER',
+            'status' => 1
+        ]);
+
+        if (!$createdUser) {
+            $this->error(
+                'Không thể tạo tài khoản',
+                500
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Get created user
+        |--------------------------------------------------------------------------
+        */
+
+        $user = $this->userModel
+            ->findByUsername($username);
+
+        if (!$user) {
+            $this->error(
+                'Không tìm thấy tài khoản vừa tạo',
+                500
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create customer profile
+        |--------------------------------------------------------------------------
+        */
+
+        $createdCustomer =
+            $this->customerModel->create([
+                'user_id' => $user['id'],
+                'name' => $fullName,
+                'phone' => $phone,
+                'email' => $email,
+                'address' => $address
+            ]);
+
+        if (!$createdCustomer) {
+
+            // Xóa user vừa tạo nếu tạo customer thất bại
+            $this->userModel->delete(
+                $user['id']
+            );
+
+            $this->error(
+                'Không thể tạo thông tin khách hàng',
+                500
+            );
+        }
+
+        $this->success(
+            [],
+            'Đăng ký tài khoản thành công'
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Forgot Password
+    |--------------------------------------------------------------------------
+    */
+
+    public function forgotPassword()
+    {
+        $data = json_decode(
+            file_get_contents('php://input'),
+            true
+        );
+
+        $username = trim(
+            $data['username'] ?? ''
+        );
+
+        $fullName = trim(
+            $data['full_name'] ?? ''
+        );
+
+        $newPassword = $data['new_password'] ?? '';
+
+        $confirmPassword =
+            $data['confirm_password'] ?? '';
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validate
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $username === '' ||
+            $fullName === '' ||
+            $newPassword === '' ||
+            $confirmPassword === ''
+        ) {
+            $this->error(
+                'Vui lòng nhập đầy đủ thông tin'
+            );
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            $this->error(
+                'Mật khẩu xác nhận không khớp'
+            );
+        }
+
+        if (strlen($newPassword) < 6) {
+            $this->error(
+                'Mật khẩu mới phải có ít nhất 6 ký tự'
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find user
+        |--------------------------------------------------------------------------
+        */
+
+        $user = $this->userModel
+            ->findByUsername($username);
+
+        if (!$user) {
+            $this->error(
+                'Thông tin xác minh không chính xác',
+                404
             );
         }
 
@@ -77,45 +389,47 @@ class AuthController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | Check password
+        | Verify full name
         |--------------------------------------------------------------------------
         */
 
-        if (!password_verify(
-            $password,
-            $user['password']
-        )) {
+        if (
+            mb_strtolower(
+                trim($user['full_name'])
+            )
+            !==
+            mb_strtolower($fullName)
+        ) {
             $this->error(
-                'Tài khoản hoặc mật khẩu không đúng',
-                401
+                'Thông tin xác minh không chính xác',
+                400
             );
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Save session
+        | Update password
         |--------------------------------------------------------------------------
         */
 
-        session_regenerate_id(true);
-        $_SESSION['user_id'] = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role'] = $user['role'];
+        $updated =
+            $this->userModel->updatePassword(
+                $user['id'],
+                $newPassword
+            );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Remove password before response
-        |--------------------------------------------------------------------------
-        */
-
-        unset($user['password']);
+        if (!$updated) {
+            $this->error(
+                'Không thể cập nhật mật khẩu',
+                500
+            );
+        }
 
         $this->success(
-            $user,
-            'Đăng nhập thành công'
+            [],
+            'Đặt lại mật khẩu thành công'
         );
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -126,6 +440,7 @@ class AuthController extends Controller
     public function logout()
     {
         header('Cache-Control: no-store, private');
+
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {
@@ -151,7 +466,6 @@ class AuthController extends Controller
         );
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Current logged-in user
@@ -161,6 +475,7 @@ class AuthController extends Controller
     public function me()
     {
         header('Cache-Control: no-store, private');
+
         if (!isset($_SESSION['user_id'])) {
             $this->error(
                 'Chưa đăng nhập',
@@ -168,7 +483,10 @@ class AuthController extends Controller
             );
         }
 
-        $user = $this->findAccount('findById', $_SESSION['user_id']);
+        $user = $this->findAccount(
+            'findById',
+            $_SESSION['user_id']
+        );
 
         if (!$user) {
             $this->error(
@@ -178,7 +496,10 @@ class AuthController extends Controller
         }
 
         if ((int)$user['status'] !== 1) {
-            $this->error('Tài khoản đã bị khóa', 403);
+            $this->error(
+                'Tài khoản đã bị khóa',
+                403
+            );
         }
 
         unset($user['password']);
