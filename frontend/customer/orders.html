@@ -27,25 +27,71 @@
     >
 
 
-    <!-- CSS dùng chung -->
+    <!-- CSS -->
     <link
         rel="stylesheet"
         href="../css/common.css"
     >
 
-
-    <!-- CSS khách hàng -->
     <link
         rel="stylesheet"
         href="../css/customer.css"
     >
 
-
-    <!-- CSS riêng trang đơn hàng -->
     <link
         rel="stylesheet"
         href="../css/orders.css"
     >
+
+
+    <!-- CSS cho thông báo lỗi -->
+    <style>
+
+        .field-error {
+
+            display: none;
+
+            margin-top: 6px;
+
+            font-size: 13px;
+
+            line-height: 1.4;
+
+            color: #dc3545;
+
+        }
+
+
+        .field-error.show {
+
+            display: block;
+
+        }
+
+
+        .form-control.input-error,
+        .form-select.input-error {
+
+            border-color: #dc3545 !important;
+
+            box-shadow: 0 0 0 0.15rem rgba(
+                220,
+                53,
+                69,
+                0.1
+            );
+
+        }
+
+
+        .form-control.input-success,
+        .form-select.input-success {
+
+            border-color: #198754 !important;
+
+        }
+
+    </style>
 
 </head>
 
@@ -60,7 +106,6 @@
 <nav class="customer-navbar">
 
     <div class="orders-container navbar-inner">
-
 
         <a
             href="dashboard.html"
@@ -136,41 +181,24 @@
         </div>
 
 
-        <div class="orders-header-actions">
+        <button
+            type="button"
+            id="createOrderBtn"
+            class="btn-primary-custom"
+        >
 
-            <button
-                type="button"
-                id="createOrderBtn"
-                class="btn-primary-custom"
-            >
+            <i class="fa-solid fa-plus"></i>
 
-                <i class="fa-solid fa-plus"></i>
+            Tạo đơn hàng
 
-                Tạo đơn hàng
-
-            </button>
-
-
-            <button
-                type="button"
-                id="reloadOrdersBtn"
-                class="btn-outline-custom"
-            >
-
-                <i class="fa-solid fa-rotate"></i>
-
-                Làm mới
-
-            </button>
-
-        </div>
+        </button>
 
     </div>
 
 
 
     <!-- =====================================================
-         CREATE ORDER
+         FORM TẠO ĐƠN
     ====================================================== -->
 
     <section
@@ -178,24 +206,19 @@
         class="create-order-card hidden"
     >
 
-
         <div class="create-order-header">
 
-            <div>
+            <h2>
 
-                <h2>
+                <i class="fa-solid fa-box-open"></i>
 
-                    <i class="fa-solid fa-box-open"></i>
+                Tạo đơn hàng
 
-                    Tạo đơn hàng
+            </h2>
 
-                </h2>
-
-                <p>
-                    Nhập thông tin lấy hàng, giao hàng và hàng hóa
-                </p>
-
-            </div>
+            <p>
+                Nhập thông tin đơn hàng
+            </p>
 
         </div>
 
@@ -204,11 +227,12 @@
         <form
             id="createOrderForm"
             class="create-order-body"
+            novalidate
         >
 
 
             <!-- =================================================
-                 PICKUP ADDRESS
+                 ĐỊA CHỈ LẤY HÀNG
             ================================================== -->
 
             <div class="form-section">
@@ -217,9 +241,7 @@
 
                     <i class="fa-solid fa-location-dot"></i>
 
-                    <span>
-                        Địa chỉ lấy hàng
-                    </span>
+                    Địa chỉ lấy hàng
 
                 </div>
 
@@ -227,73 +249,171 @@
                 <div class="form-grid">
 
 
+                    <!-- TỈNH -->
+
                     <div class="form-group">
 
-                        <label>
+                        <label for="pickupCity">
+
                             Tỉnh / Thành phố
+
                             <span>*</span>
+
                         </label>
 
-                        <input
-                            type="text"
+
+                        <select
                             id="pickupCity"
-                            list="citySuggestions"
-                            placeholder="Ví dụ: Hà Nội"
+                            name="pickup_city"
+                            class="form-select"
                             required
                         >
+
+                            <option value="">
+                                -- Chọn tỉnh / thành phố --
+                            </option>
+
+                            <option value="Hà Nội">
+                                Hà Nội
+                            </option>
+
+                            <option value="Hải Phòng">
+                                Hải Phòng
+                            </option>
+
+                            <option value="Bắc Ninh">
+                                Bắc Ninh
+                            </option>
+
+                            <option value="Hưng Yên">
+                                Hưng Yên
+                            </option>
+
+                            <option value="Ninh Bình">
+                                Ninh Bình
+                            </option>
+
+                        </select>
+
+
+                        <div
+                            id="pickupCityError"
+                            class="field-error"
+                        ></div>
 
                     </div>
 
 
+
+                    <!-- QUẬN / HUYỆN -->
+
                     <div class="form-group">
 
-                        <label>
+                        <label for="pickupDistrict">
+
                             Quận / Huyện
+
                             <span>*</span>
+
                         </label>
 
-                        <input
-                            type="text"
+
+                        <select
                             id="pickupDistrict"
-                            list="districtSuggestions"
-                            placeholder="Ví dụ: Hoài Đức"
+                            name="pickup_district"
+                            class="form-select"
                             required
+                            disabled
                         >
+
+                            <option value="">
+                                -- Chọn quận / huyện --
+                            </option>
+
+                        </select>
+
+
+                        <div
+                            id="pickupDistrictError"
+                            class="field-error"
+                        ></div>
 
                     </div>
 
+
+
+                    <!-- PHƯỜNG / XÃ -->
 
                     <div class="form-group">
 
-                        <label>
+                        <label for="pickupWard">
+
                             Phường / Xã
+
                             <span>*</span>
+
                         </label>
 
-                        <input
-                            type="text"
+
+                        <select
                             id="pickupWard"
-                            list="wardSuggestions"
-                            placeholder="Ví dụ: An Khánh"
+                            name="pickup_ward"
+                            class="form-select"
                             required
+                            disabled
                         >
+
+                            <option value="">
+                                -- Chọn phường / xã --
+                            </option>
+
+                        </select>
+
+
+                        <div
+                            id="pickupWardError"
+                            class="field-error"
+                        ></div>
 
                     </div>
 
+
+
+                    <!-- ĐỊA CHỈ CHI TIẾT -->
 
                     <div class="form-group full-width">
 
-                        <label>
+                        <label for="pickupDetail">
+
                             Địa chỉ chi tiết
+
                             <span>*</span>
+
                         </label>
+
 
                         <input
                             type="text"
                             id="pickupDetail"
-                            placeholder="Số nhà, tên đường, thôn/xóm..."
+                            name="pickup_detail"
+                            class="form-control"
+                            placeholder="Ví dụ: Số 10 đường ABC..."
+                            minlength="5"
+                            maxlength="255"
+                            autocomplete="street-address"
                             required
                         >
+
+
+                        <div
+                            id="pickupDetailError"
+                            class="field-error"
+                        ></div>
+
+
+                        <small class="input-hint">
+                            Nhập số nhà, tên đường, thôn/xóm...
+                        </small>
 
                     </div>
 
@@ -304,7 +424,7 @@
 
 
             <!-- =================================================
-                 DELIVERY ADDRESS
+                 ĐỊA CHỈ GIAO HÀNG
             ================================================== -->
 
             <div class="form-section">
@@ -313,9 +433,7 @@
 
                     <i class="fa-solid fa-location-dot"></i>
 
-                    <span>
-                        Địa chỉ giao hàng
-                    </span>
+                    Địa chỉ giao hàng
 
                 </div>
 
@@ -323,73 +441,171 @@
                 <div class="form-grid">
 
 
+                    <!-- TỈNH -->
+
                     <div class="form-group">
 
-                        <label>
+                        <label for="deliveryCity">
+
                             Tỉnh / Thành phố
+
                             <span>*</span>
+
                         </label>
 
-                        <input
-                            type="text"
+
+                        <select
                             id="deliveryCity"
-                            list="citySuggestions"
-                            placeholder="Ví dụ: Hà Nội"
+                            name="delivery_city"
+                            class="form-select"
                             required
                         >
+
+                            <option value="">
+                                -- Chọn tỉnh / thành phố --
+                            </option>
+
+                            <option value="Hà Nội">
+                                Hà Nội
+                            </option>
+
+                            <option value="Hải Phòng">
+                                Hải Phòng
+                            </option>
+
+                            <option value="Bắc Ninh">
+                                Bắc Ninh
+                            </option>
+
+                            <option value="Hưng Yên">
+                                Hưng Yên
+                            </option>
+
+                            <option value="Ninh Bình">
+                                Ninh Bình
+                            </option>
+
+                        </select>
+
+
+                        <div
+                            id="deliveryCityError"
+                            class="field-error"
+                        ></div>
 
                     </div>
 
 
+
+                    <!-- QUẬN / HUYỆN -->
+
                     <div class="form-group">
 
-                        <label>
+                        <label for="deliveryDistrict">
+
                             Quận / Huyện
+
                             <span>*</span>
+
                         </label>
 
-                        <input
-                            type="text"
+
+                        <select
                             id="deliveryDistrict"
-                            list="districtSuggestions"
-                            placeholder="Ví dụ: Nam Từ Liêm"
+                            name="delivery_district"
+                            class="form-select"
                             required
+                            disabled
                         >
+
+                            <option value="">
+                                -- Chọn quận / huyện --
+                            </option>
+
+                        </select>
+
+
+                        <div
+                            id="deliveryDistrictError"
+                            class="field-error"
+                        ></div>
 
                     </div>
 
+
+
+                    <!-- PHƯỜNG / XÃ -->
 
                     <div class="form-group">
 
-                        <label>
+                        <label for="deliveryWard">
+
                             Phường / Xã
+
                             <span>*</span>
+
                         </label>
 
-                        <input
-                            type="text"
+
+                        <select
                             id="deliveryWard"
-                            list="wardSuggestions"
-                            placeholder="Ví dụ: Tây Mỗ"
+                            name="delivery_ward"
+                            class="form-select"
                             required
+                            disabled
                         >
+
+                            <option value="">
+                                -- Chọn phường / xã --
+                            </option>
+
+                        </select>
+
+
+                        <div
+                            id="deliveryWardError"
+                            class="field-error"
+                        ></div>
 
                     </div>
 
+
+
+                    <!-- ĐỊA CHỈ CHI TIẾT -->
 
                     <div class="form-group full-width">
 
-                        <label>
+                        <label for="deliveryDetail">
+
                             Địa chỉ chi tiết
+
                             <span>*</span>
+
                         </label>
+
 
                         <input
                             type="text"
                             id="deliveryDetail"
-                            placeholder="Số nhà, tên đường, thôn/xóm..."
+                            name="delivery_detail"
+                            class="form-control"
+                            placeholder="Ví dụ: Số 20 đường XYZ..."
+                            minlength="5"
+                            maxlength="255"
+                            autocomplete="street-address"
                             required
                         >
+
+
+                        <div
+                            id="deliveryDetailError"
+                            class="field-error"
+                        ></div>
+
+
+                        <small class="input-hint">
+                            Nhập số nhà, tên đường, thôn/xóm...
+                        </small>
 
                     </div>
 
@@ -400,7 +616,7 @@
 
 
             <!-- =================================================
-                 PRODUCTS
+                 THÔNG TIN HÀNG HÓA
             ================================================== -->
 
             <div class="form-section">
@@ -409,15 +625,15 @@
 
                     <i class="fa-solid fa-box"></i>
 
-                    <span>
-                        Thông tin hàng hóa
-                    </span>
+                    Thông tin hàng hóa
 
                 </div>
 
 
                 <div id="productList">
 
+
+                    <!-- SẢN PHẨM 1 -->
 
                     <div
                         class="product-item"
@@ -426,7 +642,7 @@
 
                         <div class="product-item-top">
 
-                            <strong>
+                            <strong class="product-number">
                                 Sản phẩm 1
                             </strong>
 
@@ -436,40 +652,97 @@
                         <div class="form-grid product-grid">
 
 
+                            <!-- TÊN SẢN PHẨM -->
+
                             <div class="form-group">
 
-                                <label>
+                                <label for="productName1">
+
                                     Tên sản phẩm
+
                                     <span>*</span>
+
                                 </label>
 
-                                <input
-                                    type="text"
+
+                                <select
+                                    id="productName1"
+                                    name="product_name_1"
                                     class="product-name"
-                                    list="productSuggestions"
-                                    placeholder="Nhập tên sản phẩm..."
                                     required
                                 >
 
-                                <small>
-                                    <i class="fa-solid fa-lightbulb"></i>
-                                    Có thể nhập để tìm gợi ý
-                                </small>
+                                    <option value="">
+                                        -- Chọn sản phẩm --
+                                    </option>
+
+                                    <option value="Điện thoại">
+                                        Điện thoại
+                                    </option>
+
+                                    <option value="Máy tính">
+                                        Máy tính
+                                    </option>
+
+                                    <option value="Laptop">
+                                        Laptop
+                                    </option>
+
+                                    <option value="Máy tính bảng">
+                                        Máy tính bảng
+                                    </option>
+
+                                    <option value="Quần áo">
+                                        Quần áo
+                                    </option>
+
+                                    <option value="Giày dép">
+                                        Giày dép
+                                    </option>
+
+                                    <option value="Đồ gia dụng">
+                                        Đồ gia dụng
+                                    </option>
+
+                                    <option value="Thực phẩm">
+                                        Thực phẩm
+                                    </option>
+
+                                    <option value="Đồ điện tử">
+                                        Đồ điện tử
+                                    </option>
+
+                                    <option value="Hàng hóa khác">
+                                        Hàng hóa khác
+                                    </option>
+
+                                </select>
 
                             </div>
 
 
+
+                            <!-- SỐ LƯỢNG -->
+
                             <div class="form-group">
 
-                                <label>
+                                <label for="productQuantity1">
+
                                     Số lượng
+
                                     <span>*</span>
+
                                 </label>
+
 
                                 <input
                                     type="number"
+                                    id="productQuantity1"
+                                    name="product_quantity_1"
                                     class="product-quantity"
                                     min="1"
+                                    max="999999"
+                                    step="1"
                                     value="1"
                                     required
                                 >
@@ -477,17 +750,27 @@
                             </div>
 
 
+
+                            <!-- KHỐI LƯỢNG -->
+
                             <div class="form-group">
 
-                                <label>
+                                <label for="productWeight1">
+
                                     Khối lượng (kg)
+
                                     <span>*</span>
+
                                 </label>
+
 
                                 <input
                                     type="number"
+                                    id="productWeight1"
+                                    name="product_weight_1"
                                     class="product-weight"
                                     min="0.01"
+                                    max="999999"
                                     step="0.01"
                                     value="1"
                                     required
@@ -500,6 +783,7 @@
                     </div>
 
                 </div>
+
 
 
                 <button
@@ -519,10 +803,11 @@
 
 
             <!-- =================================================
-                 SUMMARY
+                 TÓM TẮT ĐƠN
             ================================================== -->
 
             <div class="order-summary">
+
 
                 <div class="summary-row">
 
@@ -556,7 +841,7 @@
                         Phí vận chuyển
                     </span>
 
-                    <strong>
+                    <strong id="summaryShippingFee">
                         Theo hệ thống
                     </strong>
 
@@ -597,7 +882,7 @@
 
 
             <!-- =================================================
-                 BUTTONS
+                 BUTTON
             ================================================== -->
 
             <div class="form-actions">
@@ -634,7 +919,7 @@
 
 
     <!-- =====================================================
-         SUMMARY CARDS
+         THỐNG KÊ
     ====================================================== -->
 
     <section class="statistics-grid">
@@ -715,29 +1000,24 @@
 
 
     <!-- =====================================================
-         ORDER LIST
+         DANH SÁCH ĐƠN HÀNG
     ====================================================== -->
 
     <section class="order-list-card">
 
-
         <div class="order-list-header">
 
-            <div>
+            <h2>
 
-                <h2>
+                <i class="fa-solid fa-boxes-stacked"></i>
 
-                    <i class="fa-solid fa-boxes-stacked"></i>
+                Danh sách đơn hàng
 
-                    Danh sách đơn hàng
+            </h2>
 
-                </h2>
-
-                <p>
-                    Các đơn hàng được tạo bởi tài khoản của bạn
-                </p>
-
-            </div>
+            <p>
+                Các đơn hàng được tạo bởi tài khoản của bạn
+            </p>
 
         </div>
 
@@ -796,6 +1076,8 @@
                             class="loading-cell"
                         >
 
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+
                             Đang tải dữ liệu...
 
                         </td>
@@ -813,7 +1095,7 @@
 
 
     <!-- =====================================================
-         BACK
+         QUAY LẠI
     ====================================================== -->
 
     <a
@@ -831,1742 +1113,10 @@
 
 
 
-<!-- =========================================================
-     DATAlIST
-========================================================= -->
+<!-- JS -->
 
-<datalist id="citySuggestions">
+<script src="../js/orders.js"></script>
 
-    <option value="Hà Nội">
-    <option value="Hải Phòng">
-    <option value="Bắc Ninh">
-    <option value="Hưng Yên">
-    <option value="Ninh Bình">
-
-</datalist>
-
-
-<datalist id="districtSuggestions">
-
-    <option value="Hoài Đức">
-    <option value="Nam Từ Liêm">
-    <option value="Bắc Từ Liêm">
-    <option value="Cầu Giấy">
-    <option value="Thanh Xuân">
-    <option value="Hà Đông">
-    <option value="Đống Đa">
-    <option value="Ba Đình">
-
-</datalist>
-
-
-<datalist id="wardSuggestions">
-
-    <option value="An Khánh">
-    <option value="Tây Mỗ">
-    <option value="Đại Mỗ">
-    <option value="Mễ Trì">
-    <option value="Xuân Phương">
-    <option value="Phú Đô">
-    <option value="Yên Nghĩa">
-    <option value="La Khê">
-
-</datalist>
-
-
-<datalist id="productSuggestions">
-
-    <option value="Điện thoại">
-    <option value="Laptop">
-    <option value="Máy tính bảng">
-    <option value="Máy tính">
-    <option value="Màn hình máy tính">
-    <option value="Bàn phím">
-    <option value="Chuột máy tính">
-    <option value="Tai nghe">
-    <option value="Tivi">
-    <option value="Tủ lạnh">
-    <option value="Máy giặt">
-    <option value="Quần áo">
-    <option value="Giày dép">
-    <option value="Sách">
-    <option value="Đồ gia dụng">
-
-</datalist>
-
-
-
-<!-- =========================================================
-     JAVASCRIPT
-========================================================= -->
-
-<script>
-
-
-/*
-|--------------------------------------------------------------------------
-| API
-|--------------------------------------------------------------------------
-|
-| Đường dẫn cố định theo project:
-|
-| /TRANSPORT_MANAGEMENT/backend/public/index.php
-|
-*/
-
-const API_BASE =
-    '/TRANSPORT_MANAGEMENT/backend/public/index.php';
-
-
-
-/*
-|--------------------------------------------------------------------------
-| API REQUEST
-|--------------------------------------------------------------------------
-*/
-
-async function apiRequest(
-    route,
-    options = {}
-) {
-
-    const separator =
-        route.includes('?')
-            ? '&'
-            : '?';
-
-
-    const url =
-        API_BASE +
-        '?route=' +
-        encodeURIComponent(route);
-
-
-    const response =
-        await fetch(
-            url,
-            {
-                ...options,
-
-                credentials:
-                    'same-origin',
-
-                headers: {
-                    ...(options.headers || {})
-                }
-            }
-        );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Đọc text trước
-    |--------------------------------------------------------------------------
-    |
-    | Nếu PHP trả HTML lỗi thì không còn bị:
-    | Unexpected token '<'
-    |
-    */
-
-    const rawText =
-        await response.text();
-
-
-    let result;
-
-
-    try {
-
-        result =
-            JSON.parse(
-                rawText
-            );
-
-    } catch (error) {
-
-        console.error(
-            'API trả về dữ liệu không phải JSON:',
-            rawText
-        );
-
-
-        throw new Error(
-            'API không trả về JSON. Kiểm tra backend hoặc đường dẫn API.'
-        );
-
-    }
-
-
-    if (
-        response.status === 401
-    ) {
-
-        window.location.href =
-            'login.html';
-
-        return;
-
-    }
-
-
-    if (
-        !response.ok ||
-        result.success === false
-    ) {
-
-        throw new Error(
-            result.message ||
-            'Yêu cầu thất bại.'
-        );
-
-    }
-
-
-    return result;
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| CURRENT USER
-|--------------------------------------------------------------------------
-*/
-
-async function loadCurrentUser() {
-
-    try {
-
-        const result =
-            await apiRequest(
-                '/api/me',
-                {
-                    method: 'GET'
-                }
-            );
-
-
-        if (
-            result.data &&
-            result.data.full_name
-        ) {
-
-            document.getElementById(
-                'welcomeUser'
-            ).textContent =
-                result.data.full_name;
-
-        }
-
-    } catch (error) {
-
-        console.error(
-            'Không lấy được thông tin user:',
-            error
-        );
-
-    }
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| SHOW CREATE FORM
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'createOrderBtn'
-    )
-    .addEventListener(
-        'click',
-        function () {
-
-            const section =
-                document.getElementById(
-                    'createOrderSection'
-                );
-
-
-            section.classList.remove(
-                'hidden'
-            );
-
-
-            section.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-
-        }
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| CANCEL
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'cancelCreateOrderBtn'
-    )
-    .addEventListener(
-        'click',
-        function () {
-
-            document
-                .getElementById(
-                    'createOrderSection'
-                )
-                .classList.add(
-                    'hidden'
-                );
-
-
-            document
-                .getElementById(
-                    'createOrderForm'
-                )
-                .reset();
-
-
-            resetProducts();
-
-        }
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| ADD PRODUCT
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'addProductBtn'
-    )
-    .addEventListener(
-        'click',
-        function () {
-
-            const list =
-                document.getElementById(
-                    'productList'
-                );
-
-
-            const count =
-                list.querySelectorAll(
-                    '.product-item'
-                ).length + 1;
-
-
-            const item =
-                document.createElement(
-                    'div'
-                );
-
-
-            item.className =
-                'product-item';
-
-
-            item.dataset.index =
-                count;
-
-
-            item.innerHTML = `
-
-                <div class="product-item-top">
-
-                    <strong>
-                        Sản phẩm ${count}
-                    </strong>
-
-                    <button
-                        type="button"
-                        class="remove-product"
-                    >
-
-                        <i class="fa-solid fa-trash"></i>
-
-                    </button>
-
-                </div>
-
-
-                <div class="form-grid product-grid">
-
-                    <div class="form-group">
-
-                        <label>
-                            Tên sản phẩm
-                            <span>*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            class="product-name"
-                            list="productSuggestions"
-                            placeholder="Nhập tên sản phẩm..."
-                            required
-                        >
-
-                        <small>
-                            <i class="fa-solid fa-lightbulb"></i>
-                            Có thể nhập để tìm gợi ý
-                        </small>
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Số lượng
-                            <span>*</span>
-                        </label>
-
-                        <input
-                            type="number"
-                            class="product-quantity"
-                            min="1"
-                            value="1"
-                            required
-                        >
-
-                    </div>
-
-
-                    <div class="form-group">
-
-                        <label>
-                            Khối lượng (kg)
-                            <span>*</span>
-                        </label>
-
-                        <input
-                            type="number"
-                            class="product-weight"
-                            min="0.01"
-                            step="0.01"
-                            value="1"
-                            required
-                        >
-
-                    </div>
-
-                </div>
-
-            `;
-
-
-            list.appendChild(
-                item
-            );
-
-
-            updateSummary();
-
-        }
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| REMOVE PRODUCT
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'productList'
-    )
-    .addEventListener(
-        'click',
-        function (event) {
-
-            const button =
-                event.target.closest(
-                    '.remove-product'
-                );
-
-
-            if (!button) {
-
-                return;
-
-            }
-
-
-            const products =
-                document.querySelectorAll(
-                    '.product-item'
-                );
-
-
-            if (
-                products.length <= 1
-            ) {
-
-                alert(
-                    'Đơn hàng phải có ít nhất một sản phẩm.'
-                );
-
-                return;
-
-            }
-
-
-            button
-                .closest(
-                    '.product-item'
-                )
-                .remove();
-
-
-            renumberProducts();
-
-            updateSummary();
-
-        }
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| PRODUCT INPUT
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'productList'
-    )
-    .addEventListener(
-        'input',
-        updateSummary
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| RENUMBER
-|--------------------------------------------------------------------------
-*/
-
-function renumberProducts() {
-
-    document
-        .querySelectorAll(
-            '.product-item'
-        )
-        .forEach(
-            function (item, index) {
-
-                item.dataset.index =
-                    index + 1;
-
-
-                item.querySelector(
-                    '.product-item-top strong'
-                ).textContent =
-                    `Sản phẩm ${index + 1}`;
-
-            }
-        );
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| RESET PRODUCTS
-|--------------------------------------------------------------------------
-*/
-
-function resetProducts() {
-
-    const list =
-        document.getElementById(
-            'productList'
-        );
-
-
-    list.innerHTML = `
-
-        <div
-            class="product-item"
-            data-index="1"
-        >
-
-            <div class="product-item-top">
-
-                <strong>
-                    Sản phẩm 1
-                </strong>
-
-            </div>
-
-
-            <div class="form-grid product-grid">
-
-                <div class="form-group">
-
-                    <label>
-                        Tên sản phẩm
-                        <span>*</span>
-                    </label>
-
-                    <input
-                        type="text"
-                        class="product-name"
-                        list="productSuggestions"
-                        placeholder="Nhập tên sản phẩm..."
-                        required
-                    >
-
-                    <small>
-                        <i class="fa-solid fa-lightbulb"></i>
-                        Có thể nhập để tìm gợi ý
-                    </small>
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Số lượng
-                        <span>*</span>
-                    </label>
-
-                    <input
-                        type="number"
-                        class="product-quantity"
-                        min="1"
-                        value="1"
-                        required
-                    >
-
-                </div>
-
-
-                <div class="form-group">
-
-                    <label>
-                        Khối lượng (kg)
-                        <span>*</span>
-                    </label>
-
-                    <input
-                        type="number"
-                        class="product-weight"
-                        min="0.01"
-                        step="0.01"
-                        value="1"
-                        required
-                    >
-
-                </div>
-
-            </div>
-
-        </div>
-
-    `;
-
-
-    updateSummary();
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| SUMMARY
-|--------------------------------------------------------------------------
-*/
-
-function updateSummary() {
-
-    const products =
-        document.querySelectorAll(
-            '.product-item'
-        );
-
-
-    let totalWeight =
-        0;
-
-
-    products.forEach(
-        function (product) {
-
-            const weight =
-                Number(
-                    product.querySelector(
-                        '.product-weight'
-                    ).value
-                ) || 0;
-
-
-            totalWeight +=
-                weight;
-
-        }
-    );
-
-
-    document.getElementById(
-        'summaryProductCount'
-    ).textContent =
-        products.length;
-
-
-    document.getElementById(
-        'summaryWeight'
-    ).textContent =
-        totalWeight.toFixed(2) +
-        ' kg';
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| BUILD ADDRESS
-|--------------------------------------------------------------------------
-*/
-
-function buildAddress(
-    city,
-    district,
-    ward,
-    detail
-) {
-
-    return [
-
-        detail,
-
-        ward,
-
-        district,
-
-        city
-
-    ]
-        .filter(
-            value =>
-                value &&
-                value.trim() !== ''
-        )
-        .join(', ');
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| CREATE ORDER - UC-DH-01
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'createOrderForm'
-    )
-    .addEventListener(
-        'submit',
-        async function (event) {
-
-            event.preventDefault();
-
-
-            const form =
-                this;
-
-
-            if (
-                !form.checkValidity()
-            ) {
-
-                form.reportValidity();
-
-                return;
-
-            }
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | ADDRESS
-            |--------------------------------------------------------------------------
-            */
-
-            const pickupAddress =
-                buildAddress(
-
-                    document
-                        .getElementById(
-                            'pickupCity'
-                        )
-                        .value,
-
-                    document
-                        .getElementById(
-                            'pickupDistrict'
-                        )
-                        .value,
-
-                    document
-                        .getElementById(
-                            'pickupWard'
-                        )
-                        .value,
-
-                    document
-                        .getElementById(
-                            'pickupDetail'
-                        )
-                        .value
-
-                );
-
-
-            const deliveryAddress =
-                buildAddress(
-
-                    document
-                        .getElementById(
-                            'deliveryCity'
-                        )
-                        .value,
-
-                    document
-                        .getElementById(
-                            'deliveryDistrict'
-                        )
-                        .value,
-
-                    document
-                        .getElementById(
-                            'deliveryWard'
-                        )
-                        .value,
-
-                    document
-                        .getElementById(
-                            'deliveryDetail'
-                        )
-                        .value
-
-                );
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | PRODUCTS
-            |--------------------------------------------------------------------------
-            */
-
-            const productElements =
-                document.querySelectorAll(
-                    '.product-item'
-                );
-
-
-            const items = [];
-
-
-            let totalWeight =
-                0;
-
-
-            for (
-                const product
-                of productElements
-            ) {
-
-                const name =
-                    product
-                        .querySelector(
-                            '.product-name'
-                        )
-                        .value
-                        .trim();
-
-
-                const quantity =
-                    Number(
-                        product
-                            .querySelector(
-                                '.product-quantity'
-                            )
-                            .value
-                    );
-
-
-                const weight =
-                    Number(
-                        product
-                            .querySelector(
-                                '.product-weight'
-                            )
-                            .value
-                    );
-
-
-                if (!name) {
-
-                    alert(
-                        'Vui lòng nhập tên sản phẩm.'
-                    );
-
-                    return;
-
-                }
-
-
-                if (
-                    quantity <= 0 ||
-                    !Number.isFinite(
-                        quantity
-                    )
-                ) {
-
-                    alert(
-                        'Số lượng không hợp lệ.'
-                    );
-
-                    return;
-
-                }
-
-
-                if (
-                    weight <= 0 ||
-                    !Number.isFinite(
-                        weight
-                    )
-                ) {
-
-                    alert(
-                        'Khối lượng không hợp lệ.'
-                    );
-
-                    return;
-
-                }
-
-
-                totalWeight +=
-                    weight;
-
-
-                items.push({
-
-                    product_name:
-                        name,
-
-                    quantity:
-                        quantity,
-
-                    weight:
-                        weight
-
-                });
-
-            }
-
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | BUTTON
-            |--------------------------------------------------------------------------
-            */
-
-            const submitButton =
-                document.getElementById(
-                    'submitOrderBtn'
-                );
-
-
-            submitButton.disabled =
-                true;
-
-
-            submitButton.innerHTML = `
-
-                <i class="fa-solid fa-spinner fa-spin"></i>
-
-                Đang tạo...
-
-            `;
-
-
-
-            try {
-
-
-                /*
-                |--------------------------------------------------------------------------
-                | POST UC-DH-01
-                |--------------------------------------------------------------------------
-                */
-
-                const result =
-                    await apiRequest(
-                        '/api/customer/orders',
-                        {
-
-                            method:
-                                'POST',
-
-                            headers: {
-
-                                'Content-Type':
-                                    'application/json'
-
-                            },
-
-                            body:
-                                JSON.stringify({
-
-                                    pickup_address:
-                                        pickupAddress,
-
-                                    delivery_address:
-                                        deliveryAddress,
-
-                                    total_weight:
-                                        totalWeight,
-
-                                    shipping_fee:
-                                        0,
-
-                                    items:
-                                        items
-
-                                })
-
-                        }
-                    );
-
-
-
-                alert(
-                    'Tạo đơn hàng thành công!'
-                );
-
-
-                form.reset();
-
-                resetProducts();
-
-
-                document
-                    .getElementById(
-                        'createOrderSection'
-                    )
-                    .classList.add(
-                        'hidden'
-                    );
-
-
-                await loadOrders();
-
-
-            } catch (error) {
-
-                console.error(
-                    error
-                );
-
-
-                alert(
-                    error.message
-                );
-
-
-            } finally {
-
-                submitButton.disabled =
-                    false;
-
-
-                submitButton.innerHTML = `
-
-                    <i class="fa-solid fa-check"></i>
-
-                    Tạo đơn hàng
-
-                `;
-
-            }
-
-        }
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| LOAD ORDERS
-|--------------------------------------------------------------------------
-*/
-
-async function loadOrders() {
-
-    const tableBody =
-        document.getElementById(
-            'ordersTableBody'
-        );
-
-
-    tableBody.innerHTML = `
-
-        <tr>
-
-            <td
-                colspan="8"
-                class="loading-cell"
-            >
-
-                <i class="fa-solid fa-spinner fa-spin"></i>
-
-                Đang tải dữ liệu...
-
-            </td>
-
-        </tr>
-
-    `;
-
-
-    try {
-
-        const result =
-            await apiRequest(
-                '/api/customer/orders',
-                {
-                    method: 'GET'
-                }
-            );
-
-
-        const orders =
-            Array.isArray(
-                result.data
-            )
-                ? result.data
-                : [];
-
-
-        updateStatistics(
-            orders
-        );
-
-
-        if (
-            orders.length === 0
-        ) {
-
-            tableBody.innerHTML = `
-
-                <tr>
-
-                    <td
-                        colspan="8"
-                        class="empty-cell"
-                    >
-
-                        <i class="fa-solid fa-box-open"></i>
-
-                        <strong>
-                            Chưa có đơn hàng
-                        </strong>
-
-                        <span>
-                            Hiện tại tài khoản của bạn chưa có đơn hàng nào.
-                        </span>
-
-                    </td>
-
-                </tr>
-
-            `;
-
-            return;
-
-        }
-
-
-        tableBody.innerHTML =
-            '';
-
-
-        orders.forEach(
-            function (order) {
-
-                const status =
-                    getStatus(
-                        order.status
-                    );
-
-
-                const payment =
-                    getPayment(
-                        order.payment_status
-                    );
-
-
-                const row =
-                    document.createElement(
-                        'tr'
-                    );
-
-
-                row.innerHTML = `
-
-                    <td>
-
-                        <span class="order-code">
-
-                            ${escapeHtml(
-                                order.order_code || '-'
-                            )}
-
-                        </span>
-
-                    </td>
-
-
-                    <td>
-
-                        ${escapeHtml(
-                            order.pickup_address || '-'
-                        )}
-
-                    </td>
-
-
-                    <td>
-
-                        ${escapeHtml(
-                            order.delivery_address || '-'
-                        )}
-
-                    </td>
-
-
-                    <td>
-
-                        ${Number(
-                            order.total_weight || 0
-                        ).toFixed(2)}
-
-                        kg
-
-                    </td>
-
-
-                    <td>
-
-                        <strong>
-
-                            ${formatMoney(
-                                order.shipping_fee
-                            )}
-
-                        </strong>
-
-                    </td>
-
-
-                    <td>
-
-                        <span
-                            class="payment-badge ${payment.className}"
-                        >
-
-                            ${payment.label}
-
-                        </span>
-
-                    </td>
-
-
-                    <td>
-
-                        <span
-                            class="status-badge ${status.className}"
-                        >
-
-                            <i class="${status.icon}"></i>
-
-                            ${status.label}
-
-                        </span>
-
-                    </td>
-
-
-                    <td>
-
-                        ${formatDate(
-                            order.created_at
-                        )}
-
-                    </td>
-
-                `;
-
-
-                tableBody.appendChild(
-                    row
-                );
-
-            }
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            error
-        );
-
-
-        tableBody.innerHTML = `
-
-            <tr>
-
-                <td
-                    colspan="8"
-                    class="error-cell"
-                >
-
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-
-                    <strong>
-                        Không thể tải danh sách đơn hàng
-                    </strong>
-
-                    <span>
-                        ${escapeHtml(
-                            error.message
-                        )}
-                    </span>
-
-                </td>
-
-            </tr>
-
-        `;
-
-    }
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| STATISTICS
-|--------------------------------------------------------------------------
-*/
-
-function updateStatistics(
-    orders
-) {
-
-    const total =
-        orders.length;
-
-
-    const shipping =
-        orders.filter(
-            order =>
-                order.status === 'PICKING_UP' ||
-                order.status === 'IN_TRANSIT'
-        ).length;
-
-
-    const pending =
-        orders.filter(
-            order =>
-                order.status === 'PENDING'
-        ).length;
-
-
-    document.getElementById(
-        'totalOrders'
-    ).textContent =
-        total;
-
-
-    document.getElementById(
-        'shippingOrders'
-    ).textContent =
-        shipping;
-
-
-    document.getElementById(
-        'pendingOrders'
-    ).textContent =
-        pending;
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| STATUS
-|--------------------------------------------------------------------------
-*/
-
-function getStatus(
-    status
-) {
-
-    const map = {
-
-        PENDING: {
-
-            label:
-                'Chờ xử lý',
-
-            className:
-                'pending',
-
-            icon:
-                'fa-solid fa-clock'
-
-        },
-
-
-        CONFIRMED: {
-
-            label:
-                'Đã xác nhận',
-
-            className:
-                'confirmed',
-
-            icon:
-                'fa-solid fa-circle-check'
-
-        },
-
-
-        PICKING_UP: {
-
-            label:
-                'Đang lấy hàng',
-
-            className:
-                'picking',
-
-            icon:
-                'fa-solid fa-box'
-
-        },
-
-
-        IN_TRANSIT: {
-
-            label:
-                'Đang vận chuyển',
-
-            className:
-                'transit',
-
-            icon:
-                'fa-solid fa-truck'
-
-        },
-
-
-        DELIVERED: {
-
-            label:
-                'Đã giao thành công',
-
-            className:
-                'delivered',
-
-            icon:
-                'fa-solid fa-check'
-
-        },
-
-
-        CANCELLED: {
-
-            label:
-                'Đã hủy',
-
-            className:
-                'cancelled',
-
-            icon:
-                'fa-solid fa-xmark'
-
-        }
-
-    };
-
-
-    return (
-        map[status] ||
-        {
-
-            label:
-                status || 'Không xác định',
-
-            className:
-                'unknown',
-
-            icon:
-                'fa-solid fa-circle-question'
-
-        }
-    );
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| PAYMENT
-|--------------------------------------------------------------------------
-*/
-
-function getPayment(
-    status
-) {
-
-    if (
-        status === 'PAID'
-    ) {
-
-        return {
-
-            label:
-                'Đã thanh toán',
-
-            className:
-                'paid'
-
-        };
-
-    }
-
-
-    return {
-
-        label:
-            'Chưa thanh toán',
-
-        className:
-            'unpaid'
-
-    };
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| FORMAT MONEY
-|--------------------------------------------------------------------------
-*/
-
-function formatMoney(
-    value
-) {
-
-    return Number(
-        value || 0
-    ).toLocaleString(
-        'vi-VN'
-    ) + ' VND';
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| FORMAT DATE
-|--------------------------------------------------------------------------
-*/
-
-function formatDate(
-    value
-) {
-
-    if (!value) {
-
-        return '-';
-
-    }
-
-
-    const date =
-        new Date(
-            value
-        );
-
-
-    return date.toLocaleDateString(
-        'vi-VN'
-    );
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| ESCAPE HTML
-|--------------------------------------------------------------------------
-*/
-
-function escapeHtml(
-    value
-) {
-
-    return String(
-        value
-    )
-        .replaceAll(
-            '&',
-            '&amp;'
-        )
-        .replaceAll(
-            '<',
-            '&lt;'
-        )
-        .replaceAll(
-            '>',
-            '&gt;'
-        )
-        .replaceAll(
-            '"',
-            '&quot;'
-        )
-        .replaceAll(
-            "'",
-            '&#039;'
-        );
-
-}
-
-
-
-/*
-|--------------------------------------------------------------------------
-| RELOAD
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'reloadOrdersBtn'
-    )
-    .addEventListener(
-        'click',
-        loadOrders
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| LOGOUT
-|--------------------------------------------------------------------------
-*/
-
-document
-    .getElementById(
-        'logoutBtn'
-    )
-    .addEventListener(
-        'click',
-        async function () {
-
-            try {
-
-                await apiRequest(
-                    '/api/logout',
-                    {
-                        method: 'POST'
-                    }
-                );
-
-
-                window.location.href =
-                    'login.html';
-
-
-            } catch (error) {
-
-                alert(
-                    error.message
-                );
-
-            }
-
-        }
-    );
-
-
-
-/*
-|--------------------------------------------------------------------------
-| INIT
-|--------------------------------------------------------------------------
-*/
-
-document.addEventListener(
-    'DOMContentLoaded',
-    function () {
-
-        loadCurrentUser();
-
-        loadOrders();
-
-        updateSummary();
-
-    }
-);
-
-</script>
 
 </body>
 
