@@ -4,35 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chuyến đi của tôi - Tài xế</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body { background-color: #f5f7fb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        .driver-navbar { background: #ffffff; border-bottom: 1px solid #e5e7eb; padding: 14px 0; }
+        .brand { display: flex; align-items: center; gap: 10px; color: #1f2937; text-decoration: none; font-size: 20px; font-weight: 700; }
+        .brand-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: #059669; color: white; }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; }
+        .table-responsive { max-height: 70vh; overflow-y: auto; }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container py-4">
+<body>
+    <!-- NAVBAR -->
+    <nav class="driver-navbar mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="dashboard.html" class="brand">
+                <span class="brand-icon"><i class="fa-solid fa-steering-wheel"></i></span>
+                Cổng Tài Xế
+            </a>
+            <div class="user-info">
+                <div class="text-end d-none d-md-block">
+                    <div class="fw-bold" style="font-size: 14px;" id="driverName">Đang tải...</div>
+                    <div class="text-muted" style="font-size: 12px;">Tài xế</div>
+                </div>
+                <div class="user-avatar"><i class="fa-solid fa-user-tie"></i></div>
+                <button class="btn btn-light btn-sm ms-3 text-secondary" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Thoát</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="container py-2">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fa-solid fa-truck-fast me-2"></i> Chuyến Đi Được Phân Công</h2>
+            <h2><i class="fa-solid fa-route me-2 text-success"></i> Chuyến Đi Được Phân Công</h2>
             <a href="dashboard.html" class="btn btn-secondary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Quay lại Dashboard</a>
         </div>
 
-        <!-- Danh sách chuyến của tài xế -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h5 class="mb-0">Danh sách chuyến của bạn</h5>
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-secondary">Danh sách chuyến của bạn</h5>
+                <button class="btn btn-outline-success btn-sm" onclick="renderDriverTrips()"><i class="fa-solid fa-rotate-right"></i> Làm mới</button>
             </div>
-            <div class="card-body table-responsive">
-                <table class="table table-hover align-middle">
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
-                            <th>Lộ trình</th>
+                            <th class="ps-3">Mã Chuyến</th>
+                            <th>Lộ trình (Đi ➔ Đến)</th>
                             <th>Xe vận chuyển</th>
-                            <th>Thời gian</th>
+                            <th>Thời gian xuất phát</th>
                             <th>Trạng thái</th>
-                            <th>Thao tác cập nhật</th>
+                            <th class="text-center">Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="driverTripTableBody">
-                        <!-- Dữ liệu được load động qua JS -->
+                        <tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -42,44 +72,99 @@
     <!-- Nhúng file js xử lý trips -->
     <script src="../js/trips.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const trips = await loadTrips(); // Backend sẽ tự động trả về đúng các chuyến của tài xế đang đăng nhập
-            const tbody = document.getElementById('driverTripTableBody');
-            tbody.innerHTML = '';
+        const API_URL = new URL('../../backend/public/index.php', window.location.href);
 
-            if (trips.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Bạn chưa được phân công chuyến vận chuyển nào.</td></tr>`;
-                return;
+        // 1. Kiểm tra Session để chống lệch Role
+        async function checkDriverSession() {
+            API_URL.searchParams.set('route', '/api/me');
+            try {
+                const response = await fetch(API_URL.href, { method: 'GET', credentials: 'same-origin' });
+                if (response.status === 401) { window.location.href = '../customer/login.html'; return; }
+                
+                const result = await response.json();
+                if (!result.success || result.data.role !== 'DRIVER') {
+                    alert('Lỗi truy cập: Bạn không có quyền Tài xế!');
+                    window.location.href = '../customer/login.html';
+                    return;
+                }
+                document.getElementById('driverName').textContent = result.data.full_name || result.data.username;
+            } catch (error) { console.error("Lỗi xác thực:", error); }
+        }
+
+        // 2. Render danh sách chuyến
+        async function renderDriverTrips() {
+            try {
+                const trips = await loadTrips(); // Backend chỉ trả về chuyến của tài xế này
+                const tbody = document.getElementById('driverTripTableBody');
+                tbody.innerHTML = '';
+
+                if (!trips || trips.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Bạn chưa được phân công chuyến vận chuyển nào.</td></tr>`;
+                    return;
+                }
+
+                trips.forEach(trip => {
+                    let badgeColor = 'bg-secondary';
+                    let actionButtons = '';
+
+                    if (trip.status === 'PLANNED') {
+                        badgeColor = 'bg-info text-dark';
+                        actionButtons = `<button class="btn btn-sm btn-primary" onclick="changeStatus(${trip.id}, 'IN_PROGRESS')"><i class="fa-solid fa-play"></i> Bắt đầu chạy</button>`;
+                    } else if (trip.status === 'IN_PROGRESS') {
+                        badgeColor = 'bg-primary';
+                        actionButtons = `<button class="btn btn-sm btn-success" onclick="changeStatus(${trip.id}, 'COMPLETED')"><i class="fa-solid fa-check-double"></i> Giao xong</button>`;
+                    } else if (trip.status === 'COMPLETED') {
+                        badgeColor = 'bg-success';
+                        actionButtons = `<span class="text-success"><i class="fa-solid fa-check"></i> Đã xong</span>`;
+                    } else if (trip.status === 'CANCELLED') {
+                        badgeColor = 'bg-danger';
+                        actionButtons = `<span class="text-danger"><i class="fa-solid fa-ban"></i> Đã hủy</span>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="ps-3 fw-bold text-secondary">#${trip.id}</td>
+                            <td><strong>${trip.start_location}</strong> ➔ <strong>${trip.end_location}</strong></td>
+                            <td><span class="badge border border-secondary text-secondary">${trip.license_plate || 'Chưa gán xe'}</span></td>
+                            <td>${trip.start_time || 'Chưa ấn định'}</td>
+                            <td><span class="badge ${badgeColor}">${trip.status}</span></td>
+                            <td class="text-center">${actionButtons}</td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                console.error(error);
+                document.getElementById('driverTripTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Lỗi kết nối máy chủ.</td></tr>`;
             }
+        }
 
-            trips.forEach(trip => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td>#${trip.id}</td>
-                        <td><strong>${trip.start_location}</strong> ➔ <strong>${trip.end_location}</strong></td>
-                        <td>${trip.license_plate || 'N/A'} (${trip.vehicle_type || ''})</td>
-                        <td>${trip.start_time || 'N/A'}</td>
-                        <td><span class="badge bg-warning text-dark">${trip.status}</span></td>
-                        <td>
-                            <button class="btn btn-sm btn-primary" onclick="changeStatus(${trip.id}, 'IN_PROGRESS')">Đang chạy</button>
-                            <button class="btn btn-sm btn-success" onclick="changeStatus(${trip.id}, 'COMPLETED')">Hoàn thành</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        });
-
+        // 3. Cập nhật trạng thái
         async function changeStatus(tripId, newStatus) {
-            if (!confirm(`Bạn có chắc muốn đổi trạng thái chuyến #${tripId} thành ${newStatus}?`)) return;
+            let msg = newStatus === 'IN_PROGRESS' ? 'Xác nhận bắt đầu chạy chuyến này?' : 'Xác nhận đã hoàn thành chuyến đi?';
+            if (!confirm(msg)) return;
             
             const res = await updateTripStatus(tripId, newStatus);
             if (res.success) {
-                alert(res.message);
-                location.reload();
+                alert('Cập nhật thành công!');
+                await renderDriverTrips();
             } else {
                 alert('Lỗi: ' + res.message);
             }
         }
+
+        // 4. Xử lý Đăng xuất
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            API_URL.searchParams.set('route', '/api/logout');
+            await fetch(API_URL.href, { method: 'POST', credentials: 'same-origin' });
+            sessionStorage.clear();
+            window.location.href = '../customer/login.html';
+        });
+
+        // Chạy khi trang load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkDriverSession();
+            await renderDriverTrips();
+        });
     </script>
 </body>
 </html>

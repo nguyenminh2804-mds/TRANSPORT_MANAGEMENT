@@ -3,9 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Trang Tài Xế - Quản lý vận tải</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #f5f7fb;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        }
+
+        /* Navbar */
+        .driver-navbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 14px 0;
+        }
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            color: #1f2937; text-decoration: none; font-size: 20px; font-weight: 700;
+        }
+        .brand-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            background: #059669; color: white;
+        }
+        .user-info { display: flex; align-items: center; gap: 10px; }
+        .user-avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: #ecfdf5; color: #059669;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-name-wrapper { text-align: right; }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-role { font-size: 12px; color: #6b7280; }
+
+        /* Bảng Trips */
+        .table-responsive { max-height: 65vh; overflow-y: auto; }
+        .trip-card {
+            background: #ffffff; border: 1px solid #e5e7eb;
+            border-radius: 14px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03);
+        }
+        
+        /* Modal Chi tiết đơn hàng cho Tài xế */
+        .order-detail-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background-color: #fff;
+            transition: all 0.2s;
+        }
+        .order-detail-card:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .order-info-section {
+            font-size: 13px;
+        }
+        .order-info-section a {
+            text-decoration: none;
+            color: #0d6efd;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-    <h1>Dashboard</h1>
+
+    <!-- NAVBAR -->
+    <nav class="driver-navbar mb-4">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="dashboard.html" class="brand">
+                <span class="brand-icon"><i class="fa-solid fa-steering-wheel"></i></span>
+                Cổng Tài Xế
+            </a>
+            <div class="user-info">
+                <div class="user-name-wrapper d-none d-md-block">
+                    <div class="user-name" id="driverName">Đang tải...</div>
+                    <div class="user-role">Tài xế</div>
+                </div>
+                <div class="user-avatar">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <button class="btn btn-light btn-sm ms-3 text-secondary" id="logoutBtn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Thoát
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+        <!-- Lời chào -->
+        <section class="mb-4">
+            <h2 class="fw-bold">Xin chào, <span id="welcomeName">Tài xế</span> 👋</h2>
+            <p class="text-muted">Đây là danh sách các chuyến vận chuyển bạn được phân công. Hãy cập nhật trạng thái khi bắt đầu và hoàn thành lộ trình nhé.</p>
+        </section>
+
+        <!-- Bảng danh sách chuyến -->
+        <div class="trip-card">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-secondary"><i class="fa-solid fa-list-check me-2"></i> Chuyến Đi Của Tôi</h5>
+                <button class="btn btn-outline-success btn-sm" onclick="renderDriverTrips()">
+                    <i class="fa-solid fa-rotate-right"></i> Làm mới
+                </button>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Mã Chuyến</th>
+                            <th>Lộ trình (Đi ➔ Đến)</th>
+                            <th>Thông tin hàng & Xe</th>
+                            <th>Thời gian xuất phát</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Cập nhật</th>
+                        </tr>
+                    </thead>
+                    <tbody id="driverTripTableBody">
+                        <tr><td colspan="6" class="text-center text-muted py-4">Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL CHI TIẾT DANH SÁCH ĐƠN HÀNG TRONG CHUYẾN -->
+    <div class="modal fade" id="tripOrdersModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable"> <!-- Dùng modal-xl để form rộng rãi, có thanh cuộn -->
+            <div class="modal-content bg-light">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title"><i class="fa-solid fa-boxes-packing me-2"></i>Chi tiết Đơn hàng (Chuyến #<span id="modalTripId"></span>)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="tripOrdersContainer" class="row">
+                        <!-- Danh sách card đơn hàng sẽ được Javascript đẩy vào đây -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng cửa sổ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_URL = new URL('../../backend/public/index.php', window.location.href);
+        let currentOrdersModal = null; 
+
+        // 1. Kiểm tra Session đăng nhập
+        async function checkDriverSession() {
+            API_URL.searchParams.set('route', '/api/me');
+            try {
+                const response = await fetch(API_URL.href, { method: 'GET', credentials: 'same-origin' });
+                if (response.status === 401) {
+                    window.location.href = '../customer/login.html';
+                    return;
+                }
+                const result = await response.json();
+                if (!result.success || result.data.role !== 'DRIVER') {
+                    alert('Bạn không có quyền truy cập trang này!');
+                    window.location.href = '../customer/login.html';
+                    return;
+                }
+                const fullName = result.data.full_name || result.data.username;
+                document.getElementById('driverName').textContent = fullName;
+                document.getElementById('welcomeName').textContent = fullName;
+            } catch (error) {
+                console.error("Lỗi xác thực:", error);
+            }
+        }
+
+        // Lấy danh sách chuyến
+        async function fetchMyTrips() {
+            API_URL.searchParams.set('route', '/api/trips');
+            const res = await fetch(API_URL.href, { credentials: 'same-origin' });
+            const data = await res.json();
+            return data.success ? data.data : [];
+        }
+
+        // Lấy danh sách đơn hàng
+        async function fetchOrdersByTrip(tripId) {
+            API_URL.searchParams.set('route', '/api/orders'); 
+            try {
+                const res = await fetch(API_URL.href, { credentials: 'same-origin' });
+                if (res.status === 403) throw new Error("Vui lòng báo Admin cấp quyền lấy đơn hàng cho DRIVER trong OrderController.");
+                const data = await res.json();
+                if (data.success) {
+                    return data.data.filter(order => order.trip_id == tripId);
+                }
+            } catch (error) {
+                alert(error.message);
+            }
+            return [];
+        }
+
+        // 2. Render Giao diện Bảng Chuyến xe
+        async function renderDriverTrips() {
+            try {
+                const tbody = document.getElementById('driverTripTableBody');
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải...</td></tr>';
+                
+                const trips = await fetchMyTrips();
+                tbody.innerHTML = '';
+
+                if (!trips || trips.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Bạn chưa được phân công chuyến nào. Nghỉ ngơi thôi! ☕</td></tr>`;
+                    return;
+                }
+
+                trips.forEach(trip => {
+                    let badgeColor = 'bg-secondary';
+                    let actionButtons = '';
+
+                    if (trip.status === 'PLANNED') {
+                        badgeColor = 'bg-info text-dark';
+                        actionButtons = `<button class="btn btn-sm btn-primary mb-1 w-100" onclick="updateTripStatus(${trip.id}, 'IN_PROGRESS')"><i class="fa-solid fa-play me-1"></i> Bắt đầu chuyến</button>`;
+                    } 
+                    else if (trip.status === 'IN_PROGRESS') {
+                        badgeColor = 'bg-primary';
+                        actionButtons = `
+                            <button class="btn btn-sm btn-warning mb-1 w-100 text-dark fw-bold shadow-sm" onclick="openTripOrdersModal(${trip.id})"><i class="fa-solid fa-boxes-packing me-1"></i> Xem danh sách Đơn</button>
+                            <button class="btn btn-sm btn-success w-100" onclick="updateTripStatus(${trip.id}, 'COMPLETED')"><i class="fa-solid fa-check-double me-1"></i> Chuyến xong</button>
+                        `;
+                    } 
+                    else if (trip.status === 'COMPLETED') {
+                        badgeColor = 'bg-success';
+                        actionButtons = `<button class="btn btn-sm btn-outline-secondary w-100" onclick="openTripOrdersModal(${trip.id})"><i class="fa-solid fa-eye"></i> Xem lịch sử đơn</button>`;
+                    } 
+                    else if (trip.status === 'CANCELLED') {
+                        badgeColor = 'bg-danger';
+                        actionButtons = `<span class="text-danger fw-bold"><i class="fa-solid fa-ban"></i> Đã hủy</span>`;
+                    }
+
+                    const goodsInfo = trip.goods_name ? trip.goods_name : 'Hàng hóa tổng hợp';
+                    const vehicleInfo = trip.license_plate ? trip.license_plate : 'Chưa xếp xe';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="ps-3 fw-bold text-secondary">#${trip.id}</td>
+                            <td>
+                                <div class="text-truncate" style="max-width: 250px;"><strong><i class="fa-solid fa-location-dot text-danger me-1"></i> ${trip.start_location}</strong></div>
+                                <div class="text-truncate" style="max-width: 250px;"><strong><i class="fa-solid fa-flag-checkered text-success me-1"></i> ${trip.end_location}</strong></div>
+                            </td>
+                            <td>
+                                <div class="text-muted small">Hàng: ${goodsInfo}</div>
+                                <div class="text-muted small">Xe: <span class="badge bg-secondary">${vehicleInfo}</span></div>
+                            </td>
+                            <td>${trip.start_time || 'Chưa ấn định'}</td>
+                            <td><span class="badge ${badgeColor}">${trip.status}</span></td>
+                            <td class="text-center" style="width: 170px;">
+                                ${actionButtons}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                document.getElementById('driverTripTableBody').innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Lỗi lấy dữ liệu. Vui lòng thử lại.</td></tr>`;
+            }
+        }
+
+        // Cập nhật trạng thái CHUYẾN XE 
+        async function updateTripStatus(tripId, newStatus) {
+            let confirmMsg = newStatus === 'IN_PROGRESS' 
+                ? `Xác nhận: Bắt đầu lăn bánh chuyến #${tripId}?` 
+                : `Xác nhận: Bạn đã giao TOÀN BỘ đơn hàng và kết thúc chuyến #${tripId}?`;
+
+            if (!confirm(confirmMsg)) return;
+
+            try {
+                API_URL.searchParams.set('route', '/api/trips/status');
+                const res = await fetch(API_URL.href, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: tripId, status: newStatus }),
+                    credentials: 'same-origin'
+                });
+                
+                const result = await res.json();
+                if (result.success) {
+                    alert('Cập nhật trạng thái chuyến thành công!');
+                    await renderDriverTrips();
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (error) {
+                alert('Có lỗi xảy ra khi cập nhật chuyến.');
+            }
+        }
+
+        // --- CÁC HÀM XỬ LÝ DANH SÁCH ĐƠN HÀNG TRONG CHUYẾN ---
+
+        // Mở Modal hiển thị chi tiết tất cả các đơn
+        async function openTripOrdersModal(tripId) {
+            document.getElementById('modalTripId').textContent = tripId;
+            const container = document.getElementById('tripOrdersContainer');
+            
+            // Hiển thị loading
+            container.innerHTML = '<div class="col-12 text-center py-5"><i class="fa-solid fa-spinner fa-spin fa-2x text-primary mb-3"></i><h5>Đang tải dữ liệu đơn hàng...</h5></div>';
+            
+            if (!currentOrdersModal) {
+                currentOrdersModal = new bootstrap.Modal(document.getElementById('tripOrdersModal'));
+            }
+            currentOrdersModal.show();
+
+            const orders = await fetchOrdersByTrip(tripId);
+            container.innerHTML = ''; // Clear loading
+
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-danger py-4"><h5><i class="fa-solid fa-box-open"></i> Không có đơn hàng nào được gán vào chuyến xe này.</h5></div>';
+                return;
+            }
+
+            // Sinh HTML cho từng Đơn hàng
+            orders.forEach(o => {
+                const isCancelled = o.status === 'CANCELLED';
+                const isDelivered = o.status === 'DELIVERED';
+                
+                // Tiền cước (Thu hộ hay không)
+                const isCOD = o.payment_method === 'RECEIVER_PAY';
+                const feeText = isCOD ? `<span class="text-danger fw-bold">Thu khách: ${Number(o.shipping_fee).toLocaleString('vi-VN')} đ</span>` : `<span class="text-success">Người gửi đã trả cước</span>`;
+
+                container.innerHTML += `
+                    <div class="col-lg-6 mb-3">
+                        <div class="order-detail-card h-100 p-0 shadow-sm border-${isDelivered ? 'success' : (isCancelled ? 'danger' : 'primary')}">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <strong class="text-dark"><i class="fa-solid fa-barcode text-secondary me-1"></i> ${o.order_code}</strong>
+                                <span class="badge bg-${isDelivered ? 'success' : (isCancelled ? 'danger' : 'primary')} px-3 py-2">${o.status}</span>
+                            </div>
+                            <div class="card-body order-info-section">
+                                <div class="row">
+                                    <!-- Cột Gửi -->
+                                    <div class="col-6 border-end">
+                                        <div class="text-danger mb-1"><i class="fa-solid fa-arrow-up-from-bracket"></i> <b>LẤY HÀNG:</b></div>
+                                        <div><i class="fa-regular fa-user text-muted"></i> ${o.sender_name || 'Không tên'}</div>
+                                        <div class="mt-1"><i class="fa-solid fa-phone text-muted"></i> <a href="tel:${o.sender_phone}">${o.sender_phone}</a></div>
+                                        <div class="mt-1"><i class="fa-solid fa-map-location-dot text-muted"></i> ${o.pickup_address}</div>
+                                    </div>
+                                    <!-- Cột Nhận -->
+                                    <div class="col-6">
+                                        <div class="text-success mb-1"><i class="fa-solid fa-arrow-right-to-bracket"></i> <b>GIAO HÀNG:</b></div>
+                                        <div><i class="fa-regular fa-user text-muted"></i> ${o.receiver_name}</div>
+                                        <div class="mt-1"><i class="fa-solid fa-phone text-muted"></i> <a href="tel:${o.receiver_phone}">${o.receiver_phone}</a></div>
+                                        <div class="mt-1"><i class="fa-solid fa-map-location-dot text-muted"></i> ${o.delivery_address}</div>
+                                    </div>
+                                </div>
+                                <hr class="my-3">
+                                <div>
+                                    <span class="badge bg-light text-dark border me-1"><i class="fa-solid fa-box"></i> ${o.goods_type || 'Tổng hợp'}</span>
+                                    <span class="badge bg-light text-dark border me-1"><i class="fa-solid fa-weight-hanging"></i> ${o.total_weight} kg</span>
+                                    <span class="badge bg-warning text-dark border">${feeText}</span>
+                                </div>
+                                ${o.note ? `<div class="mt-2 text-danger fst-italic"><i class="fa-solid fa-triangle-exclamation"></i> Ghi chú: ${o.note}</div>` : ''}
+                            </div>
+                            <div class="card-footer bg-light border-top-0">
+                                ${(isDelivered || isCancelled) ? `<div class="text-center text-muted fw-bold py-2"><i class="fa-solid fa-lock"></i> Đơn hàng đã hoàn tất</div>` : `
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm w-50" id="status_select_${o.id}" onchange="toggleCancelInput(${o.id})">
+                                        <option value="CONFIRMED" ${o.status === 'CONFIRMED' ? 'selected' : ''}>Chưa lấy hàng</option>
+                                        <option value="PICKING_UP" ${o.status === 'PICKING_UP' ? 'selected' : ''}>Đang đi lấy hàng</option>
+                                        <option value="IN_TRANSIT" ${o.status === 'IN_TRANSIT' ? 'selected' : ''}>Đang trên xe</option>
+                                        <option value="DELIVERING" ${o.status === 'DELIVERING' ? 'selected' : ''}>Đang giao cho khách</option>
+                                        <option value="DELIVERED">Đã giao XONG</option>
+                                        <option value="CANCELLED">Hủy/Khách boom</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-primary w-50" onclick="submitSingleOrderStatus(${o.id},${tripId})">
+                                        Lưu trạng thái
+                                    </button>
+                                </div>
+                                <input type="text" id="cancel_reason_${o.id}" class="form-control form-control-sm mt-2" style="display:none;" placeholder="Nhập lý do khách hủy/boom hàng (Bắt buộc)">
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Hiện ô nhập lý do nếu chọn Hủy
+        function toggleCancelInput(orderId) {
+            const select = document.getElementById(`status_select_${orderId}`).value;
+            document.getElementById(`cancel_reason_${orderId}`).style.display = (select === 'CANCELLED') ? 'block' : 'none';
+        }
+
+        // Gửi API cập nhật TỪNG Đơn hàng
+        async function submitSingleOrderStatus(orderId, tripId) {
+            const newStatus = document.getElementById(`status_select_${orderId}`).value;
+            const cancelReasonInput = document.getElementById(`cancel_reason_${orderId}`);
+            const cancelReason = cancelReasonInput ? cancelReasonInput.value : '';
+
+            if (newStatus === 'CANCELLED' && !cancelReason.trim()) {
+                alert("Bắt buộc phải nhập lý do khi hủy đơn hàng!");
+                cancelReasonInput.focus();
+                return;
+            }
+
+            try {
+                API_URL.searchParams.set('route', '/api/orders/update-status');
+                const res = await fetch(API_URL.href, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        order_id: orderId, 
+                        status: newStatus,
+                        cancel_reason: cancelReason
+                    }),
+                    credentials: 'same-origin'
+                });
+                
+                const result = await res.json();
+                if (result.success) {
+                    // Tải lại Modal để cập nhật màu sắc thẻ card
+                    openTripOrdersModal(tripId);
+                } else {
+                    alert(result.message || 'Lỗi không xác định');
+                }
+            } catch (error) {
+                alert('Có lỗi mạng khi kết nối đến máy chủ.');
+            }
+        }
+
+        // Đăng xuất
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if(!confirm("Bạn muốn đăng xuất?")) return;
+            API_URL.searchParams.set('route', '/api/logout');
+            try {
+                await fetch(API_URL.href, { method: 'POST', credentials: 'same-origin' });
+                sessionStorage.clear();
+                window.location.href = '../customer/login.html';
+            } catch (error) {
+                alert('Lỗi đăng xuất');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkDriverSession();
+            await renderDriverTrips();
+        });
+    </script>
 </body>
 </html>

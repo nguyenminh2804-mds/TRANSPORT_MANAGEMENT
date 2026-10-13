@@ -47,52 +47,35 @@ class AuthController extends Controller
 
     public function login()
     {
+        // Tắt cảnh báo rác của PHP để tránh phá hỏng cấu trúc JSON
+        error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
         header('Cache-Control: no-store, private');
 
-        $data = json_decode(
-            file_get_contents('php://input'),
-            true
-        );
+        $data = json_decode(file_get_contents('php://input'), true);
 
-        $username = trim(
-            $data['username'] ?? ''
-        );
-
+        $username = trim($data['username'] ?? '');
         $password = $data['password'] ?? '';
 
         if ($username === '' || $password === '') {
-            $this->error(
-                'Vui lòng nhập đầy đủ tài khoản và mật khẩu'
-            );
+            $this->error('Vui lòng nhập đầy đủ tài khoản và mật khẩu');
+            return; // Quan trọng
         }
 
-        $user = $this->findAccount(
-            'findByUsername',
-            $username
-        );
+        $user = $this->findAccount('findByUsername', $username);
 
         if (!$user) {
-            $this->error(
-                'Tài khoản hoặc mật khẩu không đúng',
-                401
-            );
+            $this->error('Tài khoản hoặc mật khẩu không đúng', 401);
+            return; // Quan trọng
         }
 
         if ((int)$user['status'] !== 1) {
-            $this->error(
-                'Tài khoản đã bị khóa',
-                403
-            );
+            $this->error('Tài khoản đã bị khóa', 403);
+            return; // Quan trọng
         }
 
-        if (!password_verify(
-            $password,
-            $user['password']
-        )) {
-            $this->error(
-                'Tài khoản hoặc mật khẩu không đúng',
-                401
-            );
+        if (!password_verify($password, $user['password'])) {
+            $this->error('Tài khoản hoặc mật khẩu không đúng', 401);
+            return; // Quan trọng
         }
 
         session_regenerate_id(true);
@@ -103,10 +86,8 @@ class AuthController extends Controller
 
         unset($user['password']);
 
-        $this->success(
-            $user,
-            'Đăng nhập thành công'
-        );
+        $this->success($user, 'Đăng nhập thành công');
+        return;
     }
 
     /*

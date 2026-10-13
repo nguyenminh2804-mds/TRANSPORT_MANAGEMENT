@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../core/Router.php';
+require_once __DIR__ . '/../app/controllers/StatisticsController.php';
 require_once __DIR__ . '/../app/controllers/TripController.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/UserController.php';
@@ -204,18 +205,43 @@ $router->delete('/api/customers', function () use ($customerController) {
 | Customer Orders
 |--------------------------------------------------------------------------
 */
-
+/*
+|--------------------------------------------------------------------------
+| Customer Orders
+|--------------------------------------------------------------------------
+*/
 $orderController = new OrderController();
 
 $router->get('/api/customer/orders', function () use ($orderController) {
-    $orderController->myOrders();
+    $orderController->handle('myOrders');
+});
+
+$router->post('/api/customer/orders', function () use ($orderController) {
+    $orderController->handle('store'); // API dùng để TẠO ĐƠN HÀNG
+});
+
+// BỔ SUNG: API SỬA ĐƠN HÀNG DÀNH CHO KHÁCH
+$router->post('/api/customer/orders/update', function () use ($orderController) {
+    $orderController->handle('update');
+});
+
+// BỔ SUNG: API HỦY ĐƠN HÀNG DÀNH CHO KHÁCH
+$router->post('/api/customer/orders/cancel', function () use ($orderController) {
+    $orderController->handle('cancel');
 });
 
 $router->post('/api/customer/orders/track', function () use ($orderController) {
-    $orderController->track();
+    $orderController->handle('track');
 });
-
-
+$router->get('/api/orders', function () use ($orderController) {
+    $orderController->handle('index');
+});
+$router->post('/api/orders/update-status', function () use ($orderController) {
+    $orderController->handle('updateStatus');
+});
+$router->post('/api/orders/update-payment', function () use ($orderController) {
+    $orderController->handle('updatePaymentStatus');
+});
 /*
 |--------------------------------------------------------------------------
 | Driver Management
@@ -328,9 +354,16 @@ $router->put('/api/trips', function () use ($tripController) {
 $router->put('/api/trips/status', function () use ($tripController) {
     $tripController->handle('status');
 });
-
+$router->post('/api/trips/assign-order', function () use ($tripController) {
+    $tripController->handle('assignOrder');
+});
 $router->delete('/api/trips', function () use ($tripController) {
     $tripController->handle('destroy');
 });
 
+$statisticsController = new StatisticsController();
+
+$router->get('/api/statistics/overview', function () use ($statisticsController) {
+    $statisticsController->handle('overview');
+});
 return $router;

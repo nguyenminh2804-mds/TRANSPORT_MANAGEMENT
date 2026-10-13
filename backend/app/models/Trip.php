@@ -14,12 +14,17 @@ class Trip
         $this->conn = $database->connect();
     }
 
-    // Lấy tất cả danh sách chuyến (Dành cho Admin / Staff)
+    /*
+    |--------------------------------------------------------------------------
+    | Lấy tất cả danh sách chuyến (Dành cho Admin / Staff)
+    |--------------------------------------------------------------------------
+    */
     public function getAll()
     {
         $sql = "SELECT t.*, 
                        d.full_name as driver_name, d.phone as driver_phone,
-                       v.license_plate, v.vehicle_type
+                       v.license_plate, v.vehicle_type,
+                       (SELECT COUNT(id) FROM orders WHERE trip_id = t.id) as order_count
                 FROM {$this->table} t
                 LEFT JOIN drivers d ON t.driver_id = d.driver_id
                 LEFT JOIN vehicles v ON t.vehicle_id = v.vehicle_id
@@ -30,12 +35,17 @@ class Trip
         return $stmt->fetchAll();
     }
 
-    // Lấy danh sách chuyến theo tài xế (Dành cho Driver)
+    /*
+    |--------------------------------------------------------------------------
+    | Lấy danh sách chuyến theo tài xế (Dành cho Driver)
+    |--------------------------------------------------------------------------
+    */
     public function getByDriverId($driverId)
     {
         $sql = "SELECT t.*, 
                        d.full_name as driver_name, d.phone as driver_phone,
-                       v.license_plate, v.vehicle_type
+                       v.license_plate, v.vehicle_type,
+                       (SELECT COUNT(id) FROM orders WHERE trip_id = t.id) as order_count
                 FROM {$this->table} t
                 LEFT JOIN drivers d ON t.driver_id = d.driver_id
                 LEFT JOIN vehicles v ON t.vehicle_id = v.vehicle_id
@@ -47,12 +57,17 @@ class Trip
         return $stmt->fetchAll();
     }
 
-    // Tìm chuyến theo ID
+    /*
+    |--------------------------------------------------------------------------
+    | Tìm chuyến theo ID
+    |--------------------------------------------------------------------------
+    */
     public function findById($id)
     {
         $sql = "SELECT t.*, 
                        d.full_name as driver_name, d.phone as driver_phone,
-                       v.license_plate, v.vehicle_type
+                       v.license_plate, v.vehicle_type,
+                       (SELECT COUNT(id) FROM orders WHERE trip_id = t.id) as order_count
                 FROM {$this->table} t
                 LEFT JOIN drivers d ON t.driver_id = d.driver_id
                 LEFT JOIN vehicles v ON t.vehicle_id = v.vehicle_id
@@ -64,7 +79,11 @@ class Trip
         return $stmt->fetch();
     }
 
-    // Tạo chuyến mới (Staff / Admin)
+    /*
+    |--------------------------------------------------------------------------
+    | Tạo chuyến mới (Staff / Admin)
+    |--------------------------------------------------------------------------
+    */
     public function create($data)
     {
         $sql = "INSERT INTO {$this->table} 
@@ -78,7 +97,7 @@ class Trip
             ':vehicle_id' => $data['vehicle_id'] ?? null,
             ':start_location' => $data['start_location'],
             ':end_location' => $data['end_location'],
-            ':start_time' => $data['start_time'] ?? null,
+            ':start_time' => (!empty($data['start_time']) ? $data['start_time'] : null),
             ':status' => $data['status'] ?? 'PLANNED',
             ':goods_name' => $data['goods_name'] ?? null,
             ':weight' => $data['weight'] ?? null,
@@ -88,7 +107,11 @@ class Trip
         ]);
     }
 
-    // Cập nhật thông tin chuyến
+    /*
+    |--------------------------------------------------------------------------
+    | Cập nhật thông tin chuyến
+    |--------------------------------------------------------------------------
+    */
     public function update($id, $data)
     {
         $sql = "UPDATE {$this->table} SET 
@@ -111,7 +134,7 @@ class Trip
             ':vehicle_id' => $data['vehicle_id'] ?? null,
             ':start_location' => $data['start_location'],
             ':end_location' => $data['end_location'],
-            ':start_time' => $data['start_time'] ?? null,
+            ':start_time' => (!empty($data['start_time']) ? $data['start_time'] : null),
             ':status' => $data['status'],
             ':goods_name' => $data['goods_name'] ?? null,
             ':weight' => $data['weight'] ?? null,
@@ -122,7 +145,11 @@ class Trip
         ]);
     }
 
-    // Cập nhật trạng thái chuyến (Dành cho tài xế hoặc nhân viên)
+    /*
+    |--------------------------------------------------------------------------
+    | Cập nhật trạng thái chuyến (Dành cho tài xế hoặc nhân viên)
+    |--------------------------------------------------------------------------
+    */
     public function updateStatus($id, $status)
     {
         $sql = "UPDATE {$this->table} SET status = :status WHERE id = :id";
@@ -133,7 +160,11 @@ class Trip
         ]);
     }
 
-    // Xóa chuyến
+    /*
+    |--------------------------------------------------------------------------
+    | Xóa chuyến
+    |--------------------------------------------------------------------------
+    */
     public function delete($id)
     {
         $sql = "DELETE FROM {$this->table} WHERE id = :id";

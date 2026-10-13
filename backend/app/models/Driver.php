@@ -165,4 +165,43 @@ class Driver
             throw $e;
         }
     }
+    /*
+    |--------------------------------------------------------------------------
+    | Tìm thông tin tài xế dựa vào user_id (dành cho phân quyền đăng nhập)
+    |--------------------------------------------------------------------------
+    */
+    /*
+    |--------------------------------------------------------------------------
+    | Tìm thông tin tài xế dựa vào user_id (Bản vá lỗi)
+    |--------------------------------------------------------------------------
+    */
+    /*
+    |--------------------------------------------------------------------------
+    | Tìm thông tin tài xế dựa vào user_id (Chuẩn 100% với $this->conn)
+    |--------------------------------------------------------------------------
+    */
+    public function findByUserId($userId)
+    {
+        $cleanUserId = (int)$userId; 
+
+        // Ưu tiên sử dụng $this->conn vì dự án của bạn dùng biến này
+        $db = null;
+        if (property_exists($this, 'conn')) {
+            $db = $this->conn;
+        } elseif (property_exists($this, 'db')) {
+            $db = $this->db;
+        } elseif (isset($GLOBALS['pdo'])) {
+            $db = $GLOBALS['pdo'];
+        }
+
+        if ($db && $cleanUserId > 0) {
+            $stmt = $db->prepare("SELECT * FROM drivers WHERE user_id = :uid LIMIT 1");
+            $stmt->bindValue(':uid', $cleanUserId, PDO::PARAM_INT);
+            $stmt->execute();
+            
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+        
+        return false;
+    }
 }

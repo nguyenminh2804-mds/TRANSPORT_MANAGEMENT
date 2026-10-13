@@ -3,9 +3,484 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orders</title>
+    <title>Quản lý đơn hàng - Quản lý vận tải</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- CSS chung của hệ thống -->
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/customer.css">
+    <link rel="stylesheet" href="../css/transport.css">
+    <link rel="stylesheet" href="../css/transport-navigation.css">
+    <style>
+        body { background-color: #f5f7fb; }
+        .card-custom { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,0.03); overflow: hidden; margin-bottom: 20px; }
+        .table-custom th { background-color: #f9fafb; font-size: 13px; color: #6b7280; text-transform: uppercase; padding: 12px 15px; }
+        .table-custom td { padding: 12px 15px; vertical-align: middle; font-size: 14px; color: #1f2937; }
+        .status-select { width: 140px; cursor: pointer; border: none; outline: none; box-shadow: none; border-radius: 6px; padding: 4px 8px; }
+        .status-select:focus { box-shadow: none; }
+    </style>
 </head>
-<body>
-    <h1>Orders</h1>
+<body class="transport-page">
+
+    <!-- HEADER -->
+    <header class="drivers-header mb-3">
+        <div class="drivers-container drivers-row d-flex justify-content-between align-items-center">
+            <a href="dashboard.html" class="drivers-brand text-decoration-none d-flex align-items-center gap-2">
+                <i class="fa-solid fa-truck-fast text-primary fs-4"></i> 
+                <span class="fw-bold text-dark">Quản lý vận tải</span>
+            </a>
+            <div class="drivers-row drivers-user d-flex align-items-center gap-3">
+                <span class="drivers-avatar"><i class="fa-solid fa-user"></i></span>
+                <span id="currentUser" class="fw-bold">Đang kiểm tra phiên…</span>
+                <button id="logoutButton" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- ĐIỀU HƯỚNG NHÂN VIÊN -->
+        <nav class="transport-nav mb-4" aria-label="Chức năng nhân viên">
+            <ul class="transport-nav__items nav nav-pills gap-2 bg-white p-2 rounded shadow-sm">
+                <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house me-1"></i> Tổng quan</a></li>
+                <li class="nav-item"><a class="nav-link active" href="orders.html"><i class="fa-solid fa-boxes-stacked me-1"></i> Quản lý đơn hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="drivers.html"><i class="fa-solid fa-id-card me-1"></i> Quản lý tài xế</a></li>
+                <li class="nav-item"><a class="nav-link" href="vehicles.html"><i class="fa-solid fa-truck me-1"></i> Quản lý phương tiện</a></li>
+                <li class="nav-item"><a class="nav-link" href="trips.html"><i class="fa-solid fa-route me-1"></i> Chuyến xe & Lộ trình</a></li>
+                <li class="nav-item"><a class="nav-link" href="assignment.html"><i class="fa-solid fa-user-check me-1"></i> Phân công tài xế</a></li>
+            </ul>
+        </nav>
+
+        <!-- TIÊU ĐỀ TRANG VÀ TÌM KIẾM -->
+        <div class="row align-items-center mb-4">
+            <div class="col-md-6">
+                <h1 class="h3 fw-bold mb-1"><i class="fa-solid fa-boxes-stacked text-primary me-2"></i>Quản lý đơn hàng</h1>
+                <p class="text-muted mb-0">Theo dõi, tìm kiếm và tạo mới đơn hàng cho khách.</p>
+            </div>
+            <div class="col-md-6 text-end">
+                <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createOrderModal">
+                    <i class="fa-solid fa-plus me-1"></i> Tạo đơn hàng
+                </button>
+                <button id="refreshBtn" class="btn btn-outline-secondary shadow-sm ms-2"><i class="fa-solid fa-rotate-right me-1"></i> Làm mới</button>
+            </div>
+        </div>
+
+        <!-- BỘ LỌC TÌM KIẾM -->
+        <div class="card card-custom p-3 mb-4">
+            <div class="row g-2">
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                        <input type="text" id="searchInput" class="form-control border-start-0" placeholder="Tìm theo Mã đơn, Tên KH, SĐT..." onkeyup="filterOrders()">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <select id="filterStatus" class="form-select" onchange="filterOrders()">
+                        <option value="ALL">-- Tất cả trạng thái --</option>
+                        <option value="PENDING">Chờ xử lý</option>
+                        <option value="ASSIGNED">Đã gán chuyến</option>
+                        <option value="IN_TRANSIT">Đang vận chuyển</option>
+                        <option value="DELIVERED">Đã giao thành công</option>
+                        <option value="CANCELED">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-md-4 text-end pt-1">
+                    <span class="badge bg-primary px-3 py-2 fs-6" id="orderCount">0 đơn hàng</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- BẢNG DANH SÁCH ĐƠN HÀNG -->
+        <div class="card-custom">
+            <div class="table-responsive">
+                <table class="table table-custom table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">Mã đơn</th>
+                            <th>Người gửi & SĐT</th>
+                            <th>Nơi lấy</th>
+                            <th>Nơi giao</th>
+                            <th>Hàng hóa</th>
+                            <th>Cước phí & TT</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody">
+                        <tr><td colspan="8" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL TẠO ĐƠN HÀNG (DÀNH CHO NHÂN VIÊN) -->
+    <div class="modal fade" id="createOrderModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-box-open me-2"></i> Tạo đơn hàng mới</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="createOrderForm">
+                        <div class="alert alert-info py-2"><i class="fa-solid fa-circle-info"></i> Nhân viên đang tạo đơn hộ khách hàng.</div>
+                        
+                        <!-- Gửi -->
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3">1. Người gửi (Lấy hàng)</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Tên người gửi <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="senderName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Số điện thoại gửi <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="senderPhone" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Địa chỉ lấy hàng <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="pickupAddress" required>
+                            </div>
+                        </div>
+
+                        <!-- Nhận -->
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3 mt-2">2. Người nhận (Giao hàng)</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Tên người nhận <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="receiverName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Số điện thoại nhận <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="receiverPhone" required>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Địa chỉ giao hàng <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="deliveryAddress" required>
+                            </div>
+                        </div>
+
+                        <!-- Chi tiết -->
+                        <h6 class="fw-bold text-secondary border-bottom pb-2 mb-3 mt-2">3. Hàng hóa & Thanh toán</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Loại hàng</label>
+                                <input type="text" class="form-control" id="goodsType" placeholder="VD: Quần áo">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Khối lượng (kg) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.1" class="form-control" id="totalWeight" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Thanh toán</label>
+                                <select class="form-select" id="paymentMethod">
+                                    <option value="SENDER_PAY">Người gửi trả</option>
+                                    <option value="RECEIVER_PAY">Thu hộ (COD)</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <label class="form-label fw-bold">Ghi chú</label>
+                                <textarea class="form-control" id="orderNote" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="text-end border-top pt-3">
+                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Hủy</button>
+                            <button type="submit" id="submitOrderBtn" class="btn btn-primary px-4"><i class="fa-solid fa-paper-plane me-1"></i> Tạo đơn</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GOM ĐƠN VÀO CHUYẾN -->
+    <div class="modal fade" id="assignTripModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-route me-2"></i> Giao đơn hàng vào chuyến xe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Đang xử lý đơn hàng: <strong id="modalOrderCode" class="text-danger fs-5"></strong></p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chọn lộ trình vận chuyển <span class="text-danger">*</span></label>
+                        <select id="tripSelect" class="form-select fw-bold">
+                            <option value="">-- Đang tải danh sách chuyến xe --</option>
+                        </select>
+                        <div class="form-text text-muted mt-2"><i class="fa-solid fa-circle-info"></i> Chỉ hiển thị các chuyến xe đang ở trạng thái <b>Lên kế hoạch (PLANNED)</b>.</div>
+                    </div>
+                    <input type="hidden" id="selectedOrderId">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" id="confirmAssignBtn" class="btn btn-primary"><i class="fa-solid fa-check me-1"></i> Xác nhận gán chuyến</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = new URL('../../backend/public/index.php', window.location.href);
+        let allOrdersCache = []; 
+
+        async function api(route, method = 'GET', data = null, params = {}) {
+            const url = new URL(API_URL);
+            url.searchParams.set('route', route);
+            for (let [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+            const options = { method, credentials: 'same-origin', headers: { 'Accept': 'application/json' } };
+            if (data) {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(data);
+            }
+            const res = await fetch(url.href, options);
+            if (res.status === 401) { window.location.href = '../customer/login.html'; return; }
+            let json = {};
+            try { json = await res.json(); } catch (err) { throw new Error(`Lỗi phản hồi từ server (HTTP ${res.status})`); }
+            if (!res.ok || !json.success) throw new Error(json.message || `Lỗi HTTP ${res.status}`);
+            return json.data;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const user = await api('/api/me');
+                if (!['ADMIN', 'STAFF'].includes(user.role)) {
+                    alert('Bạn không có quyền truy cập trang quản lý này!');
+                    window.location.href = '../customer/dashboard.html';
+                    return;
+                }
+                document.getElementById('currentUser').textContent = user.full_name;
+                await loadAllOrders();
+            } catch (e) {
+                document.getElementById('ordersTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Lỗi xác thực phiên đăng nhập.</td></tr>`;
+            }
+        });
+
+        async function loadAllOrders() {
+            try {
+                allOrdersCache = await api('/api/orders') || [];
+                renderOrdersTable(allOrdersCache);
+            } catch (e) {
+                document.getElementById('ordersTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Lỗi tải dữ liệu đơn hàng.</td></tr>`;
+            }
+        }
+
+        function renderOrdersTable(ordersData) {
+            const tbody = document.getElementById('ordersTableBody');
+            document.getElementById('orderCount').textContent = ordersData.length + ' đơn hàng';
+            
+            if (ordersData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted"><i class="fa-solid fa-box-open fa-2x mb-2 d-block"></i> Không tìm thấy đơn hàng nào.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = '';
+            ordersData.forEach(o => {
+                const statusMap = {
+                    'PENDING': { text: 'Chờ xử lý', class: 'bg-warning text-dark' },
+                    'CONFIRMED': { text: 'Đã gán chuyến', class: 'bg-info text-dark' },
+                    'ASSIGNED': { text: 'Đã gán chuyến', class: 'bg-info text-dark' },
+                    'IN_TRANSIT': { text: 'Đang vận chuyển', class: 'bg-primary text-white' },
+                    'DELIVERED': { text: 'Đã giao', class: 'bg-success text-white' },
+                    'CANCELLED': { text: 'Đã hủy', class: 'bg-danger text-white' },
+                    'CANCELED': { text: 'Đã hủy', class: 'bg-danger text-white' }
+                };
+
+                const currentStatus = statusMap[o.status] || { text: o.status, class: 'bg-secondary text-white' };
+
+                let statusSelect = `
+                    <select class="form-select form-select-sm fw-bold status-select ${currentStatus.class}" 
+                            onchange="updateOrderStatus(${o.id}, this.value)">
+                        ${Object.keys(statusMap).map(key => `
+                            <option value="${key}" class="bg-white text-dark" ${o.status === key ? 'selected' : ''}>${statusMap[key].text}</option>
+                        `).join('')}
+                    </select>
+                `;
+
+                // DROPDOWN THANH TOÁN MỚI DÀNH CHO ADMIN
+                let paymentSelect = `
+                    <select class="form-select form-select-sm fw-bold ${o.payment_status === 'PAID' ? 'bg-success text-white' : 'bg-danger text-white'}" 
+                            style="width: 130px; border:none; outline:none; box-shadow:none;"
+                            onchange="updatePaymentStatus(${o.id}, this.value)">
+                        <option value="UNPAID" ${o.payment_status !== 'PAID' ? 'selected' : ''} class="bg-white text-dark">Chưa thanh toán</option>
+                        <option value="PAID" ${o.payment_status === 'PAID' ? 'selected' : ''} class="bg-white text-dark">Đã thanh toán</option>
+                    </select>
+                `;
+                
+                let actionBtn = o.status === 'PENDING' 
+                    ? `<button class="btn btn-sm btn-primary w-100" onclick="openAssignModal(${o.id}, '${o.order_code}')" title="Gom vào chuyến"><i class="fa-solid fa-route"></i> Gán chuyến</button>` 
+                    : `<button class="btn btn-sm btn-outline-secondary w-100" disabled><i class="fa-solid fa-lock"></i> Đã gán</button>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary fs-6">#${o.order_code}</td>
+                        <td>
+                            <div class="fw-bold"><i class="fa-regular fa-user text-muted"></i> ${o.sender_name || 'Khách #' + o.customer_id}</div>
+                            <div class="small mt-1"><i class="fa-solid fa-phone text-muted"></i> ${o.sender_phone || '-'}</div>
+                        </td>
+                        <td><div class="small"><i class="fa-solid fa-location-dot text-danger"></i> ${o.pickup_address}</div></td>
+                        <td><div class="small"><i class="fa-solid fa-location-dot text-success"></i> ${o.delivery_address}</div></td>
+                        <td class="small">
+                            <div>${o.goods_type || 'Tổng hợp'}</div>
+                            <div class="fw-bold text-primary">${o.total_weight} kg</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold text-danger mb-1">${Number(o.shipping_fee).toLocaleString('vi-VN')} đ</div>
+                            ${paymentSelect}
+                        </td>
+                        <td>${statusSelect}</td>
+                        <td class="text-center" style="width: 120px;">${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // HÀM GỌI API CẬP NHẬT TRẠNG THÁI THANH TOÁN
+        async function updatePaymentStatus(orderId, newStatus) {
+            if (!confirm(`Xác nhận đổi trạng thái thanh toán thành: ${newStatus === 'PAID' ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}?`)) {
+                renderOrdersTable(allOrdersCache); return;
+            }
+            try {
+                await api('/api/orders/update-payment', 'POST', { order_id: orderId, status: newStatus });
+                
+                // Cập nhật lại trong biến cache thay vì tải lại toàn bộ API cho nhanh
+                const orderIndex = allOrdersCache.findIndex(o => o.id == orderId);
+                if(orderIndex !== -1) allOrdersCache[orderIndex].payment_status = newStatus;
+                
+                renderOrdersTable(allOrdersCache);
+            } catch (e) {
+                alert('Cập nhật thất bại: ' + e.message);
+                renderOrdersTable(allOrdersCache);
+            }
+        }
+
+        function filterOrders() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            const filtered = allOrdersCache.filter(o => {
+                const searchStr = `${o.order_code} ${o.sender_name} ${o.receiver_name} ${o.sender_phone} ${o.receiver_phone}`.toLowerCase();
+                const matchKeyword = searchStr.includes(keyword);
+
+                let matchStatus = true;
+                if (statusFilter !== 'ALL') {
+                    if (statusFilter === 'ASSIGNED') {
+                        matchStatus = (o.status === 'ASSIGNED' || o.status === 'CONFIRMED');
+                    } else if (statusFilter === 'CANCELED') {
+                        matchStatus = (o.status === 'CANCELED' || o.status === 'CANCELLED');
+                    } else {
+                        matchStatus = o.status === statusFilter;
+                    }
+                }
+                return matchKeyword && matchStatus;
+            });
+            renderOrdersTable(filtered);
+        }
+
+        document.getElementById('createOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitOrderBtn');
+            const payload = {
+                sender_name: document.getElementById('senderName').value.trim(),
+                sender_phone: document.getElementById('senderPhone').value.trim(),
+                pickup_address: document.getElementById('pickupAddress').value.trim(),
+                receiver_name: document.getElementById('receiverName').value.trim(),
+                receiver_phone: document.getElementById('receiverPhone').value.trim(),
+                delivery_address: document.getElementById('deliveryAddress').value.trim(),
+                goods_type: document.getElementById('goodsType').value.trim(),
+                total_weight: parseFloat(document.getElementById('totalWeight').value),
+                payment_method: document.getElementById('paymentMethod').value,
+                note: document.getElementById('orderNote').value.trim(),
+                customer_id: 1 
+            };
+
+            if(payload.sender_phone.length < 9 || payload.receiver_phone.length < 9) {
+                alert("Vui lòng nhập số điện thoại hợp lệ!"); return;
+            }
+
+            try {
+                btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang tạo...';
+                await api('/api/customer/orders', 'POST', payload);
+                alert(`Tạo đơn hàng thành công!`);
+                bootstrap.Modal.getInstance(document.getElementById('createOrderModal')).hide();
+                document.getElementById('createOrderForm').reset();
+                await loadAllOrders();
+            } catch (error) {
+                alert("Lỗi khi tạo đơn hàng: " + error.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane me-1"></i> Tạo đơn';
+            }
+        });
+
+        async function updateOrderStatus(orderId, newStatus) {
+            if (!confirm('Bạn có chắc chắn muốn cập nhật trạng thái vận chuyển của đơn hàng này?')) {
+                renderOrdersTable(allOrdersCache); return;
+            }
+            try {
+                await api('/api/orders/update-status', 'POST', { order_id: orderId, status: newStatus });
+                await loadAllOrders();
+            } catch (e) {
+                alert('Cập nhật thất bại: ' + e.message);
+                renderOrdersTable(allOrdersCache);
+            }
+        }
+
+        async function openAssignModal(orderId, orderCode) {
+            document.getElementById('selectedOrderId').value = orderId;
+            document.getElementById('modalOrderCode').textContent = orderCode;
+            const tripSelect = document.getElementById('tripSelect');
+            tripSelect.innerHTML = '<option value="">Đang tải chuyến xe...</option>';
+            try {
+                const trips = await api('/api/trips');
+                tripSelect.innerHTML = '<option value="">-- Bấm để chọn Lộ trình --</option>';
+                trips.filter(t => t.status === 'PLANNED').forEach(t => {
+                    tripSelect.innerHTML += `<option value="${t.id}">[ID: ${t.id}] ${t.start_location} ➔ ${t.end_location} (Bắt đầu: ${t.start_time || 'Chưa rõ'})</option>`;
+                });
+            } catch (e) {
+                tripSelect.innerHTML = '<option value="">Lỗi tải danh sách chuyến xe</option>';
+            }
+            new bootstrap.Modal(document.getElementById('assignTripModal')).show();
+        }
+        
+        document.getElementById('confirmAssignBtn').addEventListener('click', async () => {
+            const orderId = document.getElementById('selectedOrderId').value;
+            const tripId = document.getElementById('tripSelect').value;
+
+            if (!tripId) { alert('Vui lòng chọn một chuyến xe!'); return; }
+            try {
+                const btn = document.getElementById('confirmAssignBtn');
+                btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang xử lý...';
+                await api('/api/trips/assign-order', 'POST', { order_id: orderId, trip_id: tripId });
+                alert('Đã gán đơn hàng vào chuyến xe thành công!');
+                bootstrap.Modal.getInstance(document.getElementById('assignTripModal')).hide();
+                await loadAllOrders();
+            } catch (e) {
+                alert('Lỗi: ' + e.message);
+            } finally {
+                const btn = document.getElementById('confirmAssignBtn');
+                btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check me-1"></i> Xác nhận gán chuyến';
+            }
+        });
+
+        document.getElementById('refreshBtn').addEventListener('click', loadAllOrders);
+
+        // Đăng xuất
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            if(!confirm("Bạn muốn đăng xuất khỏi hệ thống?")) return;
+            try {
+                await api('/api/logout', 'POST');
+            } catch (e) {
+                console.error('Lỗi API đăng xuất:', e);
+            } finally {
+                sessionStorage.clear();
+                window.location.href = '../customer/login.html';
+            }
+        });
+    </script>
 </body>
 </html>

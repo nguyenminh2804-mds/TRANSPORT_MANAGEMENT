@@ -1,188 +1,186 @@
 <?php
-
 require_once __DIR__ . '/../../core/Controller.php';
 require_once __DIR__ . '/../models/Trip.php';
 require_once __DIR__ . '/../models/Driver.php';
 
-class TripController extends Controller
-{
+class TripController extends Controller {
     private $tripModel;
     private $driverModel;
 
-    public function __construct()
-    {
+    public function __construct() {
         $this->tripModel = new Trip();
         $this->driverModel = new Driver();
     }
 
-    // Hàm điều phối trung gian giống các Controller khác của bạn
-    public function handle($action)
-    {
+    public function handle($action) {
         if (empty($_SESSION['user_id'])) {
             $this->error('Vui lòng đăng nhập.', 401);
         }
-
+        
         switch ($action) {
-            case 'index':
-                $this->index();
-                break;
-            case 'show':
-                $this->show();
-                break;
-            case 'store':
-                $this->store();
-                break;
-            case 'update':
-                $this->update();
-                break;
-            case 'status':
-                $this->updateStatus();
-                break;
-            case 'destroy':
-                $this->destroy();
-                break;
-            default:
-                $this->error('Hành động không hợp lệ.', 400);
+            case 'index': $this->index(); break;
+            case 'show': $this->show(); break;
+            case 'store': $this->store(); break;
+            case 'update': $this->update(); break;
+            case 'status': $this->updateStatus(); break;
+            case 'destroy': $this->destroy(); break;
+            case 'assignOrder': $this->assignOrder(); break;
+            default: $this->error('Hành động không hợp lệ.', 400);
         }
     }
 
-    // Lấy danh sách chuyến đi (Phân quyền theo Role)
-    private function index()
+    public function index()
     {
+        // Tắt cảnh báo rác
+        error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
+        
         $role = $_SESSION['role'] ?? '';
-        $userId = $_SESSION['user_id'] ?? null;
+        
+        // Gọi thẳng class Database gốc của hệ thống để đảm bảo kết nối 100%
+        require_once __DIR__ . '/../../core/Database.php';
+        $dbInstance = new Database();
+        $db = $dbInstance->connect();
 
+        if (!$db) {
+            $this->error('Không thể kết nối CSDL gốc.', 500);
+            return;
+        }
+        
+        // 1. NẾU LÀ ADMIN HOẶC NHÂN VIÊN: Lấy toàn bộ chuyến xe (KÈM THÊM TÊN TÀI XẾ VÀ BIỂN SỐ XE)
         if (in_array($role, ['ADMIN', 'STAFF'])) {
-            $trips = $this->tripModel->getAll();
-        } elseif ($role === 'DRIVER') {
-            // Lấy driver_id từ user_id đang đăng nhập
-            $driver = $this->driverModel->findByUserId($userId);
-            if (!$driver) {
-                $this->success([], 'Tài khoản chưa được liên kết hồ sơ tài xế.');
-                return;
+            try {
+                // Sửa lệnh SQL ở đây: JOIN 3 bảng lại với nhau
+                $sql = "SELECT t.*, 
+                               d.full_name AS driver_name, 
+                               v.license_plate 
+                        FROM trips t
+                        LEFT JOIN drivers d ON t.driver_id = d.driver_id
+                        LEFT JOIN vehicles v ON t.vehicle_id = v.vehicle_id
+                        ORDER BY t.id DESC";
+
+                $stmt = $db->query($sql);
+                $trips = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $this->success($trips, 'Lấy toàn bộ chuyến xe thành công');
+            } catch (Exception $e) {
+                $this->error('Lỗi SQL: ' . $e->getMessage(), 500);
             }
-            $trips = $this->tripModel->getByDriverId($driver['driver_id']);
-        } else {
-            $this->error('Bạn không có quyền xem danh sách chuyến đi.', 403);
+            return;
+        } 
+        
+        // 2. NẾU LÀ TÀI XẾ: Chỉ lấy chuyến xe của mình
+        if ($role === 'DRIVER') {
+            try {
+                // Tìm ID thực sự của tài xế
+                $driver = $this->driverModel->findByUserId($_SESSION['user_id']);
+                
+                if (!$driver) {
+                    $this->success([], 'Chưa có hồ sơ tài xế');
+                    return;
+                }
+
+                // Dùng khóa chính driver_id để tìm chuyến xe
+                $stmt = $db->prepare("SELECT * FROM trips WHERE driver_id = ? ORDER BY id DESC");
+                $stmt->execute([$driver['driver_id']]); 
+                $trips = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                
+                $this->success($trips, 'Lấy chuyến xe của tài xế thành công');
+            } catch (Exception $e) {
+                $this->error('Lỗi truy xuất dữ liệu: ' . $e->getMessage(), 500);
+            }
             return;
         }
 
-        $this->success($trips, 'Lấy danh sách chuyến đi thành công');
+        $this->error('Bạn không có quyền truy cập dữ liệu này.', 403);
     }
-
-    // Xem chi tiết một chuyến
-    private function show()
-    {
+    private function show() {
         $id = $_GET['id'] ?? null;
-        if (!$id) {
-            $this->error('Thiếu ID chuyến đi.');
-        }
-
         $trip = $this->tripModel->findById($id);
-        if (!$trip) {
-            $this->error('Không tìm thấy chuyến đi.', 404);
-        }
-
+        if (!$trip) $this->error('Không tìm thấy chuyến đi.', 404);
         $this->success($trip);
     }
 
-    // Tạo chuyến mới (Chỉ ADMIN và STAFF)
-    private function store()
-    {
-        $this->checkManagerRole();
-
+    private function store() {
+        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403);
         $data = json_decode(file_get_contents('php://input'), true);
+        
+        $data['driver_id'] = empty($data['driver_id']) ? null : $data['driver_id'];
+        $data['vehicle_id'] = empty($data['vehicle_id']) ? null : $data['vehicle_id'];
 
-        if (empty($data['start_location']) || empty($data['end_location'])) {
-            $this->error('Vui lòng nhập điểm đi và điểm đến.');
-        }
-
-        $created = $this->tripModel->create($data);
-        if (!$created) {
-            $this->error('Không thể tạo chuyến đi mới.', 500);
-        }
-
-        $this->success([], 'Tạo chuyến đi thành công');
+        if ($this->tripModel->create($data)) $this->success([], 'Tạo thành công');
+        else $this->error('Lỗi khi tạo.', 500);
     }
 
-    // Cập nhật chuyến đi (ADMIN và STAFF)
-    private function update()
-    {
-        $this->checkManagerRole();
-
-        $id = $_GET['id'] ?? null;
-        if (!$id) {
-            $this->error('Thiếu ID chuyến đi.');
-        }
-
-        $data = json_decode(file_get_contents('php://input'), true);
-
-        $updated = $this->tripModel->update($id, $data);
-        if (!$updated) {
-            $this->error('Không thể cập nhật chuyến đi.', 500);
-        }
-
-        $this->success([], 'Cập nhật chuyến đi thành công');
-    }
-
-    // Cập nhật trạng thái chuyến (STAFF hoặc DRIVER của chuyến đó)
-    private function updateStatus()
-    {
+    private function update() {
+        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403);
         $id = $_GET['id'] ?? null;
         $data = json_decode(file_get_contents('php://input'), true);
-        $newStatus = $data['status'] ?? '';
 
-        $allowedStatuses = ['PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
-        if (!in_array($newStatus, $allowedStatuses, true)) {
-            $this->error('Trạng thái chuyến đi không hợp lệ.');
-        }
+        $data['driver_id'] = empty($data['driver_id']) ? null : $data['driver_id'];
+        $data['vehicle_id'] = empty($data['vehicle_id']) ? null : $data['vehicle_id'];
 
-        $trip = $this->tripModel->findById($id);
-        if (!$trip) {
-            $this->error('Không tìm thấy chuyến đi.', 404);
-        }
-
-        $role = $_SESSION['role'];
-        if ($role === 'DRIVER') {
-            $driver = $this->driverModel->findByUserId($_SESSION['user_id']);
-            if (!$driver || $trip['driver_id'] != $driver['driver_id']) {
-                $this->error('Bạn không có quyền cập nhật chuyến đi này.', 403);
-            }
-        } elseif (!in_array($role, ['ADMIN', 'STAFF'], true)) {
-            $this->error('Bạn không có quyền thực hiện hành động này.', 403);
-        }
-
-        $updated = $this->tripModel->updateStatus($id, $newStatus);
-        if (!$updated) {
-            $this->error('Không thể cập nhật trạng thái chuyến đi.', 500);
-        }
-
-        $this->success([], 'Cập nhật trạng thái chuyến thành công');
+        if ($this->tripModel->update($id, $data)) $this->success([], 'Cập nhật thành công');
+        else $this->error('Lỗi khi cập nhật.', 500);
     }
 
-    // Xóa chuyến (ADMIN và STAFF)
-    private function destroy()
+    /*
+    |--------------------------------------------------------------------------
+    | Cập nhật trạng thái CHUYẾN XE (Cho Admin, Staff và Tài xế)
+    |--------------------------------------------------------------------------
+    */
+    private function updateStatus() 
     {
-        $this->checkManagerRole();
-
-        $id = $_GET['id'] ?? null;
-        if (!$id) {
-            $this->error('Thiếu ID chuyến đi.');
-        }
-
-        $deleted = $this->tripModel->delete($id);
-        if (!$deleted) {
-            $this->error('Không thể xóa chuyến đi.', 500);
-        }
-
-        $this->success([], 'Xóa chuyến đi thành công');
-    }
-
-    private function checkManagerRole()
-    {
+        error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
         $role = $_SESSION['role'] ?? '';
-        if (!in_array($role, ['ADMIN', 'STAFF'], true)) {
-            $this->error('Chức năng này chỉ dành cho Quản trị viên và Nhân viên điều phối.', 403);
+        
+        // 1. Mở quyền cho Tài xế
+        if (!in_array($role, ['ADMIN', 'STAFF', 'DRIVER'])) {
+            $this->error('Bạn không có quyền cập nhật chuyến xe.', 403);
+        }
+
+        // 2. Lấy dữ liệu ID và Status từ chuỗi JSON Frontend gửi lên
+        $data = json_decode(file_get_contents('php://input'), true);
+        $tripId = $data['id'] ?? $_GET['id'] ?? null;
+        $status = $data['status'] ?? null;
+
+        if (!$tripId || !$status) {
+            $this->error('Thiếu thông tin mã chuyến xe hoặc trạng thái.', 400);
+        }
+
+        // 3. Thực hiện lưu vào database
+        if ($this->tripModel->updateStatus($tripId, $status)) {
+            $this->success([], 'Cập nhật trạng thái chuyến xe thành công');
+        } else {
+            $this->error('Lỗi khi cập nhật trạng thái.', 500);
+        }
+    }
+
+    private function destroy() {
+        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403);
+        $id = $_GET['id'] ?? null;
+        if ($this->tripModel->delete($id)) $this->success([], 'Xóa thành công');
+        else $this->error('Lỗi xóa.', 500);
+    }
+
+    private function assignOrder() {
+        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) {
+            $this->error('Không có quyền thực hiện chức năng này.', 403);
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $orderId = $data['order_id'] ?? null;
+        $tripId = $data['trip_id'] ?? null;
+
+        if (!$orderId || !$tripId) {
+            $this->error('Thiếu thông tin đơn hàng hoặc chuyến xe.', 400);
+        }
+
+        require_once __DIR__ . '/../models/Order.php';
+        $orderModel = new Order();
+        
+        if ($orderModel->assignToTrip($orderId, $tripId)) {
+            $this->success(null, 'Gán đơn hàng vào chuyến xe thành công!');
+        } else {
+            $this->error('Lỗi khi gán đơn hàng vào chuyến xe.', 500);
         }
     }
 }
