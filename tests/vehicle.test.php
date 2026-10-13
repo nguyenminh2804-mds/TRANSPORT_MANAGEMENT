@@ -27,7 +27,9 @@ foreach (['assigned','completed','cancelled'] as $status) vehicleReject(fn()=>Ve
 foreach (['PLANNED','IN_PROGRESS','COMPLETED','CANCELLED'] as $status) vehicleReject(fn()=>Vehicle::assertChangeAllowed(['status'=>'available'],[],[['status'=>$status]],null,true),409);
 vehicleReject(fn()=>Vehicle::assertChangeAllowed(['status'=>'on_trip'],[],[],null,true),409);
 vehicleReject(fn()=>Vehicle::assertChangeAllowed(['status'=>'available'],[['status'=>'assigned']],[],'inactive',false),409,'status');
-foreach (['PLANNED','IN_PROGRESS'] as $status) { Vehicle::assertChangeAllowed(['status'=>'available'],[],[['status'=>$status]],'maintenance',false);vehicleCheck(true,'Trip alone does not reserve'); }
+Vehicle::assertChangeAllowed(['status'=>'available'],[],[['status'=>'PLANNED']],'maintenance',false);vehicleCheck(true,'Planned Trip without assignment does not reserve');
+vehicleReject(fn()=>Vehicle::assertChangeAllowed(['status'=>'available'],[],[['status'=>'IN_PROGRESS']],'maintenance',false),409,'status');
+vehicleReject(fn()=>Vehicle::assertChangeAllowed(['status'=>'available'],[],[],'on_trip',false),409,'status');
 Vehicle::assertChangeAllowed(['status'=>'on_trip'],[['status'=>'assigned']],[['status'=>'IN_PROGRESS']],'on_trip',false);
 Vehicle::assertChangeAllowed(['status'=>'available'],[['status'=>'completed']],[['status'=>'COMPLETED']],'maintenance',false);
 vehicleCheck(true,'Same-status edit and historical-only status change allowed');
@@ -60,7 +62,8 @@ class VehicleMemoryStatement {
     public function fetchAll() { return $this->rows; }
 }
 function memoryVehicle($db) { $r=new ReflectionClass(Vehicle::class);$v=$r->newInstanceWithoutConstructor();$r->getProperty('conn')->setValue($v,$db);return $v; }
-$db=new VehicleMemoryConnection(); $v=memoryVehicle($db); $result=$v->create($data); $id=$result['vehicle_id'];
+$db=new VehicleMemoryConnection(); $v=memoryVehicle($db); $result=$v->create(array_merge($data,['status'=>'maintenance']));
+vehicleCheck($result['status']==='available','Creation ignores supplied status'); $id=$result['vehicle_id'];
 vehicleCheck($id==='9007199254740993' && is_string($result['capacity']),'Create DTO no BIGINT rounding');
 vehicleReject(fn()=>$v->create($data),409,'license_plate');
 $db->rows[$id]['license_plate']=' 51c - 123.45 ';

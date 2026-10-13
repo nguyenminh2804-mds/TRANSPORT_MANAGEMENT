@@ -18,7 +18,7 @@ async function run() {
     const fields=Object.fromEntries(['license_plate','vehicle_type','brand','capacity','status'].map(k=>[k,new Element()]));
     const form=$('vehicleForm');form.elements={namedItem:k=>fields[k]};form.reset=()=>{for(const field of Object.values(fields))field.value='';fields.status.value='available';};
     const windowEvents={},requests=[],writes=[],redirects=[];
-    let role='STAFF',listMode='normal',denied=false,expired=false,writeError=null;
+    let flowStatus=null;let role='STAFF',listMode='normal',denied=false,expired=false,writeError=null;
     const fixture={vehicle_id:'9007199254740993',license_plate:'51C-123.45',vehicle_type:'<script>alert(1)</script>',brand:null,capacity:'1250.50',status:'available',has_active_assignment:false,has_active_trip:false,created_at:'2026-10-07',updated_at:'2026-10-07'};
     const sandbox={document:{getElementById:$,createElement:()=>new Element(),createTextNode:t=>({textContent:t}),querySelector:()=>$('tableWrap')},window:{addEventListener:(k,cb)=>{windowEvents[k]=cb;}},location:{href:'http://localhost/TRANSPORT_MANAGEMENT/frontend/transport/vehicles.html',replace:u=>redirects.push(u)},sessionStorage:{removeItem:()=>{}},URL,URLSearchParams,console,
         fetch:async(url,options)=>{
@@ -33,7 +33,7 @@ async function run() {
             }
             let data;
             if(route==='/api/me') data={role,status:1,full_name:'Nhân viên thử nghiệm'};
-            else if(route==='/api/vehicles/stats')data={total:10,available:5,on_trip:2,maintenance:2,inactive:1};
+            else if(route==='/api/vehicles/stats')data=flowStatus?{total:1,available:0,on_trip:0,maintenance:0,inactive:0,pending:0,accepted:0,unknown:0,[flowStatus]:1}:{total:10,available:5,on_trip:2,maintenance:2,inactive:1,pending:0,accepted:0,unknown:0};
             else if(route==='/api/vehicles/show')data=fixture;
             else if(listMode==='error')return {status:500,ok:false,json:async()=>({success:false,message:'Không tải được phương tiện'})};
             else data=listMode==='empty'?[]:[fixture];
@@ -59,11 +59,19 @@ async function run() {
     await click('view');assert.equal($('vehicleFields').hidden,true);assert.equal($('saveButton').hidden,true);assert.equal($('vehicleDetails').children.length,7);
     $('cancelDialog').events.click();fixture.has_active_trip=true;fixture.status='on_trip';
     await click('edit');assert.equal(fields.status.disabled,true);fields.capacity.value='2000';await form.events.submit({preventDefault(){}});
-    assert.equal(writes.at(-1).method,'PUT');assert.equal(writes.at(-1).id,'9007199254740993');assert.equal(writes.at(-1).body.status,'on_trip');
+    assert.equal(writes.at(-1).method,'PUT');assert.equal(writes.at(-1).id,'9007199254740993');assert.equal(writes.at(-1).body.status,undefined);
     await click('edit');writeError={license_plate:'Biển số đã được sử dụng.'};await form.events.submit({preventDefault(){}});assert.match($('error-license_plate').textContent,/đã được sử dụng/);assert.equal($('vehicleDialog').open,true);writeError=null;$('cancelDialog').events.click();
     const before=writes.length;await click('delete');assert.equal(writes.length,before);assert.equal($('deleteDialog').open,true);
     writeError={};await $('confirmDelete').events.click();assert.equal($('deleteDialog').open,true);assert.match($('deleteMessage').textContent,/Xung đột/);
     writeError=null;await $('confirmDelete').events.click();assert.equal(writes.at(-1).method,'DELETE');assert.equal(writes.at(-1).id,fixture.vehicle_id);assert.equal($('deleteDialog').open,false);
+    for (const [state,label] of [['pending','Đã phân công – Chờ tiếp nhận'],['accepted','Đã phân công – Đã tiếp nhận, chưa bắt đầu'],['on_trip','Đang thực hiện chuyến'],['available','Sẵn sàng'],['maintenance','Bảo trì'],['inactive','Chưa sẵn sàng']]) {
+        flowStatus=fixture.display_status=state;fixture.status=['pending','accepted'].includes(state)?'available':state;fixture.has_active_assignment=['pending','accepted','on_trip'].includes(state);
+        await $('refreshButton').events.click();
+        assert.equal($('vehicleRows').children[0].children[4].children[0].children[1].textContent,label);
+        assert.equal($('metric-'+state).textContent,1);if(['pending','accepted'].includes(state)){await click('edit');assert.equal(fields.status.value,'__effective');assert.equal(fields.status.children.at(-1).textContent,label);await form.events.submit({preventDefault(){}});assert.equal(writes.at(-1).body.status,undefined);}if(state!=='available')assert.equal($('metric-available').textContent,0);
+        await click('view');assert.equal($('vehicleDetails').children[4].children[1].textContent,label);$('cancelDialog').events.click();
+    }
+    flowStatus=fixture.display_status='available';fixture.has_active_assignment=false;await $('refreshButton').events.click();assert.equal($('metric-pending').textContent,0);
     windowEvents.pagehide();assert.equal($('addButton').disabled,true);windowEvents.pageshow({persisted:true});await settle();assert.equal($('addButton').disabled,false);
     denied=true;await $('refreshButton').events.click();assert.equal($('addButton').disabled,true);assert.equal($('vehicleDialog').open,false);
     denied=false;role='CUSTOMER';windowEvents.pageshow({persisted:true});await settle();assert.equal($('addButton').disabled,true);assert.match($('pageMessage').textContent,/ADMIN\/STAFF/);

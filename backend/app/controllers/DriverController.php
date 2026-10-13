@@ -27,12 +27,13 @@ class DriverController extends Controller
                 $search = $this->query('search');
                 $status = $this->query('status');
                 if ($status !== '') {
-                    $this->validateStatus($status);
+                    if (!in_array($status, array_merge(['available','on_trip','inactive'], ResourceStatus::EXTRA), true)) $this->error('Bộ lọc trạng thái không hợp lệ.', 422);
                 }
                 $this->success($model->getAll($search, $status));
             }
             if ($action === 'store') {
                 $data = $this->body();
+                $data['status'] = 'available'; // Creation ignores client status.
                 $profile = $this->validate($data);
                 $account = $this->validateAccount($data);
                 $this->success($model->createWithAccount($profile, $account), 'Tạo hồ sơ và tài khoản DRIVER thành công.');
@@ -48,15 +49,15 @@ class DriverController extends Controller
                     $this->success($driver);
                     break;
                 case 'update':
-                    $this->success($model->change($id, $this->validate($this->body())), 'Cập nhật tài xế thành công.');
+                    $body=$this->body();if(array_key_exists('driver_id',$body))throw new DomainException('Không được gửi hoặc sửa ID tài xế trong hồ sơ.',422);$profile=$this->validate($body,true);if(!array_key_exists('status',$body))unset($profile['status']);if(!array_key_exists('user_id',$body))unset($profile['user_id']);
+                    $this->success($model->change($id,$profile,null,false,$_SESSION['user_id'],$body['status_reason']??null,$body['expected_status']??null), 'Cập nhật tài xế thành công.');
                     break;
                 case 'status':
-                    $data = $this->body();
-                    $this->validateStatus($data['status'] ?? null);
-                    $this->success($model->change($id, null, $data['status']), 'Cập nhật trạng thái thành công.');
+                    $this->error('Đổi trạng thái nhanh đã ngừng hỗ trợ. Trạng thái theo nghiệp vụ tài xế/phân công.',403);
                     break;
                 case 'destroy':
-                    $this->success($model->change($id, null, null, true), 'Xóa tài xế thành công.');
+                    $result=$model->change($id,null,null,true,$_SESSION['user_id']);
+                    $this->success($result,$result['account_deleted']?'Đã xóa hồ sơ tài xế và tài khoản liên kết.':'Đã xóa hồ sơ tài xế không liên kết tài khoản.');
                     break;
                 default:
                     $this->error('Thao tác không tồn tại.', 404);
@@ -72,6 +73,7 @@ class DriverController extends Controller
             if ($code === 1062) {
                 $this->error('Mã tài xế, số GPLX hoặc tài khoản liên kết đã được sử dụng.', 409);
             }
+            if($code===1451&&$action==='destroy')$this->error('Không thể xóa hồ sơ tài xế vì còn dữ liệu hoặc lịch sử liên quan được khóa ngoại bảo vệ. Cả hồ sơ, tài khoản và lịch sử được giữ nguyên.',409);
             if (in_array($code, [1451, 1452], true)) {
                 $this->error('Có dữ liệu liên quan hoặc liên kết không hợp lệ; không thể thực hiện thao tác.', 409);
             }
@@ -143,10 +145,11 @@ class DriverController extends Controller
         return ['username' => $username, 'password' => $password];
     }
 
-    private function validate($data)
+    private function validate($data, $editing = false)
     {
         $result = [];
         foreach (['driver_code' => 50, 'full_name' => 150, 'phone' => 20, 'license_number' => 50, 'license_class' => 30] as $field => $limit) {
+            if ($editing && $field === 'driver_code' && !array_key_exists($field,$data)) continue;
             if (!isset($data[$field]) || !is_string($data[$field])) {
                 $this->error('Thiếu hoặc sai kiểu dữ liệu trường ' . $field . '.', 422);
             }

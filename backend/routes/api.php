@@ -307,4 +307,23 @@ $router->put('/api/assignments/cancel', function () use ($assignmentController) 
     $assignmentController->handle('cancel');
 });
 
+require_once __DIR__.'/../app/controllers/DriverPortalController.php';
+$driverPortalController = new DriverPortalController();
+$router->get('/api/driver/home', function () use ($driverPortalController) { $driverPortalController->handle('home'); });
+$router->get('/api/driver/trips', function () use ($driverPortalController) { $driverPortalController->handle('schedule'); });
+$router->get('/api/driver/profile', function () use ($driverPortalController) { $driverPortalController->handle('profile'); });
+$router->put('/api/driver/profile', function () use ($driverPortalController) { $driverPortalController->handle('updateProfile'); });
+$router->put('/api/driver/accept', function () use ($driverPortalController) { $driverPortalController->handle('accept'); });
+$router->put('/api/driver/start', function () use ($driverPortalController) { $driverPortalController->handle('start'); });
+$router->put('/api/driver/complete', function () use ($driverPortalController) { $driverPortalController->handle('complete'); });
+
+$router->put('/api/driver/availability', function () use ($driverPortalController) { $driverPortalController->handle('availability'); });
+
+require_once __DIR__.'/../app/controllers/AssignmentRequestController.php';
+$requestController=new AssignmentRequestController();
+$router->get('/api/driver/requests',function()use($requestController){$requestController->handle('mine');});
+$router->post('/api/driver/requests',function()use($requestController){$requestController->handle('submit');});
+$router->get('/api/assignment-requests',function()use($requestController){$requestController->handle('list');});
+$router->put('/api/assignment-requests/review',function()use($requestController){$requestController->handle('review');});
+
 return $router;

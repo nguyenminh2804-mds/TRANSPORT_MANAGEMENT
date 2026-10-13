@@ -18,3 +18,22 @@
  .transport-dashboard .transport-dashboard-cards { grid-template-columns:minmax(0,1fr); }
 }
 @media(max-width:360px) { .transport-nav .transport-nav__item { flex-basis:100%; } }
+
+/* Keep the viewport width stable between the short overview and long lists. */
+html:has(body.drivers-page) { overflow-y:scroll; scrollbar-gutter:auto; }
+.drivers-management .drivers-filters label > span i { margin-right:5px; color:#2563eb; }
+
+.drivers-page .transport-back { display:inline-flex; align-items:center; gap:8px; margin-top:18px; min-height:42px; text-decoration:none; font-weight:600; }
+/* Shared card geometry, including two-line labels in the five-column vehicle grid. */
+.drivers-management .drivers-metrics .customer-order-summary-card { min-height:132px; padding:22px 20px; gap:14px; align-items:center; }
+.drivers-management .drivers-metrics .customer-order-summary-card > div:last-child { min-width:0; }
+.drivers-management .drivers-metrics .customer-order-summary-card span { min-height:39px; line-height:19.5px; }
+@media(max-width:640px) {
+ .drivers-management .drivers-metrics .customer-order-summary-card { min-height:116px; padding:16px 12px; gap:10px; }
+}
+
+.transport-nav .transport-nav__link:focus-visible { outline:2px solid #2563eb; outline-offset:2px; }
+.transport-requests-button { display:inline-flex; flex-wrap:wrap; align-items:center; gap:8px; min-height:42px; padding:10px 14px; border:1px solid #d8e1ef; border-radius:8px; color:#2563eb; background:#fff; text-decoration:none; font-weight:600; }
+.transport-requests-button.has-pending { animation:requests-nudge 3s ease-in-out infinite; }
+@keyframes requests-nudge { 0%,12%,100% { transform:rotate(0); } 3%,9% { transform:rotate(-1deg); } 6% { transform:rotate(1deg); } }
+@media(prefers-reduced-motion:reduce) { .transport-requests-button.has-pending { animation:none; } }

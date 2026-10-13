@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xử lý yêu cầu tài xế - Quản lý vận tải</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/common.css?v=d1454f41a43b">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="../css/customer.css?v=921343b48d30">
+    <link rel="stylesheet" href="../css/transport.css?v=e059e844b2db">
+    <link rel="stylesheet" href="../css/drivers.css?v=54c368497b09">
+    <link rel="stylesheet" href="../css/drivers-management.css?v=d874fc54ef5b">
+    <script src="../js/assignment-requests.js?v=3016560fe635" defer></script>
+    <link rel="stylesheet" href="../css/transport-navigation.css?v=24826222cfe9">
+<link rel="stylesheet" href="../css/assignment.css?v=6fbcbafec524">
+</head>
+<body class="drivers-page drivers-management assignments-management">
+    <header class="drivers-header"><div class="drivers-container drivers-row">
+        <a href="dashboard.html" class="drivers-brand"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> <span>Quản lý vận tải</span></a>
+        <div class="drivers-row drivers-user"><span class="drivers-avatar" aria-hidden="true"><i class="fa-solid fa-user" aria-hidden="true"></i></span><span id="currentUser">Đang kiểm tra phiên…</span><button id="logoutButton" type="button"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Đăng xuất</button></div>
+    </div></header>
+<main class="drivers-container"><nav class="transport-nav" aria-label="Chức năng nhân viên">
+      <ul class="transport-nav__items">
+        <li class="transport-nav__item"><a class="transport-nav__link" href="dashboard.html"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Tổng quan</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="drivers.html"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>Quản lý tài xế</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="vehicles.html"><i class="fa-solid fa-truck" aria-hidden="true"></i><span>Quản lý phương tiện</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="assignment.html"><i class="fa-solid fa-route" aria-hidden="true"></i><span>Phân công</span></a></li>
+      </ul>
+    </nav>
+<div class="drivers-row drivers-title customer-orders-page-header"><div><h1><span class="drivers-heading-icon"><i class="fa-solid fa-inbox" aria-hidden="true"></i></span>Xử lý yêu cầu tài xế</h1><p>Xem và xử lý yêu cầu từ chối hoặc hủy do tài xế gửi.</p></div><a href="assignment.html" class="transport-requests-button"><i class="fa-solid fa-route" aria-hidden="true"></i> Phân công</a></div>
+<div id="pageMessage" role="status" aria-live="polite"></div>
+<section class="customer-orders-card drivers-list-card"><div class="drivers-row drivers-list-heading"><h2><i class="fa-solid fa-inbox" aria-hidden="true"></i> Danh sách yêu cầu</h2><button id="refreshButton" type="button"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Làm mới</button></div>
+<form id="requestSearchForm" class="drivers-filters"><label><span><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</span><input id="requestSearch" type="search" maxlength="150" placeholder="Tài xế, chuyến, tuyến, lý do hoặc kết quả"></label><label><span><i class="fa-solid fa-filter" aria-hidden="true"></i> Lọc yêu cầu</span><select id="requestFilter"><option value="">Tất cả</option><option value="pending">Chưa duyệt</option><option value="approved">Đã duyệt</option><option value="rejected">Bị từ chối</option></select></label><button type="submit" class="drivers-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</button><button id="resetFilter" type="button"><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i> Xóa bộ lọc</button></form>
+<div class="drivers-results"><p id="requestsMessage" role="status" aria-live="polite"></p></div><div class="drivers-table-wrap"><table class="customer-orders-table"><caption class="visually-hidden">Yêu cầu do tài xế gửi</caption><thead><tr><th>Tài xế</th><th>Chuyến</th><th>Loại yêu cầu</th><th>Lý do</th><th>Thời điểm</th><th>Kết quả</th><th>Thao tác</th></tr></thead><tbody id="staffRequests"></tbody></table></div></section></main>
+<dialog id="reviewDialog" aria-labelledby="reviewTitle"><form id="reviewForm"><div class="drivers-dialog-header"><h2 id="reviewTitle">Xử lý yêu cầu</h2></div><div class="drivers-delete-body"><p id="reviewDescription"></p><label>Lý do xử lý *<textarea id="reviewReason" aria-describedby="reviewMessage" maxlength="2000" rows="3" required></textarea></label><p id="reviewMessage" role="alert"></p></div><div class="drivers-actions"><button id="closeReview" type="button">Đóng</button><button id="saveReview" type="submit" class="drivers-primary">Xác nhận xử lý</button></div></form></dialog>
+</body></html>
