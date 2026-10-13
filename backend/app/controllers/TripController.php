@@ -15,6 +15,7 @@ class TripController extends Controller {
     public function handle($action) {
         if (empty($_SESSION['user_id'])) {
             $this->error('Vui lòng đăng nhập.', 401);
+            return;
         }
         
         switch ($action) {
@@ -31,12 +32,9 @@ class TripController extends Controller {
 
     public function index()
     {
-        // Tắt cảnh báo rác
         error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
-        
         $role = $_SESSION['role'] ?? '';
         
-        // Gọi thẳng class Database gốc của hệ thống để đảm bảo kết nối 100%
         require_once __DIR__ . '/../../core/Database.php';
         $dbInstance = new Database();
         $db = $dbInstance->connect();
@@ -46,10 +44,9 @@ class TripController extends Controller {
             return;
         }
         
-        // 1. NẾU LÀ ADMIN HOẶC NHÂN VIÊN: Lấy toàn bộ chuyến xe (KÈM THÊM TÊN TÀI XẾ VÀ BIỂN SỐ XE)
+        // 1. NẾU LÀ ADMIN HOẶC NHÂN VIÊN
         if (in_array($role, ['ADMIN', 'STAFF'])) {
             try {
-                // Sửa lệnh SQL ở đây: JOIN 3 bảng lại với nhau
                 $sql = "SELECT t.*, 
                                d.full_name AS driver_name, 
                                v.license_plate 
@@ -67,10 +64,9 @@ class TripController extends Controller {
             return;
         } 
         
-        // 2. NẾU LÀ TÀI XẾ: Chỉ lấy chuyến xe của mình
+        // 2. NẾU LÀ TÀI XẾ
         if ($role === 'DRIVER') {
             try {
-                // Tìm ID thực sự của tài xế
                 $driver = $this->driverModel->findByUserId($_SESSION['user_id']);
                 
                 if (!$driver) {
@@ -78,7 +74,6 @@ class TripController extends Controller {
                     return;
                 }
 
-                // Dùng khóa chính driver_id để tìm chuyến xe
                 $stmt = $db->prepare("SELECT * FROM trips WHERE driver_id = ? ORDER BY id DESC");
                 $stmt->execute([$driver['driver_id']]); 
                 $trips = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -92,15 +87,16 @@ class TripController extends Controller {
 
         $this->error('Bạn không có quyền truy cập dữ liệu này.', 403);
     }
+    
     private function show() {
         $id = $_GET['id'] ?? null;
         $trip = $this->tripModel->findById($id);
-        if (!$trip) $this->error('Không tìm thấy chuyến đi.', 404);
+        if (!$trip) { $this->error('Không tìm thấy chuyến đi.', 404); return; }
         $this->success($trip);
     }
 
     private function store() {
-        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403);
+        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) { $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403); return; }
         $data = json_decode(file_get_contents('php://input'), true);
         
         $data['driver_id'] = empty($data['driver_id']) ? null : $data['driver_id'];
@@ -111,7 +107,7 @@ class TripController extends Controller {
     }
 
     private function update() {
-        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403);
+        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) { $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403); return; }
         $id = $_GET['id'] ?? null;
         $data = json_decode(file_get_contents('php://input'), true);
 
@@ -122,31 +118,25 @@ class TripController extends Controller {
         else $this->error('Lỗi khi cập nhật.', 500);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cập nhật trạng thái CHUYẾN XE (Cho Admin, Staff và Tài xế)
-    |--------------------------------------------------------------------------
-    */
     private function updateStatus() 
     {
         error_reporting(E_ALL & ~E_NOTICE & ~E_WARNING);
         $role = $_SESSION['role'] ?? '';
         
-        // 1. Mở quyền cho Tài xế
         if (!in_array($role, ['ADMIN', 'STAFF', 'DRIVER'])) {
             $this->error('Bạn không có quyền cập nhật chuyến xe.', 403);
+            return;
         }
 
-        // 2. Lấy dữ liệu ID và Status từ chuỗi JSON Frontend gửi lên
         $data = json_decode(file_get_contents('php://input'), true);
         $tripId = $data['id'] ?? $_GET['id'] ?? null;
         $status = $data['status'] ?? null;
 
         if (!$tripId || !$status) {
             $this->error('Thiếu thông tin mã chuyến xe hoặc trạng thái.', 400);
+            return;
         }
 
-        // 3. Thực hiện lưu vào database
         if ($this->tripModel->updateStatus($tripId, $status)) {
             $this->success([], 'Cập nhật trạng thái chuyến xe thành công');
         } else {
@@ -155,7 +145,7 @@ class TripController extends Controller {
     }
 
     private function destroy() {
-        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403);
+        if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) { $this->error('Chỉ Quản trị và Điều phối được thao tác.', 403); return; }
         $id = $_GET['id'] ?? null;
         if ($this->tripModel->delete($id)) $this->success([], 'Xóa thành công');
         else $this->error('Lỗi xóa.', 500);
@@ -164,6 +154,7 @@ class TripController extends Controller {
     private function assignOrder() {
         if (!in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) {
             $this->error('Không có quyền thực hiện chức năng này.', 403);
+            return;
         }
 
         $data = json_decode(file_get_contents('php://input'), true);
@@ -172,6 +163,7 @@ class TripController extends Controller {
 
         if (!$orderId || !$tripId) {
             $this->error('Thiếu thông tin đơn hàng hoặc chuyến xe.', 400);
+            return;
         }
 
         require_once __DIR__ . '/../models/Order.php';
@@ -180,7 +172,7 @@ class TripController extends Controller {
         if ($orderModel->assignToTrip($orderId, $tripId)) {
             $this->success(null, 'Gán đơn hàng vào chuyến xe thành công!');
         } else {
-            $this->error('Lỗi khi gán đơn hàng vào chuyến xe.', 500);
+            $this->error('Đơn hàng đã được gán hoặc không đủ điều kiện (Chỉ được gán đơn Chờ Xử Lý).', 400);
         }
     }
 }

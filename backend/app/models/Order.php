@@ -8,6 +8,23 @@ class Order
     private $conn;
     private $table = 'orders';
 
+    public static function canTransitionStatus($currentStatus, $newStatus)
+    {
+        $transitions = [
+            'PENDING' => ['CONFIRMED', 'CANCELLED'],
+            'CONFIRMED' => ['ASSIGNED', 'CANCELLED'],
+            'ASSIGNED' => ['PICKING_UP', 'CANCELLED'],
+            'PICKING_UP' => ['IN_TRANSIT', 'CANCELLED'],
+            'IN_TRANSIT' => ['DELIVERING', 'CANCELLED'],
+            'DELIVERING' => ['DELIVERED', 'CANCELLED'],
+            'DELIVERED' => [],
+            'CANCELLED' => [],
+            'CANCELED' => []
+        ];
+
+        return in_array($newStatus, $transitions[$currentStatus] ?? [], true);
+    }
+
     public function __construct()
     {
         $database = new Database();
@@ -24,7 +41,6 @@ class Order
         if (!$this->conn) return [];
 
         try {
-            // Liên kết 3 bảng: orders -> customers -> users để lấy tên khách hàng
             $sql = "SELECT o.*, u.full_name as customer_name
                     FROM {$this->table} o
                     LEFT JOIN customers c ON o.customer_id = c.id
@@ -33,10 +49,8 @@ class Order
 
             $stmt = $this->conn->prepare($sql);
             $stmt->execute();
-            // Bắt buộc dùng FETCH_ASSOC để JSON trả về gọn gàng, không bị lỗi
             return $stmt->fetchAll(PDO::FETCH_ASSOC); 
         } catch (Exception $e) {
-            // Nếu SQL lỗi (sai tên cột), hệ thống trả về mảng rỗng để không bị sập Frontend
             error_log("Lỗi SQL Order: " . $e->getMessage());
             return [];
         }
@@ -116,23 +130,30 @@ class Order
 
     /*
     |--------------------------------------------------------------------------
-    | GÁN ĐƠN HÀNG VÀO MỘT CHUYẾN XE
+    | GÁN ĐƠN HÀNG VÀO MỘT CHUYẾN XE (ĐÃ FIX LỖI DATABASE)
     |--------------------------------------------------------------------------
     */
     public function assignToTrip($orderId, $tripId)
     {
         try {
+            // Cho phép UPDATE nếu trip_id đang là NULL, 0, hoặc rỗng
             $sql = "UPDATE {$this->table} 
                     SET trip_id = :trip_id, 
-                        status = 'CONFIRMED' 
-                    WHERE id = :id";
+                        status = 'ASSIGNED' 
+                    WHERE id = :id
+                      AND (trip_id IS NULL OR trip_id = 0 OR trip_id = '')
+                      AND status IN ('PENDING', 'CONFIRMED')";
                     
             $stmt = $this->conn->prepare($sql);
-            return $stmt->execute([
+            $stmt->execute([
                 ':trip_id' => $tripId,
                 ':id' => $orderId
             ]);
+
+            // Trả về true nếu thực sự có dòng dữ liệu được cập nhật
+            return $stmt->rowCount() > 0;
         } catch (Exception $e) {
+            error_log("Lỗi gán chuyến: " . $e->getMessage());
             return false;
         }
     }
@@ -151,6 +172,7 @@ class Order
             return false;
         }
     }
+
     /*
     |--------------------------------------------------------------------------
     | SỬA ĐƠN HÀNG CỦA KHÁCH (Chỉ sửa khi đơn PENDING)
@@ -159,11 +181,10 @@ class Order
     public function updateCustomerOrder($orderId, $customerId, $data)
     {
         try {
-            // Kiểm tra xem đơn này có đúng của khách hàng này và đang PENDING không
             $checkStmt = $this->conn->prepare("SELECT id FROM {$this->table} WHERE id = ? AND customer_id = ? AND status = 'PENDING'");
             $checkStmt->execute([$orderId, $customerId]);
             if (!$checkStmt->fetch()) {
-                return false; // Không tìm thấy hoặc đơn đã xử lý không cho phép sửa
+                return false;
             }
 
             $sql = "UPDATE {$this->table} 
@@ -203,7 +224,6 @@ class Order
     public function cancelCustomerOrder($orderId, $customerId)
     {
         try {
-            // Cập nhật trạng thái thành CANCELLED
             $sql = "UPDATE {$this->table} 
                     SET status = 'CANCELLED' 
                     WHERE id = ? AND customer_id = ? AND status = 'PENDING'";
@@ -211,12 +231,17 @@ class Order
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([$orderId, $customerId]);
             
-            // Trả về true nếu có ít nhất 1 dòng bị ảnh hưởng (cập nhật thành công)
             return $stmt->rowCount() > 0;
         } catch (Exception $e) {
             return false;
         }
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CẬP NHẬT TRẠNG THÁI THANH TOÁN
+    |--------------------------------------------------------------------------
+    */
     public function updatePaymentStatus($orderId, $status)
     {
         try {

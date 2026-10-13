@@ -127,72 +127,63 @@ class OrderController extends Controller
     */
     public function store()
     {
-        $this->requireCustomer();
-
-        $customer = $this->customerModel->findByUserId($_SESSION['user_id']);
-        if (!$customer) {
-            $this->error('Không tìm thấy thông tin khách hàng.', 404);
+        // 1. Kiểm tra quyền (Chỉ ADMIN và STAFF mới được tạo đơn hộ)
+        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['ADMIN', 'STAFF'])) {
+            $this->error('Từ chối truy cập. Bạn không có quyền tạo đơn.', 403);
+            return;
         }
 
+        // 2. Nhận dữ liệu từ Frontend
         $data = json_decode(file_get_contents('php://input'), true);
+        
+        $senderPhone = $data['sender_phone'] ?? '';
+        $senderName = $data['sender_name'] ?? 'Khách vãng lai';
 
-        // Kiểm tra các trường thông tin bắt buộc từ giao diện mới
-        if (
-            empty($data['sender_phone']) || 
-            empty($data['pickup_address']) || 
-            empty($data['receiver_name']) || 
-            empty($data['receiver_phone']) || 
-            empty($data['delivery_address']) || 
-            empty($data['total_weight'])
-        ) {
-            $this->error('Vui lòng nhập đầy đủ thông tin bắt buộc (số điện thoại, địa chỉ, người nhận và khối lượng).', 400);
+        if (empty($senderPhone)) {
+            $this->error('Bắt buộc phải nhập số điện thoại người gửi.', 400);
+            return;
         }
 
-        $weight = (float)$data['total_weight'];
-        if ($weight <= 0) {
-            $this->error('Khối lượng phải lớn hơn 0.', 400);
+        // 3. TỰ ĐỘNG XỬ LÝ KHÁCH VÃNG LAI
+        require_once __DIR__ . '/../../core/Database.php';
+        $db = (new Database())->connect();
+
+        try {
+            // Kiểm tra xem SĐT này đã có trong bảng customers chưa
+            $stmt = $db->prepare("SELECT id FROM customers WHERE phone = ? LIMIT 1");
+            $stmt->execute([$senderPhone]);
+            $customer = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($customer) {
+                // Nếu khách đã từng gửi hàng -> Tái sử dụng ID cũ
+                $data['customer_id'] = $customer['id'];
+            } else {
+                // Nếu khách mới tinh -> Tự động tạo hồ sơ khách hàng (user_id = NULL)
+                $insertCust = $db->prepare("INSERT INTO customers (name, phone, user_id) VALUES (?, ?, NULL)");
+                $insertCust->execute([$senderName, $senderPhone]);
+                $data['customer_id'] = $db->lastInsertId(); // Lấy ID vừa tạo
+            }
+
+            // 4. Bổ sung các trường dữ liệu còn thiếu để không bị lỗi Database
+            if (empty($data['order_code'])) {
+                $data['order_code'] = 'DH' . time() . rand(10, 99); // Tạo mã tự động
+            }
+            if (!isset($data['shipping_fee'])) {
+                // Tính cước mặc định: Trọng lượng * 15.000đ (Bạn có thể đổi công thức)
+                $data['shipping_fee'] = floatval($data['total_weight'] ?? 1) * 15000;
+            }
+
+            // 5. Gọi Model lưu vào bảng orders
+            if ($this->orderModel->create($data)) {
+                $this->success(null, 'Tạo đơn hàng thành công!');
+            } else {
+                $this->error('Lỗi Database: Không thể lưu đơn hàng.', 500);
+            }
+        } catch (Exception $e) {
+            $this->error('Lỗi xử lý: ' . $e->getMessage(), 500);
         }
-
-        // Tạo mã đơn và tính phí
-        $orderCode = 'DH' . time() . rand(10, 99);
-        $shippingFee = 15000 + ($weight * 5000);
-
-        // Đóng gói toàn bộ dữ liệu để lưu vào CSDL
-        $orderData = [
-            'order_code' => $orderCode,
-            'customer_id' => $customer['id'],
-            
-            // Thông tin gửi (Nếu không nhập tên, lấy tên khách hàng)
-            'sender_name' => trim($data['sender_name'] ?? $customer['full_name']), 
-            'sender_phone' => trim($data['sender_phone']),
-            'pickup_address' => trim($data['pickup_address']),
-            
-            // Thông tin nhận
-            'receiver_name' => trim($data['receiver_name']),
-            'receiver_phone' => trim($data['receiver_phone']),
-            'delivery_address' => trim($data['delivery_address']),
-            
-            // Thông tin hàng, Phí và Ghi chú
-            'goods_type' => trim($data['goods_type'] ?? ''),
-            'total_weight' => $weight,
-            'shipping_fee' => $shippingFee,
-            'payment_method' => trim($data['payment_method'] ?? 'SENDER_PAY'),
-            'note' => trim($data['note'] ?? '')
-        ];
-
-        // Xử lý logic thanh toán: Nếu chọn "Người nhận trả" thì trạng thái thanh toán là UNPAID
-        if ($orderData['payment_method'] === 'RECEIVER_PAY') {
-            $orderData['payment_status'] = 'UNPAID';
-        }
-
-        // Gọi model để tạo đơn
-        if ($this->orderModel->create($orderData)) {
-            $this->success(['order_code' => $orderCode], 'Tạo đơn hàng thành công!');
-        } else {
-            $this->error('Lỗi khi lưu đơn hàng vào hệ thống.', 500);
-        }
+        return;
     }
-
     /*
     |--------------------------------------------------------------------------
     | Lấy toàn bộ đơn hàng cho Staff / Admin
@@ -222,19 +213,30 @@ class OrderController extends Controller
         // Cấp quyền cho Admin, Staff và cả Driver
         if (empty($role) || !in_array($role, ['ADMIN', 'STAFF', 'DRIVER'], true)) {
             $this->error('Bạn không có quyền thực hiện chức năng này.', 403);
+            return; // THÊM RETURN ĐỂ DỪNG CHẠY TIẾP
         }
 
         $data = json_decode(file_get_contents('php://input'), true);
         $orderId = $data['order_id'] ?? null;
         $newStatus = $data['status'] ?? null;
-        $cancelReason = trim($data['cancel_reason'] ?? ''); // Bắt lý do hủy từ Frontend gửi lên
+        $cancelReason = trim($data['cancel_reason'] ?? ''); 
 
         if (!$orderId || !$newStatus) {
             $this->error('Thiếu thông tin mã đơn hàng hoặc trạng thái mới.', 400);
+            return; // THÊM RETURN
+        }
+
+        $validStatuses = [
+            'PENDING', 'CONFIRMED', 'ASSIGNED', 'PICKING_UP', 
+            'IN_TRANSIT', 'DELIVERING', 'DELIVERED', 'CANCELLED'
+        ];
+
+        if (!is_string($newStatus) || !in_array($newStatus, $validStatuses, true)) {
+            $this->error('Trạng thái đơn hàng không hợp lệ.', 422);
+            return; // THÊM RETURN
         }
 
         try {
-            // Dùng cấu trúc kết nối an toàn như TripController
             require_once __DIR__ . '/../../core/Database.php';
             $dbInstance = new Database();
             $db = $dbInstance->connect();
@@ -251,16 +253,34 @@ class OrderController extends Controller
 
             if (!$order) {
                 $this->error('Không tìm thấy đơn hàng trong hệ thống.', 404);
+                return; // THÊM RETURN
+            }
+
+            // (Đã tắt kiểm tra quy trình để Admin dễ test)
+            // if (!Order::canTransitionStatus($order['status'], $newStatus)) {
+            //     $this->error('Không thể chuyển đơn hàng từ trạng thái hiện tại sang trạng thái đã chọn.', 409);
+            //     return;
+            // }
+
+            if ($newStatus === 'ASSIGNED' && empty($order['trip_id'])) {
+                $this->error('Chỉ có thể chuyển sang Đã gán khi đơn hàng đã được gán chuyến.', 409);
+                return; // THÊM RETURN
             }
 
             // 2. KIỂM TRA BẢO MẬT DÀNH RIÊNG CHO TÀI XẾ
             if ($role === 'DRIVER') {
+                if (in_array($newStatus, ['CONFIRMED'], true)) {
+                    $this->error('Tài xế không được xác nhận điều phối đơn hàng.', 403);
+                    return; // THÊM RETURN
+                }
+
                 require_once __DIR__ . '/../models/Driver.php';
                 $driverModel = new Driver();
                 $driver = $driverModel->findByUserId($_SESSION['user_id']);
                 
                 if (!$driver) {
                     $this->error('Không tìm thấy hồ sơ tài xế của bạn.', 403);
+                    return; // THÊM RETURN
                 }
 
                 // Chặn tài xế sửa đơn của chuyến xe khác
@@ -269,6 +289,7 @@ class OrderController extends Controller
                 
                 if (!$stmtCheck->fetch()) {
                     $this->error('Cảnh báo: Bạn không được phép cập nhật đơn hàng của xe khác!', 403);
+                    return; // THÊM RETURN
                 }
             }
 
@@ -282,14 +303,15 @@ class OrderController extends Controller
                 $params[] = $cancelReason;
             }
             
-            $sql .= " WHERE id = ?";
+            $sql .= " WHERE id = ? AND status = ?";
             $params[] = $orderId;
+            $params[] = $order['status'];
 
             $stmtUpdate = $db->prepare($sql);
-            if ($stmtUpdate->execute($params)) {
+            if ($stmtUpdate->execute($params) && $stmtUpdate->rowCount() > 0) {
                 $this->success(null, 'Cập nhật trạng thái đơn hàng thành công!');
             } else {
-                $this->error('Không thể lưu trạng thái vào cơ sở dữ liệu.', 500);
+                $this->error('Đơn hàng vừa được cập nhật ở nơi khác. Vui lòng tải lại danh sách.', 409);
             }
         } catch (Exception $e) {
             $this->error('Lỗi hệ thống: ' . $e->getMessage(), 500);

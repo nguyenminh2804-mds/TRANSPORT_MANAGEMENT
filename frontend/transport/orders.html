@@ -78,11 +78,14 @@
                 <div class="col-md-3">
                     <select id="filterStatus" class="form-select" onchange="filterOrders()">
                         <option value="ALL">-- Tất cả trạng thái --</option>
-                        <option value="PENDING">Chờ xử lý</option>
-                        <option value="ASSIGNED">Đã gán chuyến</option>
+                        <option value="PENDING">Chờ xử lý (Khách mới đặt)</option>
+                        <option value="CONFIRMED">Đã xác nhận</option>
+                        <option value="ASSIGNED">Đã gán chuyến xe</option>
+                        <option value="PICKING_UP">Đang lấy hàng</option>
                         <option value="IN_TRANSIT">Đang vận chuyển</option>
+                        <option value="DELIVERING">Đang giao đến khách</option>
                         <option value="DELIVERED">Đã giao thành công</option>
-                        <option value="CANCELED">Đã hủy</option>
+                        <option value="CANCELLED">Đã hủy</option>
                     </select>
                 </div>
                 <div class="col-md-4 text-end pt-1">
@@ -210,7 +213,7 @@
                         <select id="tripSelect" class="form-select fw-bold">
                             <option value="">-- Đang tải danh sách chuyến xe --</option>
                         </select>
-                        <div class="form-text text-muted mt-2"><i class="fa-solid fa-circle-info"></i> Chỉ hiển thị các chuyến xe đang ở trạng thái <b>Lên kế hoạch (PLANNED)</b>.</div>
+                        <div class="form-text text-muted mt-2"><i class="fa-solid fa-circle-info"></i> Hệ thống chỉ cho phép gán đơn vào các chuyến xe chưa xuất phát (trạng thái <b>Lên kế hoạch</b>).</div>
                     </div>
                     <input type="hidden" id="selectedOrderId">
                 </div>
@@ -264,7 +267,7 @@
         async function loadAllOrders() {
             try {
                 allOrdersCache = await api('/api/orders') || [];
-                renderOrdersTable(allOrdersCache);
+                filterOrders();
             } catch (e) {
                 document.getElementById('ordersTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Lỗi tải dữ liệu đơn hàng.</td></tr>`;
             }
@@ -283,26 +286,30 @@
             ordersData.forEach(o => {
                 const statusMap = {
                     'PENDING': { text: 'Chờ xử lý', class: 'bg-warning text-dark' },
-                    'CONFIRMED': { text: 'Đã gán chuyến', class: 'bg-info text-dark' },
-                    'ASSIGNED': { text: 'Đã gán chuyến', class: 'bg-info text-dark' },
+                    'CONFIRMED': { text: 'Đã xác nhận', class: 'bg-info text-dark' },
+                    'ASSIGNED': { text: 'Đã gán chuyến', class: 'bg-primary text-white' },
+                    'PICKING_UP': { text: 'Đang lấy hàng', class: 'bg-primary text-white' },
                     'IN_TRANSIT': { text: 'Đang vận chuyển', class: 'bg-primary text-white' },
+                    'DELIVERING': { text: 'Đang giao hàng', class: 'bg-primary text-white' },
                     'DELIVERED': { text: 'Đã giao', class: 'bg-success text-white' },
                     'CANCELLED': { text: 'Đã hủy', class: 'bg-danger text-white' },
                     'CANCELED': { text: 'Đã hủy', class: 'bg-danger text-white' }
                 };
 
                 const currentStatus = statusMap[o.status] || { text: o.status, class: 'bg-secondary text-white' };
-
+                
+                // Mở dropdown đầy đủ cho tất cả trạng thái
                 let statusSelect = `
                     <select class="form-select form-select-sm fw-bold status-select ${currentStatus.class}" 
-                            onchange="updateOrderStatus(${o.id}, this.value)">
-                        ${Object.keys(statusMap).map(key => `
-                            <option value="${key}" class="bg-white text-dark" ${o.status === key ? 'selected' : ''}>${statusMap[key].text}</option>
-                        `).join('')}
+                            onchange="updateOrderStatus(${o.id}, this.value, this)">
+                        ${Object.keys(statusMap).map(key => {
+                            if(key === 'CANCELED') return '';
+                            return `<option value="${key}" class="bg-white text-dark" ${o.status === key ? 'selected' : ''}>${statusMap[key].text}</option>`;
+                        }).join('')}
                     </select>
                 `;
 
-                // DROPDOWN THANH TOÁN MỚI DÀNH CHO ADMIN
+                // DROPDOWN THANH TOÁN
                 let paymentSelect = `
                     <select class="form-select form-select-sm fw-bold ${o.payment_status === 'PAID' ? 'bg-success text-white' : 'bg-danger text-white'}" 
                             style="width: 130px; border:none; outline:none; box-shadow:none;"
@@ -312,9 +319,12 @@
                     </select>
                 `;
                 
-                let actionBtn = o.status === 'PENDING' 
+                // KIỂM TRA TRIP_ID AN TOÀN HƠN ĐỂ HIỂN THỊ NÚT
+                let tripIdSafe = (o.trip_id && o.trip_id !== '0' && o.trip_id !== 0) ? o.trip_id : null;
+
+                let actionBtn = (['PENDING', 'CONFIRMED'].includes(o.status) && !tripIdSafe) 
                     ? `<button class="btn btn-sm btn-primary w-100" onclick="openAssignModal(${o.id}, '${o.order_code}')" title="Gom vào chuyến"><i class="fa-solid fa-route"></i> Gán chuyến</button>` 
-                    : `<button class="btn btn-sm btn-outline-secondary w-100" disabled><i class="fa-solid fa-lock"></i> Đã gán</button>`;
+                    : `<button class="btn btn-sm btn-outline-secondary w-100" disabled title="${tripIdSafe ? `Đã gán chuyến #${tripIdSafe}` : 'Đơn hàng không thể gán chuyến ở trạng thái này'}"><i class="fa-solid fa-lock"></i> ${tripIdSafe ? `Chuyến #${tripIdSafe}` : 'Đã đóng'}</button>`;
 
                 tbody.innerHTML += `
                     <tr>
@@ -340,22 +350,18 @@
             });
         }
 
-        // HÀM GỌI API CẬP NHẬT TRẠNG THÁI THANH TOÁN
         async function updatePaymentStatus(orderId, newStatus) {
             if (!confirm(`Xác nhận đổi trạng thái thanh toán thành: ${newStatus === 'PAID' ? 'ĐÃ THANH TOÁN' : 'CHƯA THANH TOÁN'}?`)) {
-                renderOrdersTable(allOrdersCache); return;
+                filterOrders(); return;
             }
             try {
                 await api('/api/orders/update-payment', 'POST', { order_id: orderId, status: newStatus });
-                
-                // Cập nhật lại trong biến cache thay vì tải lại toàn bộ API cho nhanh
                 const orderIndex = allOrdersCache.findIndex(o => o.id == orderId);
                 if(orderIndex !== -1) allOrdersCache[orderIndex].payment_status = newStatus;
-                
-                renderOrdersTable(allOrdersCache);
+                filterOrders();
             } catch (e) {
                 alert('Cập nhật thất bại: ' + e.message);
-                renderOrdersTable(allOrdersCache);
+                filterOrders();
             }
         }
 
@@ -369,9 +375,7 @@
 
                 let matchStatus = true;
                 if (statusFilter !== 'ALL') {
-                    if (statusFilter === 'ASSIGNED') {
-                        matchStatus = (o.status === 'ASSIGNED' || o.status === 'CONFIRMED');
-                    } else if (statusFilter === 'CANCELED') {
+                    if (statusFilter === 'CANCELED' || statusFilter === 'CANCELLED') {
                         matchStatus = (o.status === 'CANCELED' || o.status === 'CANCELLED');
                     } else {
                         matchStatus = o.status === statusFilter;
@@ -417,16 +421,24 @@
             }
         });
 
-        async function updateOrderStatus(orderId, newStatus) {
+        async function updateOrderStatus(orderId, newStatus, selectElement) {
             if (!confirm('Bạn có chắc chắn muốn cập nhật trạng thái vận chuyển của đơn hàng này?')) {
-                renderOrdersTable(allOrdersCache); return;
+                selectElement.value = allOrdersCache.find(o => o.id == orderId)?.status || '';
+                return;
             }
+            selectElement.disabled = true;
             try {
                 await api('/api/orders/update-status', 'POST', { order_id: orderId, status: newStatus });
-                await loadAllOrders();
+                const order = allOrdersCache.find(o => o.id == orderId);
+                if (order) order.status = newStatus;
+                
+                // Cập nhật lại UI để refresh thanh chọn
+                renderOrdersTable(allOrdersCache); 
             } catch (e) {
                 alert('Cập nhật thất bại: ' + e.message);
-                renderOrdersTable(allOrdersCache);
+                filterOrders();
+            } finally {
+                selectElement.disabled = false;
             }
         }
 
@@ -458,7 +470,7 @@
                 await api('/api/trips/assign-order', 'POST', { order_id: orderId, trip_id: tripId });
                 alert('Đã gán đơn hàng vào chuyến xe thành công!');
                 bootstrap.Modal.getInstance(document.getElementById('assignTripModal')).hide();
-                await loadAllOrders();
+                await loadAllOrders(); // Tự động load lại trang
             } catch (e) {
                 alert('Lỗi: ' + e.message);
             } finally {
@@ -469,14 +481,11 @@
 
         document.getElementById('refreshBtn').addEventListener('click', loadAllOrders);
 
-        // Đăng xuất
         document.getElementById('logoutButton').addEventListener('click', async () => {
             if(!confirm("Bạn muốn đăng xuất khỏi hệ thống?")) return;
             try {
                 await api('/api/logout', 'POST');
-            } catch (e) {
-                console.error('Lỗi API đăng xuất:', e);
-            } finally {
+            } catch (e) {} finally {
                 sessionStorage.clear();
                 window.location.href = '../customer/login.html';
             }

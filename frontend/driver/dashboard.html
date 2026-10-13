@@ -202,7 +202,7 @@
             return [];
         }
 
-        // 2. Render Giao diện Bảng Chuyến xe
+        // 2. Render Giao diện Bảng Chuyến xe (Đã Việt hóa trạng thái)
         async function renderDriverTrips() {
             try {
                 const tbody = document.getElementById('driverTripTableBody');
@@ -216,27 +216,33 @@
                     return;
                 }
 
+                // TỪ ĐIỂN DỊCH TRẠNG THÁI CHUYẾN XE (TRIPS) SANG TIẾNG VIỆT
+                const tripStatusMap = {
+                    'PLANNED': { text: 'Chờ xuất phát', class: 'bg-info text-dark' },
+                    'IN_PROGRESS': { text: 'Đang chạy', class: 'bg-primary' },
+                    'COMPLETED': { text: 'Đã hoàn thành', class: 'bg-success' },
+                    'CANCELLED': { text: 'Đã hủy', class: 'bg-danger' }
+                };
+
                 trips.forEach(trip => {
-                    let badgeColor = 'bg-secondary';
+                    // Lấy text và màu sắc từ từ điển (nếu không có thì để mặc định)
+                    const currentStatus = tripStatusMap[trip.status] || { text: trip.status, class: 'bg-secondary' };
                     let actionButtons = '';
 
+                    // Logic hiển thị nút bấm vẫn giữ nguyên dựa trên mã tiếng Anh
                     if (trip.status === 'PLANNED') {
-                        badgeColor = 'bg-info text-dark';
                         actionButtons = `<button class="btn btn-sm btn-primary mb-1 w-100" onclick="updateTripStatus(${trip.id}, 'IN_PROGRESS')"><i class="fa-solid fa-play me-1"></i> Bắt đầu chuyến</button>`;
                     } 
                     else if (trip.status === 'IN_PROGRESS') {
-                        badgeColor = 'bg-primary';
                         actionButtons = `
                             <button class="btn btn-sm btn-warning mb-1 w-100 text-dark fw-bold shadow-sm" onclick="openTripOrdersModal(${trip.id})"><i class="fa-solid fa-boxes-packing me-1"></i> Xem danh sách Đơn</button>
                             <button class="btn btn-sm btn-success w-100" onclick="updateTripStatus(${trip.id}, 'COMPLETED')"><i class="fa-solid fa-check-double me-1"></i> Chuyến xong</button>
                         `;
                     } 
                     else if (trip.status === 'COMPLETED') {
-                        badgeColor = 'bg-success';
                         actionButtons = `<button class="btn btn-sm btn-outline-secondary w-100" onclick="openTripOrdersModal(${trip.id})"><i class="fa-solid fa-eye"></i> Xem lịch sử đơn</button>`;
                     } 
                     else if (trip.status === 'CANCELLED') {
-                        badgeColor = 'bg-danger';
                         actionButtons = `<span class="text-danger fw-bold"><i class="fa-solid fa-ban"></i> Đã hủy</span>`;
                     }
 
@@ -255,7 +261,10 @@
                                 <div class="text-muted small">Xe: <span class="badge bg-secondary">${vehicleInfo}</span></div>
                             </td>
                             <td>${trip.start_time || 'Chưa ấn định'}</td>
-                            <td><span class="badge ${badgeColor}">${trip.status}</span></td>
+                            
+                            <!-- Đã áp dụng từ điển để hiển thị tiếng Việt -->
+                            <td><span class="badge ${currentStatus.class} px-3 py-2">${currentStatus.text}</span></td>
+                            
                             <td class="text-center" style="width: 170px;">
                                 ${actionButtons}
                             </td>
@@ -364,10 +373,10 @@
                                 ${(isDelivered || isCancelled) ? `<div class="text-center text-muted fw-bold py-2"><i class="fa-solid fa-lock"></i> Đơn hàng đã hoàn tất</div>` : `
                                 <div class="d-flex gap-2">
                                     <select class="form-select form-select-sm w-50" id="status_select_${o.id}" onchange="toggleCancelInput(${o.id})">
-                                        <option value="CONFIRMED" ${o.status === 'CONFIRMED' ? 'selected' : ''}>Chưa lấy hàng</option>
-                                        <option value="PICKING_UP" ${o.status === 'PICKING_UP' ? 'selected' : ''}>Đang đi lấy hàng</option>
-                                        <option value="IN_TRANSIT" ${o.status === 'IN_TRANSIT' ? 'selected' : ''}>Đang trên xe</option>
-                                        <option value="DELIVERING" ${o.status === 'DELIVERING' ? 'selected' : ''}>Đang giao cho khách</option>
+                                        <option value="ASSIGNED" ${o.status === 'ASSIGNED' ? 'selected' : ''}>Đã phân công</option>
+                                        <option value="PICKING_UP" ${o.status === 'PICKING_UP' ? 'selected' : ''}>Đang lấy hàng</option>
+                                        <option value="IN_TRANSIT" ${o.status === 'IN_TRANSIT' ? 'selected' : ''}>Đang vận chuyển</option>
+                                        <option value="DELIVERING" ${o.status === 'DELIVERING' ? 'selected' : ''}>Đang giao</option>
                                         <option value="DELIVERED">Đã giao XONG</option>
                                         <option value="CANCELLED">Hủy/Khách boom</option>
                                     </select>
@@ -403,6 +412,7 @@
             }
 
             try {
+                // Cập nhật API endpoint phù hợp với hệ thống của bạn (tôi dùng lại API chung của Admin)
                 API_URL.searchParams.set('route', '/api/orders/update-status');
                 const res = await fetch(API_URL.href, {
                     method: 'POST',
