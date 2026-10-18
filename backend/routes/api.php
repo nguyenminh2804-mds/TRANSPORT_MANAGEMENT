@@ -10,7 +10,7 @@ require_once __DIR__ . '/../app/controllers/OrderController.php';
 require_once __DIR__ . '/../app/controllers/DriverController.php';
 require_once __DIR__ . '/../app/controllers/VehicleController.php';
 require_once __DIR__ . '/../app/controllers/AssignmentController.php';
-
+require_once __DIR__ . '/../app/controllers/SupportController.php';
 $router = new Router();
 
 /*
@@ -217,7 +217,7 @@ $router->get('/api/customer/orders', function () use ($orderController) {
 });
 
 $router->post('/api/customer/orders', function () use ($orderController) {
-    $orderController->handle('store'); // API dùng để TẠO ĐƠN HÀNG
+    $orderController->handle('createCustomerOrder');
 });
 
 // BỔ SUNG: API SỬA ĐƠN HÀNG DÀNH CHO KHÁCH
@@ -366,4 +366,45 @@ $statisticsController = new StatisticsController();
 $router->get('/api/statistics/overview', function () use ($statisticsController) {
     $statisticsController->handle('overview');
 });
+
+$supportController = new SupportController();
+
+// Khách hàng
+$router->get('/api/customer/support-tickets', function () use ($supportController) {
+    $supportController->handle('customerIndex');
+});
+
+$router->post('/api/customer/support-tickets', function () use ($supportController) {
+    $supportController->handle('customerCreate');
+});
+
+$router->get('/api/customer/support-tickets/show', function () use ($supportController) {
+    $supportController->handle('customerShow');
+});
+
+$router->post('/api/customer/support-tickets/reply', function () use ($supportController) {
+    $supportController->handle('customerReply');
+});
+
+// Nhân viên / Admin
+$router->get('/api/staff/support-tickets', function () use ($supportController) {
+    $supportController->handle('staffIndex');
+});
+
+$router->post('/api/staff/support-tickets/reply', function () use ($supportController) {
+    $supportController->handle('staffReply');
+});
+
+$router->post('/api/staff/support-tickets/status', function () use ($supportController) {
+    $supportController->handle('staffStatus');
+});
+
+$router->get('/api/staff/support-tickets/show', function () use ($supportController) {
+    $supportController->handle('staffShow');
+});
+
+$router->post('/api/admin/support-tickets/assign', function () use ($supportController) {
+    $supportController->handle('adminAssign');
+});
+
 return $router;

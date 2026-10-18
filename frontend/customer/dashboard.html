@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -22,315 +23,254 @@
     <!-- CSS -->
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/customer.css">
+
+    <!-- Đồng bộ hiệu ứng các thẻ chức năng -->
+    <style>
+        .customer-function-card {
+            text-decoration: none;
+            color: inherit;
+            transform: none;
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                background-color 0.2s ease;
+        }
+
+        .customer-function-card:hover {
+            transform: none;
+            color: inherit;
+            border-color: #c7d7fe;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.08);
+        }
+
+        .customer-function-card:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.35);
+            outline-offset: 3px;
+        }
+
+        .customer-function-card .customer-function-arrow {
+            flex-shrink: 0;
+        }
+
+        .customer-function-card .customer-function-arrow i {
+            transition: none;
+        }
+    </style>
 </head>
 
 <body class="customer-page">
 
-<!-- =========================================================
-     NAVBAR
-========================================================= -->
+    <!-- NAVBAR -->
+    <nav class="customer-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
 
-<nav class="customer-navbar">
-
-    <div class="container d-flex justify-content-between align-items-center">
-
-        <!-- Logo -->
-        <div class="customer-brand">
-
-            <i class="fa-solid fa-truck-fast"></i>
-
-            <span>
-                Quản lý vận tải
-            </span>
-
-        </div>
-
-
-        <!-- User -->
-        <div class="customer-user">
-
-            <div class="customer-avatar">
-
-                <i class="fa-solid fa-user"></i>
-
+            <div class="customer-brand">
+                <i class="fa-solid fa-truck-fast"></i>
+                <span>Quản lý vận tải</span>
             </div>
 
-            <span id="welcomeUser">
-                Xin chào
-            </span>
-
-            <button
-                type="button"
-                id="logoutBtn"
-                class="btn btn-light customer-logout"
-            >
-                <i class="fa-solid fa-right-from-bracket me-2"></i>
-                Đăng xuất
-            </button>
-
-        </div>
-
-    </div>
-
-</nav>
-
-
-<!-- =========================================================
-     MAIN
-========================================================= -->
-
-<main class="container py-5">
-
-
-    <!-- PAGE TITLE -->
-
-    <div class="customer-page-title mb-4">
-
-        <h1>
-            Trang khách hàng
-        </h1>
-
-        <p>
-            Quản lý tài khoản và các dịch vụ vận chuyển của bạn
-        </p>
-
-    </div>
-
-
-    <!-- =====================================================
-         WELCOME BANNER
-    ====================================================== -->
-
-    <section class="customer-welcome mb-4">
-
-        <div class="customer-welcome-content">
-
-            <h2>
-                Chào mừng bạn đến với hệ thống
-            </h2>
-
-            <p>
-                Quản lý thông tin cá nhân, xem đơn hàng và
-                theo dõi hành trình vận chuyển một cách nhanh chóng.
-            </p>
-
-        </div>
-
-        <div class="customer-welcome-icon">
-
-            <i class="fa-solid fa-truck"></i>
-
-        </div>
-
-    </section>
-
-
-    <!-- =====================================================
-         MAIN FUNCTIONS
-    ====================================================== -->
-
-    <section class="row g-4">
-
-
-        <!-- =================================================
-             PROFILE
-        ================================================== -->
-
-        <div class="col-md-6">
-
-            <a
-                href="profile.html"
-                class="customer-function-card"
-            >
-
-                <div class="customer-function-icon profile">
-
+            <div class="customer-user">
+                <div class="customer-avatar">
                     <i class="fa-solid fa-user"></i>
-
                 </div>
 
-                <div class="customer-function-content">
+                <span id="welcomeUser">Xin chào</span>
 
-                    <h3>
-                        Thông tin cá nhân
-                    </h3>
-
-                    <p>
-                        Xem và quản lý thông tin tài khoản,
-                        số điện thoại, email và địa chỉ.
-                    </p>
-
-                </div>
-
-                <div class="customer-function-arrow">
-
-                    <i class="fa-solid fa-chevron-right"></i>
-
-                </div>
-
-            </a>
-
-        </div>
-
-
-        <!-- =================================================
-             ORDERS
-        ================================================== -->
-
-        <div class="col-md-6">
-
-            <a
-                href="orders.html"
-                class="customer-function-card"
-            >
-
-                <div class="customer-function-icon orders">
-
-                    <i class="fa-solid fa-box"></i>
-
-                </div>
-
-                <div class="customer-function-content">
-
-                    <h3>
-                        Đơn hàng của tôi
-                    </h3>
-
-                    <p>
-                        Xem danh sách đơn hàng và thông tin
-                        chi tiết các đơn vận chuyển.
-                    </p>
-
-                </div>
-
-                <div class="customer-function-arrow">
-
-                    <i class="fa-solid fa-chevron-right"></i>
-
-                </div>
-
-            </a>
-
-        </div>
-
-
-        <!-- =================================================
-             TRACKING
-        ================================================== -->
-
-        <div class="col-md-6">
-
-            <a
-                href="tracking.html"
-                class="customer-function-card"
-            >
-
-                <div class="customer-function-icon tracking">
-
-                    <i class="fa-solid fa-location-dot"></i>
-
-                </div>
-
-                <div class="customer-function-content">
-
-                    <h3>
-                        Theo dõi đơn hàng
-                    </h3>
-
-                    <p>
-                        Nhập mã đơn hàng để tra cứu trạng thái
-                        và quá trình vận chuyển.
-                    </p>
-
-                </div>
-
-                <div class="customer-function-arrow">
-
-                    <i class="fa-solid fa-chevron-right"></i>
-
-                </div>
-
-            </a>
-
-        </div>
-
-
-        <!-- =================================================
-             SERVICE INFORMATION
-        ================================================== -->
-
-        <div class="col-md-6">
-
-            <div class="customer-function-card customer-function-static">
-
-                <div class="customer-function-icon service">
-
-                    <i class="fa-solid fa-headset"></i>
-
-                </div>
-
-                <div class="customer-function-content">
-
-                    <h3>
-                        Dịch vụ khách hàng
-                    </h3>
-
-                    <p>
-                        Tra cứu đơn hàng và quản lý các thông tin
-                        liên quan đến dịch vụ vận chuyển.
-                    </p>
-
-                </div>
-
-                <div class="customer-function-arrow">
-
-                    <i class="fa-solid fa-circle-info"></i>
-
-                </div>
-
+                <button
+                    type="button"
+                    id="logoutBtn"
+                    class="btn btn-light customer-logout"
+                >
+                    <i class="fa-solid fa-right-from-bracket me-2"></i>
+                    Đăng xuất
+                </button>
             </div>
 
         </div>
+    </nav>
 
-    </section>
+    <!-- MAIN -->
+    <main class="container py-5">
 
-
-    <!-- =====================================================
-         GUIDE
-    ====================================================== -->
-
-    <section class="customer-dashboard-note mt-5">
-
-        <div class="customer-dashboard-note-icon">
-
-            <i class="fa-solid fa-circle-info"></i>
-
-        </div>
-
-        <div>
-
-            <h4>
-                Hướng dẫn
-            </h4>
+        <!-- PAGE TITLE -->
+        <div class="customer-page-title mb-4">
+            <h1>Trang khách hàng</h1>
 
             <p>
-                Chọn một chức năng ở trên để bắt đầu sử dụng
-                hệ thống quản lý vận chuyển.
+                Quản lý tài khoản và các dịch vụ vận chuyển của bạn
             </p>
-
         </div>
 
-    </section>
+        <!-- WELCOME BANNER -->
+        <section class="customer-welcome mb-4">
 
-</main>
+            <div class="customer-welcome-content">
+                <h2>Chào mừng bạn đến với hệ thống</h2>
 
+                <p>
+                    Quản lý thông tin cá nhân, xem đơn hàng và
+                    theo dõi hành trình vận chuyển một cách nhanh chóng.
+                </p>
+            </div>
 
-<!-- =========================================================
-     JAVASCRIPT
-========================================================= -->
+            <div class="customer-welcome-icon">
+                <i class="fa-solid fa-truck"></i>
+            </div>
 
-<script src="../js/dashboard.js?v=599e1df87827"></script>
+        </section>
+
+        <!-- MAIN FUNCTIONS -->
+        <section class="row g-4">
+
+            <!-- 1. PROFILE -->
+            <div class="col-md-6">
+                <a
+                    href="profile.html"
+                    class="customer-function-card"
+                >
+                    <div class="customer-function-icon profile">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+
+                    <div class="customer-function-content">
+                        <h3>Thông tin cá nhân</h3>
+
+                        <p>
+                            Xem và quản lý thông tin tài khoản,
+                            số điện thoại, email và địa chỉ.
+                        </p>
+                    </div>
+
+                    <div class="customer-function-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 2. ORDERS -->
+            <div class="col-md-6">
+                <a
+                    href="orders.html"
+                    class="customer-function-card"
+                >
+                    <div class="customer-function-icon orders">
+                        <i class="fa-solid fa-box"></i>
+                    </div>
+
+                    <div class="customer-function-content">
+                        <h3>Đơn hàng của tôi</h3>
+
+                        <p>
+                            Xem danh sách đơn hàng và thông tin
+                            chi tiết các đơn vận chuyển.
+                        </p>
+                    </div>
+
+                    <div class="customer-function-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 3. CREATE ORDER -->
+            <div class="col-md-6">
+                <a
+                    href="orders.html?create=1"
+                    class="customer-function-card"
+                >
+                    <div class="customer-function-icon create-order">
+                        <i class="fa-solid fa-circle-plus"></i>
+                    </div>
+
+                    <div class="customer-function-content">
+                        <h3>Tạo đơn hàng</h3>
+
+                        <p>
+                            Tạo đơn vận chuyển mới, nhập thông tin
+                            người gửi, người nhận và xem phí vận chuyển.
+                        </p>
+                    </div>
+
+                    <div class="customer-function-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 4. TRACKING -->
+            <div class="col-md-6">
+                <a
+                    href="tracking.html"
+                    class="customer-function-card"
+                >
+                    <div class="customer-function-icon tracking">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+
+                    <div class="customer-function-content">
+                        <h3>Theo dõi đơn hàng</h3>
+
+                        <p>
+                            Nhập mã đơn hàng để tra cứu trạng thái
+                            và quá trình vận chuyển.
+                        </p>
+                    </div>
+
+                    <div class="customer-function-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+
+            <!-- 5. CUSTOMER SERVICE -->
+            <div class="col-md-6">
+                <a
+                    href="support.html"
+                    class="customer-function-card"
+                >
+                    <div class="customer-function-icon service">
+                        <i class="fa-solid fa-headset"></i>
+                    </div>
+
+                    <div class="customer-function-content">
+                        <h3>Dịch vụ khách hàng</h3>
+
+                        <p>
+                            Gửi yêu cầu hỗ trợ, theo dõi trạng thái
+                            và trao đổi với nhân viên vận chuyển.
+                        </p>
+                    </div>
+
+                    <div class="customer-function-arrow">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </div>
+                </a>
+            </div>
+
+        </section>
+
+        <!-- GUIDE -->
+        <section class="customer-dashboard-note mt-5">
+
+            <div class="customer-dashboard-note-icon">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+
+            <div>
+                <h4>Hướng dẫn</h4>
+
+                <p>
+                    Chọn một chức năng ở trên để bắt đầu sử dụng
+                    hệ thống quản lý vận chuyển.
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script src="../js/dashboard.js?v=599e1df87827"></script>
 
 </body>
-
 </html>
