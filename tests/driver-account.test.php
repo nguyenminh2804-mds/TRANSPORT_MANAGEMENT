@@ -84,7 +84,8 @@ function memoryDriver($db) {
     return $model;
 }
 $db=new AccountMemoryConnection();
-$result=memoryDriver($db)->createWithAccount($profile,$account);
+$result=memoryDriver($db)->createWithAccount(array_merge($profile,['status'=>'inactive']),$account);
+accountCheck($result['status']==='available','Creation ignores supplied profile status');
 accountCheck($db->commits===1 && $db->rollbacks===0,'One committed transaction');
 accountCheck($result['user_id']==='101','Linked account id stays string');
 accountCheck(password_verify($account['password'],$db->users[101]['password']),'Hash compatible with login');

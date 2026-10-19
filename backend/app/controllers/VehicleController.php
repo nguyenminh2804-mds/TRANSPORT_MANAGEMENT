@@ -14,18 +14,22 @@ class VehicleController extends Controller
             if (!$model->isManager($_SESSION['user_id'])) $this->error('Chỉ ADMIN/STAFF đang hoạt động được quản lý phương tiện.', 403);
             if ($action === 'index') {
                 $search = $this->query('search'); $status = $this->query('status');
-                if ($status !== '' && !in_array($status, Vehicle::STATUSES, true)) throw new DomainException('Bộ lọc trạng thái không hợp lệ.', 422);
+                if ($status !== '' && !in_array($status, array_merge(Vehicle::STATUSES, ResourceStatus::EXTRA), true)) throw new DomainException('Bộ lọc trạng thái không hợp lệ.', 422);
                 $this->success($model->getAll($search, $status));
             }
             if ($action === 'stats') $this->success($model->stats());
-            if ($action === 'store') $this->success($model->create(Vehicle::validate($this->body())), 'Thêm phương tiện thành công.');
+            if ($action === 'store') {
+                $data = $this->body();
+                $data['status'] = 'available'; // Creation ignores client status.
+                $this->success($model->create(Vehicle::validate($data)), 'Thêm phương tiện thành công.');
+            }
             $id = Vehicle::positiveId($_GET['id'] ?? null);
             switch ($action) {
                 case 'show':
                     $vehicle = $model->findById($id);
                     if (!$vehicle) $this->error('Không tìm thấy phương tiện.', 404);
                     $this->success($vehicle); break;
-                case 'update': $this->success($model->change($id, Vehicle::validate($this->body())), 'Cập nhật phương tiện thành công.'); break;
+                case 'update': $body=$this->body();$data=Vehicle::validate($body);if(!array_key_exists('status',$body))unset($data['status']);$this->success($model->change($id,$data), 'Cập nhật phương tiện thành công.'); break;
                 case 'destroy': $this->success($model->change($id, null, true), 'Xóa phương tiện thành công.'); break;
                 default: $this->error('Thao tác không tồn tại.', 404);
             }

@@ -108,3 +108,14 @@
 .drivers-management .drivers-account-grid legend { float:none; font-size:15px; font-weight:700; margin:0 0 12px; }
 .drivers-management .drivers-account-grid p { margin:0; font-size:13px; }
 @media(max-width:640px) { .drivers-management .drivers-account-grid { grid-template-columns:minmax(0,1fr); } }
+
+/* Derived reservation states shared by Driver and Vehicle; do not change stored enums. */
+.drivers-management .drivers-badge { display:inline-flex; align-items:center; gap:6px; }
+.drivers-management .drivers-badge i { flex-shrink:0; }
+.drivers-management .drivers-badge.pending { background:#fef3c7; color:#92400e; }
+.drivers-management .drivers-badge.accepted { background:#dbeafe; color:#1d4ed8; }
+.drivers-management .drivers-badge.unknown { background:#f1f5f9; color:#526078; }
+
+.drivers-management textarea { width:100%; min-width:0; padding:11px 12px; border:1px solid #d8e1ef; border-radius:8px; font:inherit; resize:vertical; }
+
+.drivers-management [aria-invalid="true"] { border-color:#dc2626; }

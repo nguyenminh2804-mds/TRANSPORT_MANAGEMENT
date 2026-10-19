@@ -1,12 +1,22 @@
 (() => {
     'use strict';
     const apiUrl = new URL('../../backend/public/index.php', location.href);
-    const labels = { available: 'Đang rảnh', on_trip: 'Đang thực hiện chuyến', inactive: 'Ngừng làm việc' };
+    const labels = { available: 'Sẵn sàng', on_trip: 'Đang thực hiện chuyến', inactive: 'Chưa sẵn sàng', pending:'Chờ tiếp nhận phân công', accepted:'Đã tiếp nhận – Chưa bắt đầu', unknown:'Dữ liệu phân công không hợp lệ' };
+    function displayStatus(row) { return row.display_status || (row.has_active_assignment && row.status === 'available' ? 'unknown' : row.status); }
+    function showEffectiveStatus(select,row) {
+        for(const option of Array.from(select.querySelectorAll?.('option[data-effective]')||[]))option.remove();
+        if(row&&select.disabled&&displayStatus(row)!==row.status){const option=document.createElement('option');option.dataset.effective='true';option.value='__effective';option.textContent=labels[displayStatus(row)]||'Dữ liệu không hợp lệ';select.append(option);select.value='__effective';}
+    }
+    function statusBadge(row) {
+        const status = displayStatus(row), badge = document.createElement('span'), icon = document.createElement('i');
+        badge.className = 'drivers-badge ' + (Object.hasOwn(labels,status) ? status : 'unknown');
+        icon.className = 'fa-solid fa-' + ({available:'circle-check',pending:'clock',accepted:'circle-check',on_trip:'truck',inactive:'ban',maintenance:'screwdriver-wrench',unknown:'circle-exclamation'}[status] || 'circle-question');
+        icon.setAttribute('aria-hidden','true');badge.append(icon,document.createTextNode(labels[status] || 'Cần kiểm tra dữ liệu'));return badge;
+    }
     const $ = id => document.getElementById(id);
     const form = $('driverForm');
     let selectedId = null;
     let selectedStatus = 'available';
-    let statusId = null;
     let requestNumber = 0;
     let saving = false;
     let ready = false;
@@ -65,7 +75,9 @@
         td.className = 'drivers-empty' + (loading ? ' loading' : '');
         $('driverRows').replaceChildren(row);
     }
+    function reasonError(text='') { $('error-status_reason').textContent=text;$('statusReason').setAttribute('aria-invalid',text?'true':'false'); }
     function clearFieldErrors() {
+        reasonError();
         for (const name of [...fieldNames, ...accountFieldNames]) {
             $('error-' + name).textContent = '';
             form.elements.namedItem(name).setAttribute('aria-invalid', 'false');
@@ -91,13 +103,14 @@
             else if (name === 'phone' && !/^\+?[0-9]{9,15}$/.test(input.value)) error = 'Nhập 9–15 chữ số, có thể bắt đầu bằng +.';
             else if (name === 'user_id' && input.value && (!/^[1-9][0-9]{0,19}$/.test(input.value) || (input.value.length === 20 && input.value > '18446744073709551615'))) error = 'ID phải là số nguyên dương trong giới hạn BIGINT.';
             else if (name === 'license_expiry' && !input.validity.valid) error = 'Vui lòng nhập ngày hợp lệ từ năm 1000 đến 9999.';
-            else if (name === 'status' && !Object.hasOwn(labels, input.value)) error = 'Vui lòng chọn trạng thái hợp lệ.';
+            else if (name === 'status' && !['available','on_trip','inactive'].includes(input.value)) error = 'Vui lòng chọn trạng thái hợp lệ.';
             if (error) { fieldError(name, error); first ||= input; }
         }
         if (first) { first.focus(); return false; }
         return true;
     }
     function showFormError(error) {
+        if(/lý do/i.test(error.message))reasonError(error.message);
         const mappings = [['username', /username|tên đăng nhập/i], ['password', /password|mật khẩu/i], ['phone', /phone|điện thoại/i], ['license_expiry', /license_expiry|ngày hết hạn/i], ['license_class', /license_class|hạng GPLX/i], ['user_id', /user_id|tài khoản/i], ['address', /address|địa chỉ/i], ['driver_code', /driver_code/i], ['full_name', /full_name/i], ['license_number', /license_number/i], ['status', /trạng thái/i]];
         const field = mappings.find(([, pattern]) => pattern.test(error.message));
         if (error.status === 409 && /đã được sử dụng/i.test(error.message)) {
@@ -109,13 +122,13 @@
     }
     async function loadStats() {
         const current = ++statsRequest;
-        for (const id of ['totalDrivers', 'availableDrivers', 'busyDrivers', 'inactiveDrivers']) $(id).textContent = '—';
+        for (const id of ['totalDrivers', 'availableDrivers', 'busyDrivers', 'inactiveDrivers', 'pendingDrivers', 'acceptedDrivers']) $(id).textContent = '—';
         $('statsMessage').textContent = 'Đang tải thống kê…';
         try {
             const drivers = await api('/api/drivers');
             if (current !== statsRequest) return;
             $('totalDrivers').textContent = drivers.length;
-            for (const [status, id] of [['available', 'availableDrivers'], ['on_trip', 'busyDrivers'], ['inactive', 'inactiveDrivers']]) $(id).textContent = drivers.filter(driver => driver.status === status).length;
+            for (const [status, id] of [['available', 'availableDrivers'], ['on_trip', 'busyDrivers'], ['inactive', 'inactiveDrivers'], ['pending','pendingDrivers'], ['accepted','acceptedDrivers']]) $(id).textContent = drivers.filter(driver => displayStatus(driver) === status).length;
             $('statsMessage').textContent = 'Thống kê toàn bộ tài xế, không phụ thuộc bộ lọc danh sách.';
         } catch (error) {
             if (current === statsRequest) $('statsMessage').textContent = `Không tải được thống kê: ${error.message} Nhấn Làm mới để thử lại.`;
@@ -144,15 +157,13 @@
                     const value = key === 'license_expiry' && driver[key] ? driver[key].split('-').reverse().join('/') : driver[key];
                     cell(row, value, columnLabels[index]);
                 }
-                const badge = document.createElement('span');
-                badge.className = `drivers-badge ${driver.status}`;
-                badge.textContent = labels[driver.status] || driver.status;
+                const badge = statusBadge(driver);
                 cell(row, '', 'Trạng thái').replaceChildren(badge);
                 const actionCell = cell(row, '', 'Thao tác');
                 const actions = document.createElement('div');
                 actions.className = 'drivers-row-actions';
                 actionCell.replaceChildren(actions);
-                for (const [action, label] of [['view', 'Xem'], ['edit', 'Sửa'], ['status', 'Trạng thái'], ['delete', 'Xóa']]) {
+                for (const [action, label] of [['view', 'Xem'], ['edit', 'Sửa'], ['delete', 'Xóa']]) {
                     const button = document.createElement('button');
                     button.type = 'button';
                     const icon = document.createElement('i');
@@ -192,10 +203,15 @@
             input.disabled = readonly;
             if (driver) input.value = driver[field] ?? '';
         }
+        form.elements.namedItem('driver_code').disabled=readonly||Boolean(driver);
+        $('driverIdField').hidden=!driver||readonly;
+        $('driverId').value=driver?.driver_id??'';
+        $('statusReasonField').hidden=!driver||readonly;
+        $('statusReason').disabled=!driver||readonly;
         $('accountFields').hidden = readonly || Boolean(driver);
         $('linkedAccountField').hidden = readonly || !driver;
-        form.elements.namedItem('user_id').disabled = readonly || !driver;
-        form.elements.namedItem('full_name').maxLength = driver ? 150 : 100;
+        form.elements.namedItem('user_id').disabled = true;
+        form.elements.namedItem('full_name').maxLength = driver && !driver.user_id ? 150 : 100;
         for (const name of accountFieldNames) {
             const input = form.elements.namedItem(name);
             input.value = '';
@@ -205,7 +221,11 @@
         $('dialogTitle').textContent = readonly ? 'Thông tin tài xế' : driver ? 'Sửa tài xế' : 'Thêm tài xế';
         $('driverCode').textContent = driver ? `Mã tài xế: ${driver.driver_code}` : 'Nhập mã tài xế riêng, không trùng hồ sơ khác.';
         selectedStatus = driver?.status ?? 'available';
-        form.elements.namedItem('status').disabled = readonly || Boolean(driver?.has_active_assignment || driver?.has_active_trip);
+        form.elements.namedItem('status').value = selectedStatus;
+
+        form.elements.namedItem('status').disabled = !driver||readonly||Boolean(driver.has_active_assignment||driver.has_active_trip)||!['available','inactive'].includes(driver.status);
+        $('statusReason').value='';
+        showEffectiveStatus(form.elements.namedItem('status'),driver);
         if (!readonly && (driver?.has_active_assignment || driver?.has_active_trip)) message($('formMessage'), 'Tài xế còn phân công hoặc chuyến đang hiệu lực; có thể sửa hồ sơ nhưng không đổi trạng thái.');
         $('driverFields').hidden = readonly;
         $('requiredNote').hidden = readonly;
@@ -217,7 +237,7 @@
                 const term = document.createElement('dt');
                 const value = document.createElement('dd');
                 term.textContent = label;
-                value.textContent = key === 'status' ? labels[driver.status] : key === 'license_expiry' && driver[key] ? driver[key].split('-').reverse().join('/') : driver[key] ?? '—';
+                value.textContent = key === 'status' ? labels[displayStatus(driver)] : key === 'license_expiry' && driver[key] ? driver[key].split('-').reverse().join('/') : driver[key] ?? '—';
                 group.append(term, value);
                 $('driverDetails').append(group);
             }
@@ -230,6 +250,7 @@
 
     $('listRetry').addEventListener('click', () => { message($('pageMessage')); if (ready) load(); else initialize(); });
     form.addEventListener('input', event => {
+        if(event.target.id==='statusReason'){reasonError();return;}
         const name = event.target.name;
         if (![...fieldNames, ...accountFieldNames].includes(name)) return;
         $('error-' + name).textContent = '';
@@ -240,8 +261,6 @@
     $('addButton').addEventListener('click', () => openForm());
     for (const id of ['closeDialog', 'cancelDialog']) $(id).addEventListener('click', () => { if (!saving) { form.elements.namedItem('password').value = ''; $('driverDialog').close(); } });
     $('driverDialog').addEventListener('cancel', event => { if (saving) event.preventDefault(); else form.elements.namedItem('password').value = ''; });
-    $('statusDialog').addEventListener('cancel', event => { if (saving) event.preventDefault(); });
-    $('closeStatus').addEventListener('click', () => { if (!saving) $('statusDialog').close(); });
     $('filterForm').addEventListener('submit', event => { event.preventDefault(); if (ready) { message($('pageMessage')); load(); } });
     $('resetFilter').addEventListener('click', () => { $('filterForm').reset(); if (ready) { message($('pageMessage')); load(); } });
 
@@ -259,13 +278,6 @@
                 message($('deleteMessage'));
                 $('confirmDelete').disabled = false;
                 $('deleteDialog').showModal();
-            } else if (button.dataset.action === 'status') {
-                if (driver.has_active_assignment || driver.has_active_trip) throw new Error('Không thể đổi trạng thái khi còn phân công assigned hoặc chuyến PLANNED/IN_PROGRESS.');
-                statusId = id;
-                $('statusDriver').textContent = `${driver.driver_code} — ${driver.full_name}`;
-                $('newStatus').value = driver.status;
-                message($('statusMessage'));
-                $('statusDialog').showModal();
             } else { saving = false; openForm(driver, button.dataset.action === 'view'); }
         } catch (error) { message($('pageMessage'), error.message, true); }
         finally { saving = false; button.disabled = false; }
@@ -282,10 +294,10 @@
         $('confirmDelete').textContent = 'Đang xóa…';
         message($('deleteMessage'));
         try {
-            await api('/api/drivers', 'DELETE', null, { id: pendingDelete.driver_id });
+            const result=await api('/api/drivers', 'DELETE', null, { id: pendingDelete.driver_id });
             pendingDelete = null;
             $('deleteDialog').close();
-            message($('pageMessage'), 'Xóa tài xế thành công.');
+            message($('pageMessage'),result?.account_deleted?'Đã xóa hồ sơ tài xế và tài khoản liên kết.':'Đã xóa hồ sơ tài xế không liên kết tài khoản.');
             await refresh();
         } catch (error) { message($('deleteMessage'), error.message, true); }
         finally { saving = false; $('confirmDelete').disabled = false; $('confirmDelete').textContent = 'Xóa tài xế'; }
@@ -295,11 +307,11 @@
         event.preventDefault();
         if (saving || !ready || formReadonly || !validateForm()) return;
         const data = Object.fromEntries(new FormData(form));
-        if (selectedId) data.user_id = data.user_id.trim() === '' ? null : data.user_id.trim();
-        else delete data.user_id;
+        if(selectedId){delete data.driver_code;delete data.driver_id;}
+        delete data.user_id;
         data.address = data.address.trim() || null;
         data.license_expiry = data.license_expiry || null;
-        if (form.elements.namedItem('status').disabled) data.status = selectedStatus;
+        if(selectedId){if(form.elements.namedItem('status').disabled||data.status===selectedStatus)delete data.status;else{const reason=$('statusReason').value.trim();if(!reason){reasonError('Vui lòng nhập lý do hiệu chỉnh trạng thái.');$('statusReason').focus();return;}data.status_reason=reason;data.expected_status=selectedStatus;}}else data.status='available';
         saving = true;
         $('saveButton').disabled = true;
         $('saveButton').textContent = 'Đang lưu…';
@@ -313,32 +325,14 @@
         finally { saving = false; $('saveButton').disabled = false; $('saveButton').textContent = selectedId ? 'Lưu thay đổi' : 'Tạo hồ sơ và tài khoản'; }
     });
 
-    $('statusForm').addEventListener('submit', async event => {
-        event.preventDefault();
-        if (saving || !ready) return;
-        saving = true;
-        const button = event.submitter || $('statusSaveButton');
-        button.disabled = true;
-        try {
-            await api('/api/drivers/status', 'PUT', { status: $('newStatus').value }, { id: statusId });
-            $('statusDialog').close();
-            message($('pageMessage'), 'Cập nhật trạng thái thành công.');
-            await refresh();
-        } catch (error) { message($('statusMessage'), error.message, true); }
-        finally { saving = false; button.disabled = false; }
-    });
 
-    $('logoutButton').addEventListener('click', async () => {
-        try { await api('/api/logout', 'POST'); try { sessionStorage.removeItem('user'); } catch {} location.href = '../customer/login.html'; }
-        catch (error) { message($('pageMessage'), error.message, true); }
-    });
-
+    $('logoutButton').addEventListener('click',async()=>{if(saving)return;try{await api('/api/logout','POST');ready=false;try{sessionStorage.removeItem('user');}catch{}location.href='../customer/login.html';}catch(error){message($('pageMessage'),error.message,true);}});
     async function initialize() {
         ++requestNumber;
         ++statsRequest;
         message($('pageMessage'));
         tableMessage('Đang kiểm tra phiên đăng nhập…', true);
-        for (const id of ['totalDrivers', 'availableDrivers', 'busyDrivers', 'inactiveDrivers']) $(id).textContent = '—';
+        for (const id of ['totalDrivers', 'availableDrivers', 'busyDrivers', 'inactiveDrivers', 'pendingDrivers', 'acceptedDrivers']) $(id).textContent = '—';
         $('statsMessage').textContent = 'Đang kiểm tra phiên đăng nhập…';
         ready = false;
         $('addButton').disabled = true;
@@ -358,7 +352,7 @@
     }
     window.addEventListener('pageshow', async event => {
         if (event.persisted) {
-            for (const id of ['driverDialog', 'statusDialog', 'deleteDialog']) $(id).close();
+            for (const id of ['driverDialog', 'deleteDialog']) $(id).close();
             pendingDelete = null;
             await initialize();
         }

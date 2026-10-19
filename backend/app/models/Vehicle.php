@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . '/ResourceStatus.php';
 require_once __DIR__ . '/../../config/database.php';
 
 class VehicleValidationException extends DomainException
@@ -83,7 +84,8 @@ class Vehicle
 
     private function selectSql(): string
     {
-        return "SELECT v.*, EXISTS(SELECT 1 FROM assignments a WHERE a.vehicle_id=v.vehicle_id AND a.status='assigned') AS has_active_assignment, EXISTS(SELECT 1 FROM assignments a WHERE a.vehicle_id=v.vehicle_id AND a.status='assigned') AS has_active_trip FROM vehicles v";
+        $display = ResourceStatus::sql('v','vehicle_id');
+        return "SELECT v.*, ($display) AS display_status, EXISTS(SELECT 1 FROM assignments a WHERE a.vehicle_id=v.vehicle_id AND a.status='assigned') AS has_active_assignment, EXISTS(SELECT 1 FROM assignments a WHERE a.vehicle_id=v.vehicle_id AND a.status='assigned') AS has_active_trip FROM vehicles v";
     }
 
     public function getAll(string $search = '', string $status = ''): array
@@ -93,15 +95,15 @@ class Vehicle
             $sql .= " AND (v.license_plate LIKE :plate ESCAPE '!' OR v.vehicle_type LIKE :type ESCAPE '!' OR v.brand LIKE :brand ESCAPE '!')";
             foreach (['plate','type','brand'] as $key) $params[$key] = '%' . strtr($search, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         }
-        if ($status !== '') { $sql .= ' AND v.status=:status'; $params['status'] = $status; }
+        if ($status !== '') { $sql .= ' AND ('.ResourceStatus::sql('v','vehicle_id').')=:status'; $params['status'] = $status; }
         $stmt = $this->conn->prepare($sql . ' ORDER BY v.vehicle_id DESC'); $stmt->execute($params);
         return array_map([$this, 'dto'], $stmt->fetchAll());
     }
 
     public function stats(): array
     {
-        $result = array_fill_keys(array_merge(['total'], self::STATUSES), 0);
-        foreach ($this->conn->query('SELECT status, COUNT(*) AS amount FROM vehicles GROUP BY status')->fetchAll() as $row) {
+        $result = array_fill_keys(array_merge(['total'], self::STATUSES, ResourceStatus::EXTRA), 0);
+        foreach ($this->conn->query('SELECT display_status AS status, COUNT(*) AS amount FROM ('.$this->selectSql().') resource_rows GROUP BY display_status')->fetchAll() as $row) {
             $result[$row['status']] = (int)$row['amount']; $result['total'] += (int)$row['amount'];
         }
         return $result;
@@ -131,6 +133,7 @@ class Vehicle
             throw new DomainException('Không thể xóa phương tiện đang thực hiện chuyến hoặc đã có lịch sử chuyến/phân công.', 409);
         }
         if ($target !== null && $target !== $vehicle['status']) {
+            if($target==='on_trip'||$vehicle['status']==='on_trip'||array_filter($trips,fn($t)=>$t['status']==='IN_PROGRESS'))throw new VehicleValidationException(['status'=>'Trạng thái đang chạy do chuyến quyết định.'],409);
             foreach ($assignments as $assignment) if ($assignment['status'] === 'assigned') {
                 throw new VehicleValidationException(['status' => 'Không thể đổi trạng thái khi còn phân công đang hoạt động.'], 409);
             }
@@ -139,6 +142,7 @@ class Vehicle
 
     public function create(array $data)
     {
+        $data['status'] = 'available';
         $this->assertUnique($data['license_plate']);
         $stmt = $this->conn->prepare('INSERT INTO vehicles (license_plate, vehicle_type, brand, capacity, status) VALUES (:license_plate,:vehicle_type,:brand,:capacity,:status)');
         $stmt->execute($data);
@@ -153,6 +157,7 @@ class Vehicle
             if (!$vehicle) throw new DomainException('Không tìm thấy phương tiện.', 404);
             $stmt = $this->conn->prepare('SELECT assignment_id, status FROM assignments WHERE vehicle_id=? FOR UPDATE'); $stmt->execute([$id]); $assignments = $stmt->fetchAll();
             $stmt = $this->conn->prepare('SELECT id, status FROM trips WHERE vehicle_id=? FOR UPDATE'); $stmt->execute([$id]); $trips = $stmt->fetchAll();
+            if($data!==null&&!array_key_exists('status',$data))$data['status']=$vehicle['status'];
             self::assertChangeAllowed($vehicle, $assignments, $trips, $data['status'] ?? null, $delete);
             if ($delete) {
                 $stmt = $this->conn->prepare('DELETE FROM vehicles WHERE vehicle_id=?'); $stmt->execute([$id]); $result = [];

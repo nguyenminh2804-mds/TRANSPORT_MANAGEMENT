@@ -4,562 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lý tài xế - Quản lý vận tải</title>
-    <!-- Thư viện Bootstrap & FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/common.css?v=d1454f41a43b">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    
-    <style>
-        body { background-color: #f5f7fb; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-        
-        /* Navbar Styles */
-        .drivers-header { background: #ffffff; border-bottom: 1px solid #e5e7eb; padding: 14px 0; margin-bottom: 20px;}
-        .drivers-container { max-width: 1200px; margin: 0 auto; padding: 0 15px;}
-        .drivers-row { display: flex; align-items: center; justify-content: space-between; }
-        .drivers-brand { display: flex; align-items: center; gap: 10px; color: #1f2937; text-decoration: none; font-size: 20px; font-weight: 700; }
-        .drivers-brand i { background: #2563eb; color: white; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .drivers-user { gap: 15px; font-size: 14px; font-weight: 600;}
-        .drivers-avatar { width: 38px; height: 38px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; }
-        
-        /* Nút cơ bản */
-        .btn-logout { background: transparent; border: none; color: #6b7280; font-weight: 600; cursor: pointer; transition: 0.2s;}
-        .btn-logout:hover { color: #dc2626; }
-        .btn-primary-custom { background-color: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; transition: 0.2s;}
-        .btn-primary-custom:hover { background-color: #1d4ed8; }
-        .btn-primary-custom:disabled { background-color: #9ca3af; cursor: not-allowed; }
-
-        /* Dashboard & Bảng */
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
-        .stat-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 20px; display: flex; align-items: center; gap: 15px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03); }
-        .stat-icon { width: 48px; height: 48px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 19px; }
-        .stat-icon.total { background: #eff6ff; color: #2563eb; }
-        .stat-icon.available { background: #ecfdf5; color: #059669; }
-        .stat-icon.on_trip { background: #fef3c7; color: #d97706; }
-        .stat-icon.inactive { background: #fef2f2; color: #dc2626; }
-        .stat-content span { display: block; color: #6b7280; font-size: 13px; margin-bottom: 3px; }
-        .stat-content strong { font-size: 24px; color: #1f2937;}
-
-        .card-container { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 3px 12px rgba(0, 0, 0, 0.03); overflow: hidden; margin-bottom: 20px;}
-        .card-header-custom { padding: 15px 20px; border-bottom: 1px solid #e5e7eb; background: #fafafa; display: flex; justify-content: space-between; align-items: center; }
-        .card-header-custom h2 { margin: 0; font-size: 18px; font-weight: 700; color: #1f2937; }
-        
-        .table-responsive { max-height: 60vh; overflow-y: auto; }
-        .table-custom th { background-color: #f9fafb; font-size: 13px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 15px;}
-        .table-custom td { padding: 12px 15px; vertical-align: middle; font-size: 14px; color: #1f2937; }
-        
-        /* Nhãn trạng thái */
-        .badge-custom { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .badge-available { background-color: #d1e7dd; color: #0f5132; }
-        .badge-on_trip { background-color: #fff3cd; color: #856404; }
-        .badge-inactive { background-color: #f8d7da; color: #842029; }
-        
-        /* Nút thao tác trên dòng */
-        .action-btn { background: transparent; border: none; border-radius: 4px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s;}
-        .action-btn:hover { background: #f3f4f6; }
-        .action-btn.edit { color: #d97706; }
-        .action-btn.status { color: #2563eb; }
-        .action-btn.delete { color: #dc2626; }
-
-        /* Dialog/Modal */
-        dialog { border: none; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-width: 700px; width: 100%; padding: 0;}
-        dialog::backdrop { background: rgba(0,0,0,0.5); }
-        .dialog-header { padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-        .dialog-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: #1f2937;}
-        .dialog-body { padding: 20px; max-height: 70vh; overflow-y: auto;}
-        .dialog-footer { padding: 15px 20px; border-top: 1px solid #e5e7eb; background: #fafafa; display: flex; justify-content: flex-end; gap: 10px;}
-        .field-error { color: #dc2626; font-size: 12px; display: block; margin-top: 4px; min-height: 18px;}
-    </style>
+    <link rel="stylesheet" href="../css/customer.css?v=921343b48d30">
+    <link rel="stylesheet" href="../css/transport.css?v=e059e844b2db">
+    <link rel="stylesheet" href="../css/drivers.css?v=54c368497b09">
+    <link rel="stylesheet" href="../css/drivers-management.css?v=d874fc54ef5b">
+    <script src="../js/drivers.js?v=025eadc398a9" defer></script>
+    <link rel="stylesheet" href="../css/transport-navigation.css?v=24826222cfe9">
 </head>
-<body>
-    <!-- HEADER -->
-    <header class="drivers-header">
-        <div class="drivers-container drivers-row">
-            <a href="dashboard.html" class="drivers-brand">
-                <i class="fa-solid fa-truck-fast"></i> <span>Quản lý vận tải</span>
-            </a>
-            <div class="drivers-row drivers-user">
-                <span class="drivers-avatar"><i class="fa-solid fa-user"></i></span>
-                <span id="currentUser">Đang tải...</span>
-                <button id="logoutButton" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
-            </div>
-        </div>
-    </header>
-
+<body class="drivers-page drivers-management">
+    <header class="drivers-header"><div class="drivers-container drivers-row">
+        <a href="dashboard.html" class="drivers-brand"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> <span>Quản lý vận tải</span></a>
+        <div class="drivers-row drivers-user"><span class="drivers-avatar" aria-hidden="true"><i class="fa-solid fa-user"></i></span><span id="currentUser">Đang kiểm tra phiên…</span><button id="logoutButton" type="button"><i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Đăng xuất</button></div>
+    </div></header>
     <main class="drivers-container">
-        <!-- ĐIỀU HƯỚNG VÀ TIÊU ĐỀ -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h1 class="h3 fw-bold mb-1"><i class="fa-solid fa-id-card text-primary me-2"></i>Quản lý tài xế</h1>
-                <p class="text-muted mb-0">Quản lý hồ sơ, giấy phép lái xe và phân công tài khoản.</p>
-            </div>
-            <button id="addButton" type="button" class="btn-primary-custom" disabled>
-                <i class="fa-solid fa-plus me-1"></i> Thêm tài xế
-            </button>
-        </div>
+            <nav class="transport-nav" aria-label="Chức năng nhân viên">
+      <ul class="transport-nav__items">
+        <li class="transport-nav__item"><a class="transport-nav__link" href="dashboard.html"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Tổng quan</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="drivers.html" aria-current="page"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>Quản lý tài xế</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="vehicles.html"><i class="fa-solid fa-truck" aria-hidden="true"></i><span>Quản lý phương tiện</span></a></li>
+        <li class="transport-nav__item"><a class="transport-nav__link" href="assignment.html"><i class="fa-solid fa-route" aria-hidden="true"></i><span>Phân công</span></a></li>
+      </ul>
+    </nav>
 
-        <div id="pageMessage" class="alert alert-info" style="display:none;"></div>
-
-        <!-- THỐNG KÊ -->
-        <section class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon total"><i class="fa-solid fa-users"></i></div>
-                <div class="stat-content"><span>Tổng tài xế</span><strong id="totalDrivers">—</strong></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon available"><i class="fa-solid fa-circle-check"></i></div>
-                <div class="stat-content"><span>Đang rảnh</span><strong id="availableDrivers">—</strong></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon on_trip"><i class="fa-solid fa-truck-moving"></i></div>
-                <div class="stat-content"><span>Đang chạy xe</span><strong id="busyDrivers">—</strong></div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon inactive"><i class="fa-solid fa-user-slash"></i></div>
-                <div class="stat-content"><span>Ngừng làm việc</span><strong id="inactiveDrivers">—</strong></div>
-            </div>
+        <div class="drivers-row drivers-title customer-orders-page-header"><div><h1><span class="drivers-heading-icon"><i class="fa-solid fa-id-card" aria-hidden="true"></i></span>Quản lý tài xế</h1><p>Thông tin hồ sơ, giấy phép lái xe và trạng thái làm việc.</p></div><button id="addButton" type="button" class="drivers-primary" disabled><i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm tài xế</button></div>
+        <div id="pageMessage" role="status" aria-live="polite"></div>
+        <section class="drivers-metrics" aria-label="Thống kê toàn bộ tài xế" aria-live="polite">
+            <div class="customer-order-summary-card"><div class="customer-summary-icon total" aria-hidden="true"><i class="fa-solid fa-users"></i></div><div><span>Tổng tài xế</span><strong id="totalDrivers">—</strong></div></div>
+            <div class="customer-order-summary-card"><div class="customer-summary-icon delivering" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div><div><span>Sẵn sàng</span><strong id="availableDrivers">—</strong></div></div>
+            <div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-truck"></i></div><div><span>Đang thực hiện chuyến</span><strong id="busyDrivers">—</strong></div></div>
+            <div class="customer-order-summary-card"><div class="customer-summary-icon drivers-icon-inactive" aria-hidden="true"><i class="fa-solid fa-user-slash"></i></div><div><span>Chưa sẵn sàng</span><strong id="inactiveDrivers">—</strong></div></div>
+        <div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-clock" aria-hidden="true"></i></div><div><span>Chờ tiếp nhận phân công</span><strong id="pendingDrivers">—</strong></div></div><div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div><div><span>Đã tiếp nhận – Chưa bắt đầu</span><strong id="acceptedDrivers">—</strong></div></div></section>
+        <p id="statsMessage" class="drivers-note" role="status">Đang tải thống kê…</p>
+        <section class="customer-orders-card drivers-list-card" aria-labelledby="listHeading">
+            <div class="drivers-row drivers-list-heading customer-orders-card-header"><div><h2 id="listHeading"><i class="fa-solid fa-address-book" aria-hidden="true"></i>Danh sách tài xế</h2><p>Tra cứu hồ sơ và quản lý trạng thái làm việc</p></div><button id="refreshButton" class="customer-refresh-btn" type="button"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Làm mới</button></div>
+            <form id="filterForm" class="drivers-filters">
+                <label for="search"><span><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</span><input type="search" id="search" maxlength="150" placeholder="Mã, họ tên, điện thoại hoặc số GPLX"></label>
+                <label for="statusFilter"><span><i class="fa-solid fa-filter" aria-hidden="true"></i> Lọc trạng thái</span><select id="statusFilter"><option value="">Tất cả trạng thái</option><option value="available">Sẵn sàng</option><option value="on_trip">Đang thực hiện chuyến</option><option value="inactive">Chưa sẵn sàng</option><option value="pending">Đã phân công – Chờ tiếp nhận</option><option value="accepted">Đã tiếp nhận – Chưa bắt đầu</option></select></label>
+                <button type="submit" class="drivers-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</button><button id="resetFilter" type="button"><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i> Xóa bộ lọc</button>
+            </form>
+            <div class="drivers-results"><p id="resultCount" role="status">Đang kiểm tra phiên đăng nhập…</p><button id="listRetry" type="button" hidden><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Thử lại</button></div>
+            <div class="drivers-table-wrap"><table class="customer-orders-table"><caption class="visually-hidden">Hồ sơ và thao tác quản lý tài xế</caption><thead><tr><th scope="col">Mã tài xế</th><th scope="col">Họ tên</th><th scope="col">Điện thoại</th><th scope="col">Số GPLX</th><th scope="col">Hạng</th><th scope="col">Hết hạn GPLX</th><th scope="col">Trạng thái</th><th scope="col">Thao tác</th></tr></thead><tbody id="driverRows"><tr><td colspan="8" class="drivers-empty">Đang kiểm tra phiên đăng nhập…</td></tr></tbody></table></div>
         </section>
-
-        <!-- KHU VỰC BẢNG DỮ LIỆU -->
-        <section class="card-container">
-            <div class="card-header-custom">
-                <h2><i class="fa-solid fa-list me-2 text-secondary"></i>Danh sách hồ sơ tài xế</h2>
-                <button id="refreshButton" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-rotate-right me-1"></i>Làm mới</button>
-            </div>
-            
-            <!-- Bộ lọc -->
-            <div class="p-3 border-bottom bg-light">
-                <form id="filterForm" class="row g-2 align-items-center">
-                    <div class="col-md-5">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="search" id="search" class="form-control" placeholder="Tìm theo Mã, Tên, SĐT, GPLX...">
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <select id="statusFilter" class="form-select">
-                            <option value="">-- Tất cả trạng thái --</option>
-                            <option value="available">Đang rảnh</option>
-                            <option value="on_trip">Đang thực hiện chuyến</option>
-                            <option value="inactive">Ngừng làm việc</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="submit" class="btn btn-secondary me-1">Lọc</button>
-                        <button type="button" id="resetFilter" class="btn btn-outline-secondary">Xóa bộ lọc</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Bảng -->
-            <div class="table-responsive">
-                <table class="table table-custom table-hover mb-0">
-                    <thead>
-                        <tr>
-                            <th>Mã TX</th>
-                            <th>Họ tên</th>
-                            <th>Điện thoại</th>
-                            <th>Số GPLX</th>
-                            <th>Hạng</th>
-                            <th>Trạng thái</th>
-                            <th class="text-center">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="driverRows">
-                        <tr><td colspan="7" class="text-center py-4 text-muted"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        <p class="drivers-note">Tài xế có phân công đang hiệu lực không thể đổi trạng thái. Hồ sơ có lịch sử phân công/chuyến hoặc đang thực hiện chuyến không thể xóa.</p>
     </main>
-
-    <!-- ============================================== -->
-    <!-- DIALOG (MODAL): THÊM / SỬA TÀI XẾ -->
-    <!-- ============================================== -->
-    <dialog id="driverDialog">
-        <form id="driverForm" novalidate>
-            <div class="dialog-header">
-                <h3 id="dialogTitle"><i class="fa-solid fa-id-card text-primary me-2"></i>Thêm tài xế mới</h3>
-                <button type="button" id="closeDialog" class="btn-close"></button>
-            </div>
-            <div class="dialog-body">
-                <div id="formMessage" class="alert alert-danger" style="display:none;"></div>
-                <div class="alert alert-info small py-2 mb-3">Các trường có dấu <span class="text-danger">*</span> là bắt buộc. Nếu tài khoản đăng nhập đã có ở phần Quản lý Người Dùng, vui lòng nhập ID tài khoản vào ô "Tài khoản liên kết".</div>
-                
-                <h6 class="fw-bold border-bottom pb-2 mb-3 text-secondary">Thông tin hồ sơ nghiệp vụ</h6>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Mã tài xế <span class="text-danger">*</span></label>
-                        <input name="driver_code" class="form-control" required placeholder="VD: TX001">
-                        <span id="error-driver_code" class="field-error"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
-                        <input name="full_name" class="form-control" required>
-                        <span id="error-full_name" class="field-error"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
-                        <input name="phone" class="form-control" required placeholder="Gồm 9-15 số">
-                        <span id="error-phone" class="field-error"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label fw-semibold">Trạng thái <span class="text-danger">*</span></label>
-                        <select name="status" class="form-select">
-                            <option value="available">Đang rảnh</option>
-                            <option value="inactive">Ngừng làm việc</option>
-                        </select>
-                        <span id="error-status" class="field-error"></span>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Địa chỉ</label>
-                        <input name="address" class="form-control">
-                        <span id="error-address" class="field-error"></span>
-                    </div>
-                    <div class="col-md-5">
-                        <label class="form-label fw-semibold">Số GPLX <span class="text-danger">*</span></label>
-                        <input name="license_number" class="form-control" required>
-                        <span id="error-license_number" class="field-error"></span>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">Hạng <span class="text-danger">*</span></label>
-                        <select name="license_class" class="form-select" required>
-                            <option value="B2">B2</option>
-                            <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
-                            <option value="FC">FC</option>
-                        </select>
-                        <span id="error-license_class" class="field-error"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Ngày hết hạn</label>
-                        <input name="license_expiry" type="date" class="form-control">
-                        <span id="error-license_expiry" class="field-error"></span>
-                    </div>
-                </div>
-
-                <!-- Khu vực Liên kết Tài khoản / Tạo mới -->
-                <div class="mt-4 p-3 bg-light rounded border">
-                    <h6 class="fw-bold mb-3 text-secondary"><i class="fa-solid fa-user-lock me-2"></i>Tài khoản đăng nhập App</h6>
-                    
-                    <div id="linkedAccountField" class="mb-3">
-                        <label class="form-label fw-semibold">ID tài khoản liên kết (Tùy chọn)</label>
-                        <input name="user_id" class="form-control" placeholder="ID trong bảng users (nếu đã có)">
-                        <div class="form-text text-muted">Nếu bạn đã chuyển Role của 1 user thành DRIVER, hãy nhập ID của user đó vào đây để liên kết.</div>
-                        <span id="error-user_id" class="field-error"></span>
-                    </div>
-
-                    <div id="accountFields">
-                        <div class="form-text text-primary mb-2">Hoặc hệ thống sẽ tự tạo mới tài khoản đăng nhập dựa vào thông tin sau:</div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Tên đăng nhập mới <span class="text-danger">*</span></label>
-                                <input name="username" class="form-control">
-                                <span id="error-username" class="field-error"></span>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
-                                <input name="password" type="password" class="form-control">
-                                <span id="error-password" class="field-error"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="dialog-footer">
-                <button type="button" id="cancelDialog" class="btn btn-outline-secondary">Hủy</button>
-                <button type="submit" id="saveButton" class="btn btn-primary"><i class="fa-solid fa-save me-1"></i> Lưu thông tin</button>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- DIALOG ĐỔI TRẠNG THÁI -->
-    <dialog id="statusDialog">
-        <form id="statusForm">
-            <div class="dialog-header">
-                <h3 class="text-warning mb-0"><i class="fa-solid fa-arrows-rotate me-2"></i>Đổi trạng thái</h3>
-            </div>
-            <div class="dialog-body">
-                <div id="statusMessage" class="alert alert-danger" style="display:none;"></div>
-                <p>Tài xế: <strong id="statusDriver" class="text-primary"></strong></p>
-                <label class="form-label fw-semibold">Trạng thái mới</label>
-                <select id="newStatus" class="form-select mb-3">
-                    <option value="available">Đang rảnh</option>
-                    <option value="inactive">Ngừng làm việc</option>
-                </select>
-            </div>
-            <div class="dialog-footer">
-                <button type="button" id="closeStatus" class="btn btn-outline-secondary">Hủy</button>
-                <button type="submit" id="statusSaveButton" class="btn btn-warning fw-bold text-dark">Cập nhật</button>
-            </div>
-        </form>
-    </dialog>
-
-    <!-- DIALOG XÓA -->
-    <dialog id="deleteDialog">
-        <div class="dialog-header">
-            <h3 class="text-danger mb-0"><i class="fa-solid fa-triangle-exclamation me-2"></i>Xác nhận xóa</h3>
+    <dialog id="driverDialog" aria-labelledby="dialogTitle"><form id="driverForm" novalidate>
+        <div class="drivers-row drivers-dialog-header"><h2 id="dialogTitle">Thêm tài xế</h2><button type="button" id="closeDialog" aria-label="Đóng"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <p id="driverCode" class="drivers-dialog-description"></p>
+        <p id="requiredNote" class="drivers-dialog-description">Các trường có dấu * là bắt buộc.</p>
+        <dl id="driverDetails" class="drivers-details" hidden></dl>
+        <div id="formMessage" role="alert" aria-live="assertive"></div>
+        <div id="driverFields" class="drivers-form-grid">
+            <h3 class="drivers-full drivers-form-heading">Thông tin hồ sơ</h3>
+            <label id="driverIdField" hidden>ID tài xế<input id="driverId" disabled></label>
+            <label id="linkedAccountField" hidden>ID tài khoản tài xế<input name="user_id" disabled aria-describedby="error-user_id" type="text" inputmode="numeric" pattern="[1-9][0-9]{0,19}" maxlength="20"><small>Tài khoản liên kết chỉ đọc; không thay đổi khi sửa hồ sơ.</small><small id="error-user_id" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Mã tài xế *<input name="driver_code" aria-describedby="error-driver_code" required maxlength="50" placeholder="Ví dụ TX001"><small id="error-driver_code" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Họ tên *<input name="full_name" aria-describedby="error-full_name" required maxlength="150" autocomplete="name"><small id="error-full_name" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Số điện thoại *<input name="phone" aria-describedby="error-phone" type="tel" required maxlength="16" pattern="\+?[0-9]{9,15}" autocomplete="tel"><small id="error-phone" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Địa chỉ<input name="address" aria-describedby="error-address" maxlength="255" autocomplete="street-address"><small id="error-address" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Số GPLX *<input name="license_number" aria-describedby="error-license_number" required maxlength="50"><small id="error-license_number" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Hạng GPLX *<input name="license_class" aria-describedby="error-license_class" required maxlength="30" list="licenseSuggestions"><datalist id="licenseSuggestions"><option value="B"><option value="C"><option value="D"><option value="C1"><option value="CE"></datalist><small id="error-license_class" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Ngày hết hạn GPLX<input name="license_expiry" aria-describedby="error-license_expiry" type="date" min="1000-01-01" max="9999-12-31"><small id="error-license_expiry" class="drivers-field-error" aria-live="polite"></small></label>
+            <label>Trạng thái *<select name="status" aria-describedby="error-status"><option value="available">Sẵn sàng</option><option value="on_trip" disabled>Đang thực hiện chuyến</option><option value="inactive">Chưa sẵn sàng</option></select><small id="error-status" class="drivers-field-error" aria-live="polite"></small></label>
+            <fieldset id="accountFields" class="drivers-full drivers-account-grid">
+                <legend>Thông tin tài khoản đăng nhập</legend>
+                <p class="drivers-full drivers-note">Tạo đồng thời tài khoản DRIVER đang hoạt động và liên kết với hồ sơ này.</p>
+                <label>Tên đăng nhập *<input name="username" required maxlength="50" autocomplete="off" spellcheck="false" aria-describedby="error-username"><small id="error-username" class="drivers-field-error" aria-live="polite"></small></label>
+                <label>Mật khẩu khởi tạo *<input name="password" type="password" required maxlength="72" autocomplete="new-password" aria-describedby="passwordHelp error-password"><small id="passwordHelp">Không được để trống, tối đa 72 byte UTF-8. Ký tự có dấu có thể dùng nhiều byte.</small><small id="error-password" class="drivers-field-error" aria-live="polite"></small></label>
+            </fieldset>
+            <label id="statusReasonField" class="drivers-full" hidden>Lý do hiệu chỉnh trạng thái<textarea id="statusReason" rows="2" maxlength="2000" aria-describedby="statusReasonHelp error-status_reason" placeholder="Bắt buộc khi đổi Sẵn sàng/Chưa sẵn sàng"></textarea><small id="statusReasonHelp">Chỉ hiệu chỉnh khi không có phân công hoặc chuyến khóa trạng thái.</small><small id="error-status_reason" class="drivers-field-error" aria-live="polite"></small></label>
         </div>
-        <div class="dialog-body">
-            <div id="deleteMessage" class="alert alert-danger" style="display:none;"></div>
-            <p>Bạn có chắc chắn muốn xóa hồ sơ tài xế này? Thao tác không thể hoàn tác.</p>
-            <div class="alert alert-warning fw-bold text-dark" id="deleteDriver"></div>
-            <small class="text-muted">Hệ thống sẽ từ chối xóa nếu tài xế đang chạy chuyến hoặc có dữ liệu lịch sử.</small>
-        </div>
-        <div class="dialog-footer">
-            <button type="button" id="cancelDelete" class="btn btn-outline-secondary">Hủy</button>
-            <button type="button" id="confirmDelete" class="btn btn-danger"><i class="fa-solid fa-trash-can me-1"></i> Xóa tài xế</button>
-        </div>
+        <div class="drivers-actions"><button id="cancelDialog" type="button">Hủy</button><button id="saveButton" class="drivers-primary" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Lưu tài xế</button></div>
+    </form></dialog>
+    <dialog id="deleteDialog" aria-labelledby="deleteTitle" aria-describedby="deleteDescription">
+        <div class="drivers-row drivers-dialog-header"><h2 id="deleteTitle"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Xóa tài xế</h2><button id="closeDelete" type="button" aria-label="Đóng"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>
+        <div class="drivers-delete-body"><p id="deleteDriver"></p><p id="deleteDescription">Bạn có chắc muốn xóa hồ sơ này? Thao tác không thể hoàn tác. Hồ sơ và tài khoản DRIVER liên kết sẽ cùng bị xóa trong một giao dịch. Nếu ràng buộc hoặc lịch sử ngăn xóa, cả hai được giữ nguyên. Hệ thống từ chối nếu tài xế đang thực hiện chuyến hoặc có lịch sử chuyến, phân công, yêu cầu hay hiệu chỉnh trạng thái.</p><div id="deleteMessage" role="alert"></div></div>
+        <div class="drivers-actions"><button id="cancelDelete" type="button" autofocus>Hủy</button><button id="confirmDelete" type="button" class="drivers-delete-confirm"><i class="fa-solid fa-trash-can" aria-hidden="true"></i> Xóa tài xế</button></div>
     </dialog>
-
-    <!-- Kịch bản Logic JS -->
-    <script>
-        const API_URL = new URL('../../backend/public/index.php', window.location.href);
-        const STATUS_LABELS = { 'available': 'Đang rảnh', 'on_trip': 'Đang chạy xe', 'inactive': 'Ngừng làm việc' };
-        const STATUS_BADGE = { 'available': 'badge-available', 'on_trip': 'badge-on_trip', 'inactive': 'badge-inactive' };
-        
-        let driversList = [];
-        let selectedId = null;
-        let isSaving = false;
-
-        // Tiện ích hiển thị thông báo
-        function showMsg(elementId, text, isError = true) {
-            const el = document.getElementById(elementId);
-            if (!text) { el.style.display = 'none'; return; }
-            el.textContent = text;
-            el.className = `alert alert-${isError ? 'danger' : 'success'} py-2 mb-3`;
-            el.style.display = 'block';
-        }
-
-        function showFieldError(field, text) {
-            const errEl = document.getElementById('error-' + field);
-            if (errEl) errEl.textContent = text || '';
-        }
-
-        // --- GIAO TIẾP API CHUNG ---
-        async function api(route, method = 'GET', data = null, params = {}) {
-            const url = new URL(API_URL);
-            url.searchParams.set('route', route);
-            for (let [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-
-            let res;
-            try {
-                const options = { method, credentials: 'same-origin', cache: 'no-store', headers: { 'Accept': 'application/json' } };
-                if (data) {
-                    options.headers['Content-Type'] = 'application/json';
-                    options.body = JSON.stringify(data);
-                }
-                res = await fetch(url.href, options);
-            } catch (e) { throw new Error('Không thể kết nối máy chủ.'); }
-
-            if (res.status === 401) { window.location.href = '../customer/login.html'; throw new Error('Phiên đăng nhập hết hạn.'); }
-            
-            let json = await res.json().catch(() => ({}));
-            if (!res.ok || !json.success) throw new Error(json.message || `Lỗi HTTP ${res.status}`);
-            return json.data;
-        }
-
-        // --- KHỞI TẠO & KIỂM TRA PHIÊN ---
-        async function init() {
-            try {
-                const user = await api('/api/me');
-                if (!['ADMIN', 'STAFF'].includes(user.role)) throw new Error('Không có quyền truy cập');
-                document.getElementById('currentUser').textContent = user.full_name;
-                document.getElementById('addButton').disabled = false;
-                await loadData();
-            } catch (e) {
-                showMsg('pageMessage', e.message);
-                document.getElementById('driverRows').innerHTML = `<tr><td colspan="7" class="text-center text-danger">Chưa đăng nhập hoặc không có quyền.</td></tr>`;
-            }
-        }
-
-        // --- TẢI DỮ LIỆU ---
-        async function loadData() {
-            const search = document.getElementById('search').value.trim();
-            const status = document.getElementById('statusFilter').value;
-            try {
-                driversList = await api('/api/drivers', 'GET', null, { search, status });
-                renderTable();
-                updateStats();
-            } catch (e) {
-                showMsg('pageMessage', 'Lỗi tải danh sách: ' + e.message);
-            }
-        }
-
-        function updateStats() {
-            document.getElementById('totalDrivers').textContent = driversList.length;
-            document.getElementById('availableDrivers').textContent = driversList.filter(d => d.status === 'available').length;
-            document.getElementById('busyDrivers').textContent = driversList.filter(d => d.status === 'on_trip').length;
-            document.getElementById('inactiveDrivers').textContent = driversList.filter(d => d.status === 'inactive').length;
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('driverRows');
-            tbody.innerHTML = '';
-            if (driversList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">Không có dữ liệu tài xế</td></tr>`;
-                return;
-            }
-
-            driversList.forEach(d => {
-                const badge = `<span class="badge-custom ${STATUS_BADGE[d.status]}">${STATUS_LABELS[d.status]}</span>`;
-                const isBusy = (d.status === 'on_trip' || d.has_active_assignment || d.has_active_trip);
-                
-                // Nút thao tác
-                let actions = `
-                    <button class="action-btn edit" onclick="openForm(${d.driver_id})" title="Sửa hồ sơ"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="action-btn status" onclick="openStatus(${d.driver_id})" title="Đổi trạng thái" ${isBusy ? 'disabled opacity-50' : ''}><i class="fa-solid fa-arrows-rotate"></i></button>
-                    <button class="action-btn delete" onclick="openDelete(${d.driver_id})" title="Xóa tài xế" ${isBusy ? 'disabled opacity-50' : ''}><i class="fa-solid fa-trash"></i></button>
-                `;
-
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="fw-bold text-secondary">${d.driver_code}</td>
-                        <td><div class="fw-bold">${d.full_name}</div><small class="text-muted">UID: ${d.user_id || 'Chưa liên kết'}</small></td>
-                        <td>${d.phone}</td>
-                        <td>${d.license_number}</td>
-                        <td><span class="badge bg-secondary">${d.license_class}</span></td>
-                        <td>${badge}</td>
-                        <td class="text-center">${actions}</td>
-                    </tr>
-                `;
-            });
-        }
-
-        // --- CÁC HÀM MỞ MODAL ---
-        function openForm(id = null) {
-            selectedId = id;
-            const form = document.getElementById('driverForm');
-            form.reset();
-            showMsg('formMessage', '');
-            document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
-
-            if (id) {
-                // Chế độ Sửa
-                const d = driversList.find(x => x.driver_id == id);
-                document.getElementById('dialogTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-warning me-2"></i>Cập nhật tài xế';
-                form.elements['driver_code'].value = d.driver_code;
-                form.elements['full_name'].value = d.full_name;
-                form.elements['phone'].value = d.phone;
-                form.elements['status'].value = d.status;
-                form.elements['address'].value = d.address || '';
-                form.elements['license_number'].value = d.license_number;
-                form.elements['license_class'].value = d.license_class;
-                form.elements['user_id'].value = d.user_id || '';
-                
-                // Khóa khu vực tạo tài khoản
-                document.getElementById('accountFields').style.display = 'none';
-                document.getElementById('linkedAccountField').style.display = 'block';
-                form.elements['username'].required = false;
-                form.elements['password'].required = false;
-            } else {
-                // Chế độ Thêm mới
-                document.getElementById('dialogTitle').innerHTML = '<i class="fa-solid fa-id-card text-primary me-2"></i>Thêm tài xế mới';
-                document.getElementById('accountFields').style.display = 'block';
-                document.getElementById('linkedAccountField').style.display = 'block';
-                form.elements['username'].required = true;
-                form.elements['password'].required = true;
-            }
-
-            document.getElementById('driverDialog').showModal();
-        }
-
-        // --- XỬ LÝ LƯU (TẠO/SỬA) ---
-        document.getElementById('driverForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (isSaving) return;
-            const form = e.target;
-            
-            // Xóa lỗi cũ
-            document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
-            showMsg('formMessage', '');
-
-            const data = Object.fromEntries(new FormData(form));
-            // Xử lý dữ liệu
-            if (data.user_id && data.user_id.trim() === '') data.user_id = null;
-            if (!selectedId && data.user_id) {
-                // Cố tình móc ID có sẵn khi tạo mới
-                delete data.username; delete data.password;
-            } else if (!selectedId && !data.user_id) {
-                // Bắt buộc nhập user/pass nếu ko nhập user_id
-                if(!data.username) { showFieldError('username', 'Vui lòng nhập Username'); return; }
-                if(!data.password) { showFieldError('password', 'Vui lòng nhập Password'); return; }
-            }
-
-            if(selectedId) { delete data.username; delete data.password; } // Khi sửa không đụng tới user/pass
-
-            try {
-                isSaving = true;
-                const btn = document.getElementById('saveButton');
-                btn.disabled = true; btn.innerHTML = 'Đang lưu...';
-
-                await api('/api/drivers', selectedId ? 'PUT' : 'POST', data, selectedId ? { id: selectedId } : {});
-                
-                document.getElementById('driverDialog').close();
-                showMsg('pageMessage', selectedId ? 'Cập nhật thành công!' : 'Thêm tài xế thành công!', false);
-                await loadData();
-            } catch (error) {
-                showMsg('formMessage', error.message);
-            } finally {
-                isSaving = false;
-                document.getElementById('saveButton').disabled = false;
-                document.getElementById('saveButton').innerHTML = '<i class="fa-solid fa-save me-1"></i> Lưu thông tin';
-            }
-        });
-
-        // --- XỬ LÝ TRẠNG THÁI ---
-        function openStatus(id) {
-            selectedId = id;
-            const d = driversList.find(x => x.driver_id == id);
-            document.getElementById('statusDriver').textContent = `${d.driver_code} - ${d.full_name}`;
-            document.getElementById('newStatus').value = d.status === 'on_trip' ? 'available' : d.status;
-            document.getElementById('statusDialog').showModal();
-        }
-
-        document.getElementById('statusForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const newStatus = document.getElementById('newStatus').value;
-                await api('/api/drivers/status', 'PUT', { status: newStatus }, { id: selectedId });
-                document.getElementById('statusDialog').close();
-                showMsg('pageMessage', 'Cập nhật trạng thái thành công!', false);
-                await loadData();
-            } catch (err) { showMsg('statusMessage', err.message); }
-        });
-
-        // --- XỬ LÝ XÓA ---
-        function openDelete(id) {
-            selectedId = id;
-            const d = driversList.find(x => x.driver_id == id);
-            document.getElementById('deleteDriver').textContent = `[${d.driver_code}] - ${d.full_name}`;
-            document.getElementById('deleteDialog').showModal();
-        }
-
-        document.getElementById('confirmDelete').addEventListener('click', async () => {
-            try {
-                await api('/api/drivers', 'DELETE', null, { id: selectedId });
-                document.getElementById('deleteDialog').close();
-                showMsg('pageMessage', 'Xóa tài xế thành công!', false);
-                await loadData();
-            } catch (err) { showMsg('deleteMessage', err.message); }
-        });
-
-        // --- SỰ KIỆN NÚT BẤM KHÁC ---
-        document.getElementById('filterForm').addEventListener('submit', (e) => { e.preventDefault(); loadData(); });
-        document.getElementById('resetFilter').addEventListener('click', () => { document.getElementById('filterForm').reset(); loadData(); });
-        document.getElementById('refreshButton').addEventListener('click', loadData);
-        document.getElementById('addButton').addEventListener('click', () => openForm(null));
-        
-        ['closeDialog', 'cancelDialog'].forEach(id => document.getElementById(id).addEventListener('click', () => document.getElementById('driverDialog').close()));
-        document.getElementById('closeStatus').addEventListener('click', () => document.getElementById('statusDialog').close());
-        document.getElementById('cancelDelete').addEventListener('click', () => document.getElementById('deleteDialog').close());
-
-        document.getElementById('logoutButton').addEventListener('click', async () => {
-            await api('/api/logout', 'POST');
-            sessionStorage.clear();
-            window.location.href = '../customer/login.html';
-        });
-
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
 </body>
 </html>

@@ -6,3 +6,14 @@
 .assignments-management .drivers-badge { display:inline-flex; align-items:center; gap:6px; }
 .assignments-management .drivers-badge i { color:inherit; flex-shrink:0; }
 .assignments-management label > span i { margin-right:5px; color:#2563eb; }
+
+.assignments-management .drivers-badge.pending { background:#fef3c7; color:#92400e; }
+.assignments-management .drivers-badge.accepted { background:#dbeafe; color:#1d4ed8; }
+.assignments-management .drivers-badge.running { background:#ffedd5; color:#9a3412; }
+
+.assignments-management #staffRequests > div { padding:18px 0; border-bottom:1px solid #edf0f5; overflow-wrap:anywhere; }
+.assignments-management #staffRequests button { margin-right:8px; margin-bottom:8px; }
+
+.assignments-management .request-origin { display:block; margin-top:6px; font-weight:600; color:#526078; }
+.assignments-management #reviewDialog input[type="checkbox"] { width:auto; margin-right:8px; }
+.assignments-management #reviewDialog label { display:block; margin-top:12px; }

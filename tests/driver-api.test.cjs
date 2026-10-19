@@ -74,7 +74,7 @@ async function frontendChecks() {
     let writeError = false;
     let accountError = false;
     const requests = [];
-    const roster = [fixture, {...fixture,driver_id:'2',driver_code:'TX-AVAILABLE',status:'available'}, {...fixture,driver_id:'3',driver_code:'TX-INACTIVE',status:'inactive'}];
+    const roster = [fixture, {...fixture,driver_id:'2',driver_code:'TX-AVAILABLE',status:'available',has_active_assignment:false,has_active_trip:false}, {...fixture,driver_id:'3',driver_code:'TX-INACTIVE',status:'inactive'}];
     const writes = [];
     const windowEvents = {};
     const redirects = [];
@@ -116,12 +116,12 @@ async function frontendChecks() {
     await form.events.submit({ preventDefault(){} });
     assert.equal(Object.hasOwn(saved,'username'),false);
     assert.equal(Object.hasOwn(saved,'password'),false);
-    assert.equal(saved.status, 'on_trip'); // disabled select vẫn giữ đúng trạng thái
+    assert.equal(saved.status, undefined); // disabled select vẫn giữ đúng trạng thái
     assert.equal(saved.user_id, fixture.user_id); // Không Number() làm mất BIGINT
     assert.equal(saved.address, null);
     assert.equal(saved.license_expiry, null);
     get('addButton').events.click();
-    assert.equal(fields.status.disabled, false);
+    assert.equal(fields.status.disabled, true);
     assert.equal(fields.status.value, 'available');
     fixture.has_active_assignment = false;
     fixture.has_active_trip = true;
@@ -195,13 +195,6 @@ async function frontendChecks() {
     assert.equal(Object.hasOwn(saved,'user_id'),false);
     assert.equal(fields.password.value,'');
     fixture.has_active_trip = false;
-    await clickAction('status');
-    assert.equal(get('statusDialog').open, true);
-    get('newStatus').value = 'inactive';
-    await get('statusForm').events.submit({preventDefault(){},submitter:get('statusSaveButton')});
-    assert.equal(writes.at(-1).route, '/api/drivers/status');
-    assert.equal(saved.status, 'inactive');
-    assert.equal(get('statusDialog').open, false);
     get('search').value = 'TX-BIG';
     await get('filterForm').events.submit({preventDefault(){}});
     await new Promise(resolve => setImmediate(resolve));
@@ -218,6 +211,17 @@ async function frontendChecks() {
     assert.match(get('pageMessage').textContent, /Lỗi API/);
     assert.equal(get('totalDrivers').textContent, 3);
     listMode = 'normal';
+    for (const [state,label] of [['pending','Chờ tiếp nhận phân công'],['accepted','Đã tiếp nhận – Chưa bắt đầu'],['on_trip','Đang thực hiện chuyến'],['available','Sẵn sàng']]) {
+        fixture.display_status=state;fixture.status=state==='on_trip'?'on_trip':'available';fixture.has_active_assignment=state!=='available';
+        await get('refreshButton').events.click();
+        assert.equal(get('driverRows').children[0].children[6].children[0].children[1].textContent,label);
+        const stat={pending:'pendingDrivers',accepted:'acceptedDrivers',on_trip:'busyDrivers'}[state];
+        if(stat)assert.equal(get(stat).textContent,1);
+        if(['pending','accepted'].includes(state)){await clickAction('edit');assert.equal(fields.status.disabled,true);assert.equal(fields.status.value,'__effective');assert.equal(fields.status.children.at(-1).textContent,label);await form.events.submit({preventDefault(){}});assert.equal(saved.status,undefined);}
+        assert.equal(get('availableDrivers').textContent,state==='available'?2:1);
+    }
+    fixture.display_status='available';fixture.has_active_assignment=false;await get('refreshButton').events.click();assert.equal(get('pendingDrivers').textContent,0);
+    fixture.status='available';fixture.display_status='available';fixture.has_active_assignment=false;fixture.has_active_trip=false;await clickAction('edit');assert.equal(fields.status.disabled,false);fields.status.value='inactive';get('statusReason').value='';const beforeCorrection=writes.length;await form.events.submit({preventDefault(){}});assert.equal(writes.length,beforeCorrection);get('statusReason').value='Báo lỗi hệ thống';await form.events.submit({preventDefault(){}});assert.equal(saved.status,'inactive');assert.equal(saved.status_reason,'Báo lỗi hệ thống');assert.equal(saved.expected_status,'available');
     await windowEvents.pageshow({persisted:true});
     assert.equal(get('addButton').disabled, false);
     assert.equal(get('driverRows').children.length, 3);

@@ -2,10 +2,22 @@
     'use strict';
     const $ = id => document.getElementById(id);
     const endpoint = new URL('../../backend/public/index.php', location.href);
-    const labels = {available:'Sẵn sàng', on_trip:'Đang thực hiện chuyến', maintenance:'Bảo trì', inactive:'Ngừng sử dụng'};
+    const labels = {available:'Sẵn sàng', on_trip:'Đang thực hiện chuyến', maintenance:'Bảo trì', inactive:'Chưa sẵn sàng', pending:'Đã phân công – Chờ tiếp nhận', accepted:'Đã phân công – Đã tiếp nhận, chưa bắt đầu', unknown:'Dữ liệu phân công không hợp lệ'};
+    function displayStatus(row) { return row.display_status || (row.has_active_assignment && row.status === 'available' ? 'unknown' : row.status); }
+    function showEffectiveStatus(select,row) {
+        for(const option of Array.from(select.querySelectorAll?.('option[data-effective]')||[]))option.remove();
+        if(row&&select.disabled&&displayStatus(row)!==row.status){const option=document.createElement('option');option.dataset.effective='true';option.value='__effective';option.textContent=labels[displayStatus(row)]||'Dữ liệu không hợp lệ';select.append(option);select.value='__effective';}
+    }
+    function statusBadge(row) {
+        const status = displayStatus(row), badge = document.createElement('span'), icon = document.createElement('i');
+        badge.className = 'drivers-badge ' + (Object.hasOwn(labels,status) ? status : 'unknown');
+        icon.className = 'fa-solid fa-' + ({available:'circle-check',pending:'clock',accepted:'circle-check',on_trip:'truck',inactive:'ban',maintenance:'screwdriver-wrench',unknown:'circle-exclamation'}[status] || 'circle-question');
+        icon.setAttribute('aria-hidden','true');badge.append(icon,document.createTextNode(labels[status] || 'Cần kiểm tra dữ liệu'));return badge;
+    }
     const fields = {license_plate:'Biển số', vehicle_type:'Loại xe', brand:'Hãng xe', capacity:'Tải trọng (kg)', status:'Trạng thái'};
     const form = $('vehicleForm');
     let ready = false, saving = false, selected = null, pendingDelete = null, listRequest = 0, statsRequest = 0, authRequest = 0, detailRequest = 0;
+    let originalStatus='available';
     const normalizePlate = value => value.replace(/[\s\p{Z}]+/gu, '').toUpperCase();
     const input = name => form.elements.namedItem(name);
     function message(id, text = '', error = false) {
@@ -21,7 +33,7 @@
         ready = false; listRequest++; statsRequest++; detailRequest++;
         for (const id of ['addButton','refreshButton','searchButton','resetFilter','saveButton','confirmDelete']) $(id).disabled = true;
         $('vehicleDialog').close(); $('deleteDialog').close();
-        for (const key of ['total',...Object.keys(labels)]) $('metric-' + key).textContent = '—';
+        for (const key of ['total',...Object.keys(labels).filter(key=>key!=='unknown')]) $('metric-' + key).textContent = '—';
         tableMessage('Vui lòng xác thực phiên đăng nhập để xem phương tiện.');
         document.querySelector('.drivers-table-wrap').setAttribute('aria-busy','false');
     }
@@ -47,7 +59,7 @@
         for (const vehicle of vehicles) {
             const tr = document.createElement('tr');
             for (const key of ['license_plate','vehicle_type','brand','capacity']) cell(tr, vehicle[key], fields[key]);
-            const badge = document.createElement('span'); badge.className = 'drivers-badge ' + (Object.hasOwn(labels, vehicle.status) ? vehicle.status : ''); badge.textContent = labels[vehicle.status] || 'Không xác định';
+            const badge = statusBadge(vehicle);
             cell(tr, '', fields.status).replaceChildren(badge);
             const actions = document.createElement('div'); actions.className = 'drivers-row-actions'; cell(tr, '', 'Thao tác').replaceChildren(actions);
             for (const [action,label,icon] of [['view','Xem','eye'],['edit','Sửa','pen-to-square'],['delete','Xóa','trash-can']]) {
@@ -76,12 +88,12 @@
     async function stats() {
         if (!ready) return;
         const seq = ++statsRequest;
-        for (const key of ['total',...Object.keys(labels)]) $('metric-' + key).textContent = '—';
+        for (const key of ['total',...Object.keys(labels).filter(key=>key!=='unknown')]) $('metric-' + key).textContent = '—';
         $('statsMessage').textContent = 'Đang tải thống kê…';
         try {
             const data = await api('/api/vehicles/stats');
             if (seq !== statsRequest || !ready) return;
-            for (const key of ['total',...Object.keys(labels)]) {
+            for (const key of ['total',...Object.keys(labels).filter(key=>key!=='unknown')]) {
                 if (!Number.isSafeInteger(data?.[key]) || data[key] < 0) throw new Error('Thống kê không hợp lệ.');
                 $('metric-' + key).textContent = data[key];
             }
@@ -110,7 +122,8 @@
         if (!data.vehicle_type || [...data.vehicle_type].length > 100 || /[\x00-\x1F\x7F]/u.test(data.vehicle_type)) errors.vehicle_type = 'Loại xe bắt buộc, tối đa 100 ký tự, không chứa ký tự điều khiển.';
         if ([...data.brand].length > 100 || /[\x00-\x1F\x7F]/u.test(data.brand)) errors.brand = 'Hãng xe tối đa 100 ký tự, không chứa ký tự điều khiển.';
         if (!/^(?:0|[1-9][0-9]{0,7})(?:\.[0-9]{1,2})?$/.test(data.capacity) || Number(data.capacity) <= 0) errors.capacity = 'Tải trọng phải lớn hơn 0, tối đa 99999999.99 kg, tối đa 2 chữ số thập phân.';
-        if (!Object.hasOwn(labels,data.status)) errors.status = 'Vui lòng chọn trạng thái hợp lệ.';
+        if(input('status').disabled)data.status=originalStatus;
+        if (!['available','on_trip','maintenance','inactive'].includes(data.status)) errors.status = 'Vui lòng chọn trạng thái hợp lệ.';
         for (const [name,text] of Object.entries(errors)) fieldError(name,text);
         if (Object.keys(errors).length) { input(Object.keys(errors)[0]).focus(); return null; }
         data.brand ||= null; return data;
@@ -122,10 +135,12 @@
         $('vehicleFields').hidden = view; $('vehicleDetails').hidden = !view; $('requiredNote').hidden = view; $('saveButton').hidden = view;
         $('vehicleDetails').replaceChildren();
         for (const name of Object.keys(fields)) { input(name).disabled = view; input(name).value = vehicle?.[name] ?? (name === 'status' ? 'available' : ''); }
-        input('status').disabled = view || Boolean(vehicle?.has_active_assignment || vehicle?.has_active_trip);
-        if (input('status').disabled && !view) $('error-status').textContent = 'Giữ nguyên trạng thái khi còn chuyến/phân công hoạt động.';
+        originalStatus=vehicle?.status??'available';
+        input('status').disabled = !vehicle || view || originalStatus==='on_trip'||Boolean(vehicle?.has_active_assignment || vehicle?.has_active_trip);
+        showEffectiveStatus(input('status'),vehicle);
+        if (vehicle && input('status').disabled && !view) $('error-status').textContent = 'Giữ nguyên trạng thái khi còn chuyến/phân công hoạt động.';
         if (view) for (const [name,label] of Object.entries({...fields, created_at:'Ngày tạo', updated_at:'Cập nhật gần nhất'})) {
-            const div = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = label; dd.textContent = name === 'status' ? labels[vehicle[name]] || 'Không xác định' : vehicle[name] ?? '—'; div.append(dt,dd); $('vehicleDetails').append(div);
+            const div = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd'); dt.textContent = label; dd.textContent = name === 'status' ? labels[displayStatus(vehicle)] || 'Không xác định' : vehicle[name] ?? '—'; div.append(dt,dd); $('vehicleDetails').append(div);
         }
         $('saveButton').disabled = false; $('vehicleDialog').showModal();
     }
@@ -145,6 +160,7 @@
     form.addEventListener('submit',async event => {
         event.preventDefault(); if (!ready || saving || $('saveButton').hidden) return;
         const data = validate(); if (!data) return;
+        if(selected&&(input('status').disabled||data.status===originalStatus))delete data.status;
         saving = true; $('saveButton').disabled = true;
         try {
             await api('/api/vehicles',selected ? 'PUT' : 'POST',data,selected ? {id:selected} : {});
