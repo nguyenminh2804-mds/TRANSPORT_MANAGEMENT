@@ -1,0 +1,684 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý phiếu hỗ trợ | TMS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f4f7fb;
+            color: #1e293b;
+            font-family: Arial, sans-serif;
+        }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: #2563eb;
+            color: white;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 18px;
+            height: 100%;
+        }
+
+        .stat-number {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .ticket-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 14px;
+            cursor: pointer;
+            background: #fff;
+            transition: border-color .15s, background .15s;
+        }
+
+        .ticket-item:hover {
+            border-color: #93b4fc;
+            background: #f8faff;
+        }
+
+        .ticket-item.active {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .ticket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 650px;
+            overflow-y: auto;
+        }
+
+        .status-badge {
+            display: inline-block;
+            border-radius: 20px;
+            padding: 5px 9px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status-PENDING { background: #fff7ed; color: #c2410c; }
+        .status-PROCESSING { background: #eff6ff; color: #1d4ed8; }
+        .status-RESOLVED { background: #ecfdf5; color: #047857; }
+        .status-CLOSED { background: #f1f5f9; color: #475569; }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        .message.staff {
+            margin-left: auto;
+            background: #dbeafe;
+        }
+
+        .message-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+
+        .empty-state {
+            padding: 40px 15px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .detail-panel {
+            min-height: 400px;
+        }
+
+        @media (max-width: 767px) {
+            .ticket-list { max-height: 400px; }
+            .message { max-width: 95%; }
+        }
+    </style>
+</head>
+
+<body>
+<header class="topbar">
+    <div class="container-fluid px-3 px-lg-4 py-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="brand-icon">
+                <i class="fa-solid fa-headset fs-5"></i>
+            </div>
+            <div>
+                <h5 class="mb-0 fw-bold">Quản lý hỗ trợ</h5>
+                <small class="text-secondary">Hệ thống vận chuyển TMS</small>
+            </div>
+            <div class="ms-auto">
+                <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                    Quay lại
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="container-fluid px-3 px-lg-4 py-4">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Phiếu hỗ trợ khách hàng</h4>
+            <p class="text-secondary mb-0">
+                Tiếp nhận, phản hồi và theo dõi yêu cầu hỗ trợ.
+            </p>
+        </div>
+        <button class="btn btn-primary" id="refreshBtn">
+            <i class="fa-solid fa-rotate me-1"></i> Làm mới
+        </button>
+    </div>
+
+    <div id="alertArea"></div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="text-secondary small">Tổng phiếu</div>
+                <div class="stat-number" id="totalCount">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="text-secondary small">Chờ xử lý</div>
+                <div class="stat-number text-warning" id="pendingCount">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="text-secondary small">Đang xử lý</div>
+                <div class="stat-number text-primary" id="processingCount">0</div>
+            </div>
+        </div>
+        <div class="col-6 col-xl-3">
+            <div class="stat-card">
+                <div class="text-secondary small">Đã giải quyết</div>
+                <div class="stat-number text-success" id="resolvedCount">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5 col-xl-4">
+            <section class="panel p-3">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="fw-bold mb-0">Danh sách phiếu</h6>
+                    <span class="badge text-bg-light" id="listCount">0 phiếu</span>
+                </div>
+
+                <div class="mb-3">
+                    <label for="statusFilter" class="form-label small fw-semibold">
+                        Lọc theo trạng thái
+                    </label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="PENDING">Chờ xử lý</option>
+                        <option value="PROCESSING">Đang xử lý</option>
+                        <option value="RESOLVED">Đã giải quyết</option>
+                        <option value="CLOSED">Đã đóng</option>
+                    </select>
+                </div>
+
+                <div id="ticketList" class="ticket-list">
+                    <div class="empty-state">
+                        <div class="spinner-border spinner-border-sm"></div>
+                        <p class="mt-2 mb-0">Đang tải dữ liệu...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-7 col-xl-8">
+            <section class="panel p-3 p-lg-4 detail-panel">
+                <div id="ticketDetail">
+                    <div class="empty-state">
+                        <i class="fa-regular fa-folder-open fs-1 mb-3"></i>
+                        <h6>Chưa chọn phiếu hỗ trợ</h6>
+                        <p class="mb-0">Chọn một phiếu ở danh sách để xem chi tiết.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+
+<script>
+const API_BASE =
+    'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+
+const state = {
+    tickets: [],
+    selectedId: null,
+    selectedTicket: null,
+    messages: [],
+    user: null
+};
+
+const $ = id => document.getElementById(id);
+
+const STATUS_LABELS = {
+    PENDING: 'Chờ xử lý',
+    PROCESSING: 'Đang xử lý',
+    RESOLVED: 'Đã giải quyết',
+    CLOSED: 'Đã đóng'
+};
+
+const CATEGORY_LABELS = {
+    CONSULTATION: 'Tư vấn',
+    COMPLAINT: 'Khiếu nại',
+    INCIDENT: 'Sự cố',
+    FEEDBACK: 'Góp ý',
+    OTHER: 'Khác'
+};
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[char]);
+}
+
+function formatDate(value) {
+    if (!value) return '—';
+    const date = new Date(String(value).replace(' ', 'T'));
+    return Number.isNaN(date.getTime())
+        ? escapeHtml(value)
+        : date.toLocaleString('vi-VN');
+}
+
+function showAlert(message, type = 'danger') {
+    $('alertArea').innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${escapeHtml(message)}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+}
+
+async function apiRequest(route, options = {}, params = {}) {
+    const url = new URL(API_BASE);
+    url.searchParams.set('route', route);
+
+    Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+            url.searchParams.set(key, value);
+        }
+    });
+
+    const response = await fetch(url.toString(), {
+        credentials: 'include',
+        ...options,
+        headers: {
+            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+            ...(options.headers || {})
+        }
+    });
+
+    const text = await response.text();
+    let result;
+
+    try {
+        result = JSON.parse(text);
+    } catch {
+        throw new Error(
+            `Server trả về dữ liệu không phải JSON (HTTP ${response.status}).`
+        );
+    }
+
+    if (!response.ok || result.success === false) {
+        throw new Error(result.message || `Lỗi HTTP ${response.status}`);
+    }
+
+    return result.data;
+}
+
+function statusBadge(status) {
+    return `<span class="status-badge status-${escapeHtml(status)}">
+        ${escapeHtml(STATUS_LABELS[status] || status || 'Không rõ')}
+    </span>`;
+}
+
+function renderStats() {
+    $('totalCount').textContent = state.tickets.length;
+    $('pendingCount').textContent =
+        state.tickets.filter(t => t.status === 'PENDING').length;
+    $('processingCount').textContent =
+        state.tickets.filter(t => t.status === 'PROCESSING').length;
+    $('resolvedCount').textContent =
+        state.tickets.filter(t => t.status === 'RESOLVED').length;
+    $('listCount').textContent = `${state.tickets.length} phiếu`;
+}
+
+function renderTicketList() {
+    const list = $('ticketList');
+
+    if (!state.tickets.length) {
+        list.innerHTML = `
+            <div class="empty-state">
+                <i class="fa-regular fa-circle-check fs-2 mb-2"></i>
+                <p class="mb-0">Không có phiếu hỗ trợ phù hợp.</p>
+            </div>`;
+        return;
+    }
+
+    list.innerHTML = state.tickets.map(ticket => `
+        <div class="ticket-item ${
+            String(ticket.id) === String(state.selectedId) ? 'active' : ''
+        }" data-ticket-id="${escapeHtml(ticket.id)}" role="button" tabindex="0">
+            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                <span class="fw-bold small">${escapeHtml(ticket.ticket_code)}</span>
+                ${statusBadge(ticket.status)}
+            </div>
+            <div class="fw-semibold mb-1">${escapeHtml(ticket.subject)}</div>
+            <div class="small text-secondary mb-2">
+                <i class="fa-regular fa-user me-1"></i>
+                ${escapeHtml(ticket.customer_name || 'Khách hàng')}
+            </div>
+            <div class="d-flex justify-content-between gap-2">
+                <span class="small text-secondary">
+                    ${escapeHtml(CATEGORY_LABELS[ticket.category] || ticket.category || 'Khác')}
+                </span>
+                <span class="small text-secondary">${formatDate(ticket.created_at)}</span>
+            </div>
+        </div>
+    `).join('');
+
+    list.querySelectorAll('[data-ticket-id]').forEach(item => {
+        const open = () => loadTicket(item.dataset.ticketId);
+
+        item.addEventListener('click', open);
+        item.addEventListener('keydown', event => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                open();
+            }
+        });
+    });
+}
+
+function renderDetail() {
+    const ticket = state.selectedTicket;
+
+    if (!ticket) {
+        $('ticketDetail').innerHTML = `
+            <div class="empty-state">
+                <i class="fa-regular fa-folder-open fs-1 mb-3"></i>
+                <h6>Chưa chọn phiếu hỗ trợ</h6>
+                <p class="mb-0">Chọn một phiếu ở danh sách để xem chi tiết.</p>
+            </div>`;
+        return;
+    }
+
+    const closed = ['RESOLVED', 'CLOSED'].includes(ticket.status);
+
+    const messagesHtml = state.messages.length
+        ? state.messages.map(message => {
+            const isStaff = ['ADMIN', 'STAFF', 'TRANSPORT_STAFF']
+                .includes(String(message.sender_role || '').toUpperCase());
+
+            return `
+                <div class="message ${isStaff ? 'staff' : ''} mb-3">
+                    <div class="message-meta">
+                        <strong>${escapeHtml(message.sender_name || 'Người dùng')}</strong>
+                        · ${formatDate(message.created_at)}
+                    </div>
+                    <div>${escapeHtml(message.message)}</div>
+                </div>`;
+        }).join('')
+        : '<p class="text-secondary small">Chưa có nội dung trao đổi.</p>';
+
+    $('ticketDetail').innerHTML = `
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-3">
+            <div>
+                <div class="small text-secondary mb-1">
+                    Mã phiếu: ${escapeHtml(ticket.ticket_code)}
+                </div>
+                <h5 class="fw-bold mb-2">${escapeHtml(ticket.subject)}</h5>
+                ${statusBadge(ticket.status)}
+            </div>
+            <div>
+                <label for="statusUpdate" class="form-label small fw-semibold">
+                    Cập nhật trạng thái
+                </label>
+                <select class="form-select form-select-sm" id="statusUpdate"
+                    ${ticket.status === 'CLOSED' ? 'disabled' : ''}>
+                    <option value="PENDING" ${ticket.status === 'PENDING' ? 'selected' : ''}>Chờ xử lý</option>
+                    <option value="PROCESSING" ${ticket.status === 'PROCESSING' ? 'selected' : ''}>Đang xử lý</option>
+                    <option value="RESOLVED" ${ticket.status === 'RESOLVED' ? 'selected' : ''}>Đã giải quyết</option>
+                    <option value="CLOSED" ${ticket.status === 'CLOSED' ? 'selected' : ''}>Đã đóng</option>
+                </select>
+                <button class="btn btn-outline-primary btn-sm mt-2 w-100"
+                    id="updateStatusBtn" ${ticket.status === 'CLOSED' ? 'disabled' : ''}>
+                    Lưu trạng thái
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <div class="bg-light rounded-3 p-3 h-100">
+                    <div class="small text-secondary mb-1">Khách hàng</div>
+                    <div class="fw-semibold">${escapeHtml(ticket.customer_name || '—')}</div>
+                    <div class="small text-secondary">${escapeHtml(ticket.customer_phone || '')}</div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="bg-light rounded-3 p-3 h-100">
+                    <div class="small text-secondary mb-1">Thông tin phiếu</div>
+                    <div>Loại: ${escapeHtml(CATEGORY_LABELS[ticket.category] || ticket.category || 'Khác')}</div>
+                    <div>Đơn hàng: ${escapeHtml(ticket.order_id || 'Không liên kết')}</div>
+                    <div>Ngày tạo: ${formatDate(ticket.created_at)}</div>
+                    <div>Nhân viên: ${escapeHtml(ticket.assigned_name || 'Chưa phân công')}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <h6 class="fw-bold">Nội dung yêu cầu ban đầu</h6>
+            <div class="bg-light rounded-3 p-3" style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeHtml(ticket.description)}</div>
+        </div>
+
+        <hr>
+
+        <h6 class="fw-bold mb-3">
+            <i class="fa-regular fa-comments me-2"></i>Lịch sử trao đổi
+        </h6>
+
+        <div id="messageList" class="mb-4">${messagesHtml}</div>
+
+        ${closed ? `
+            <div class="alert alert-secondary mb-0">
+                Phiếu đã giải quyết hoặc đóng nên không thể phản hồi thêm.
+            </div>
+        ` : `
+            <form id="replyForm">
+                <label for="replyMessage" class="form-label fw-semibold">
+                    Phản hồi khách hàng
+                </label>
+                <textarea class="form-control mb-3" id="replyMessage"
+                    rows="4" maxlength="5000"
+                    placeholder="Nhập nội dung phản hồi..." required></textarea>
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <small class="text-secondary">Tối đa 5000 ký tự</small>
+                    <button class="btn btn-primary" type="submit" id="replyBtn">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Gửi phản hồi
+                    </button>
+                </div>
+            </form>
+        `}
+    `;
+
+    $('updateStatusBtn')?.addEventListener('click', updateStatus);
+    $('replyForm')?.addEventListener('submit', sendReply);
+}
+
+async function loadTickets(keepSelection = true) {
+    const filter = $('statusFilter').value;
+    $('ticketList').innerHTML = `
+        <div class="empty-state">
+            <div class="spinner-border spinner-border-sm"></div>
+            <p class="mt-2 mb-0">Đang tải danh sách...</p>
+        </div>`;
+
+    try {
+        const params = filter ? { status: filter } : {};
+        const tickets = await apiRequest('/api/staff/support-tickets', {}, params);
+
+        if (!Array.isArray(tickets)) {
+            throw new Error('API danh sách phiếu không trả về mảng dữ liệu.');
+        }
+
+        state.tickets = tickets;
+        renderStats();
+
+        const selectedStillExists = state.tickets.some(
+            t => String(t.id) === String(state.selectedId)
+        );
+
+        if (!keepSelection || !selectedStillExists) {
+            state.selectedId = null;
+            state.selectedTicket = null;
+            state.messages = [];
+        }
+
+        renderTicketList();
+        renderDetail();
+
+        if (keepSelection && selectedStillExists) {
+            await loadTicket(state.selectedId, false);
+        }
+    } catch (error) {
+        $('ticketList').innerHTML = `
+            <div class="empty-state text-danger">
+                <i class="fa-solid fa-triangle-exclamation fs-3 mb-2"></i>
+                <p class="mb-0">${escapeHtml(error.message)}</p>
+            </div>`;
+        showAlert(error.message);
+    }
+}
+
+async function loadTicket(ticketId, rerenderList = true) {
+    state.selectedId = ticketId;
+
+    if (rerenderList) renderTicketList();
+
+    $('ticketDetail').innerHTML = `
+        <div class="empty-state">
+            <div class="spinner-border"></div>
+            <p class="mt-2 mb-0">Đang tải chi tiết phiếu...</p>
+        </div>`;
+
+    try {
+        const result = await apiRequest(
+            '/api/staff/support-tickets/show',
+            {},
+            { id: ticketId }
+        );
+
+        if (!result || !result.ticket) {
+            throw new Error('API chi tiết phiếu trả về dữ liệu không hợp lệ.');
+        }
+
+        state.selectedTicket = result.ticket;
+        state.messages = Array.isArray(result.messages) ? result.messages : [];
+
+        renderTicketList();
+        renderDetail();
+    } catch (error) {
+        $('ticketDetail').innerHTML = `
+            <div class="alert alert-danger">${escapeHtml(error.message)}</div>`;
+    }
+}
+
+async function updateStatus() {
+    const status = $('statusUpdate')?.value;
+    if (!state.selectedId || !status) return;
+
+    const button = $('updateStatusBtn');
+    button.disabled = true;
+
+    try {
+        await apiRequest('/api/staff/support-tickets/status', {
+            method: 'POST',
+            body: JSON.stringify({
+                ticket_id: state.selectedId,
+                status
+            })
+        });
+
+        showAlert('Cập nhật trạng thái thành công.', 'success');
+        await loadTickets(true);
+    } catch (error) {
+        showAlert(error.message);
+    } finally {
+        if ($('updateStatusBtn')) $('updateStatusBtn').disabled = false;
+    }
+}
+
+async function sendReply(event) {
+    event.preventDefault();
+
+    const textarea = $('replyMessage');
+    const message = textarea.value.trim();
+
+    if (!message) {
+        showAlert('Vui lòng nhập nội dung phản hồi.');
+        return;
+    }
+
+    const button = $('replyBtn');
+    button.disabled = true;
+
+    try {
+        await apiRequest('/api/staff/support-tickets/reply', {
+            method: 'POST',
+            body: JSON.stringify({
+                ticket_id: state.selectedId,
+                message
+            })
+        });
+
+        showAlert('Đã gửi phản hồi cho khách hàng.', 'success');
+        await loadTickets(true);
+    } catch (error) {
+        showAlert(error.message);
+    } finally {
+        if ($('replyBtn')) $('replyBtn').disabled = false;
+    }
+}
+
+async function init() {
+    try {
+        const me = await apiRequest('/api/me');
+
+        state.user = me?.user || me;
+
+        const role = String(state.user?.role || '').toUpperCase();
+
+        if (!['ADMIN', 'TRANSPORT_STAFF', 'STAFF'].includes(role)) {
+            showAlert('Tài khoản hiện tại không có quyền truy cập trang nhân viên.');
+            $('ticketList').innerHTML = `
+                <div class="empty-state">
+                    <p class="mb-0">Không đủ quyền truy cập.</p>
+                </div>`;
+            return;
+        }
+
+        await loadTickets(false);
+    } catch (error) {
+        showAlert(
+            'Không thể xác minh phiên đăng nhập hoặc tải dữ liệu. ' +
+            error.message +
+            ' Hãy đăng nhập bằng tài khoản nhân viên rồi thử lại.'
+        );
+        $('ticketList').innerHTML = `
+            <div class="empty-state">
+                <i class="fa-solid fa-lock fs-2 mb-2"></i>
+                <p class="mb-0">Cần đăng nhập để xem phiếu hỗ trợ.</p>
+            </div>`;
+    }
+}
+
+$('statusFilter').addEventListener('change', () => loadTickets(false));
+$('refreshBtn').addEventListener('click', () => loadTickets(true));
+
+init();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

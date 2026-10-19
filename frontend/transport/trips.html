@@ -3,9 +3,621 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trips</title>
+    <title>Quản lý chuyến xe - Điều phối</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- CSS chung của hệ thống -->
+    <link rel="stylesheet" href="../css/common.css">
+    <link rel="stylesheet" href="../css/transport.css">
+    <link rel="stylesheet" href="../css/transport-navigation.css">
+    <style>
+        body { background-color: #f5f7fb; }
+        .card-custom { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,0.03); overflow: hidden; }
+        .table-custom th { background-color: #f9fafb; font-size: 13px; color: #6b7280; text-transform: uppercase; padding: 12px 15px; }
+        .table-custom td { padding: 12px 15px; vertical-align: middle; font-size: 14px; color: #1f2937; }
+        .table-responsive { max-height: 65vh; overflow-y: auto; }
+        
+        .suggestion-box {
+            background-color: #e8f4fd;
+            border: 1px dashed #0d6efd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
-<body>
-    <h1>Trips</h1>
+<body class="transport-page">
+
+    <!-- HEADER -->
+    <header class="drivers-header mb-3">
+        <div class="drivers-container drivers-row d-flex justify-content-between align-items-center">
+            <a href="dashboard.html" class="drivers-brand text-decoration-none d-flex align-items-center gap-2">
+                <i class="fa-solid fa-truck-fast text-primary fs-4"></i> 
+                <span class="fw-bold text-dark">Quản lý vận tải</span>
+            </a>
+            <div class="drivers-row drivers-user d-flex align-items-center gap-3">
+                <span class="drivers-avatar"><i class="fa-solid fa-user"></i></span>
+                <span id="currentUser" class="fw-bold">Đang kiểm tra phiên…</span>
+                <button id="logoutButton" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container py-3">
+        <!-- ĐIỀU HƯỚNG NHÂN VIÊN -->
+        <nav class="transport-nav mb-4" aria-label="Chức năng nhân viên">
+            <ul class="transport-nav__items nav nav-pills gap-2 bg-white p-2 rounded shadow-sm">
+                <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house me-1"></i> Tổng quan</a></li>
+                <li class="nav-item"><a class="nav-link" href="orders.html"><i class="fa-solid fa-boxes-stacked me-1"></i> Quản lý đơn hàng</a></li>
+                <li class="nav-item"><a class="nav-link" href="drivers.html"><i class="fa-solid fa-id-card me-1"></i> Quản lý tài xế</a></li>
+                <li class="nav-item"><a class="nav-link" href="vehicles.html"><i class="fa-solid fa-truck me-1"></i> Quản lý phương tiện</a></li>
+                <li class="nav-item"><a class="nav-link active" href="trips.html"><i class="fa-solid fa-route me-1"></i> Chuyến xe & Lộ trình</a></li>
+                <li class="nav-item"><a class="nav-link" href="assignment.html"><i class="fa-solid fa-user-check me-1"></i> Phân công tài xế</a></li>
+            </ul>
+        </nav>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-1"><i class="fa-solid fa-route text-primary me-2"></i>Quản lý Lộ trình Chuyến xe</h1>
+                <p class="text-muted mb-0">Tạo chuyến mới, tìm kiếm và kiểm tra danh sách đơn hàng trong chuyến.</p>
+            </div>
+            <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createTripModal">
+                <i class="fa-solid fa-plus me-1"></i> Tạo chuyến mới
+            </button>
+        </div>
+
+        <!-- TÌM KIẾM CHUYẾN XE -->
+        <div class="card card-custom p-3 mb-4">
+            <form id="searchTripForm" class="d-flex gap-2 align-items-end">
+                <div class="flex-grow-1">
+                    <label class="form-label text-muted fw-bold small mb-1">Tìm chuyến xe theo ID</label>
+                    <input type="number" id="searchTripId" class="form-control" placeholder="Nhập mã ID chuyến (VD: 5)">
+                </div>
+                <button type="submit" class="btn btn-secondary px-4"><i class="fa-solid fa-magnifying-glass me-1"></i> Tìm kiếm</button>
+                <button type="button" class="btn btn-light border px-4" onclick="clearSearch()"><i class="fa-solid fa-xmark me-1"></i> Xóa bộ lọc</button>
+            </form>
+        </div>
+
+        <!-- BẢNG DANH SÁCH CHUYẾN -->
+        <div class="card card-custom">
+            <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-secondary"><i class="fa-solid fa-list-check me-2"></i> Danh sách chuyến xe</h5>
+                <button class="btn btn-outline-secondary btn-sm" onclick="refreshTripTable()"><i class="fa-solid fa-rotate-right"></i> Tải lại bảng</button>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-custom table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">ID Chuyến</th>
+                            <th>Lộ trình (Đi ➔ Đến)</th>
+                            <th>Thời gian xuất/đến</th>
+                            <th class="text-center">Số lượng đơn</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffTripTableBody">
+                        <tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i> Đang tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- MODAL TẠO CHUYẾN MỚI NÂNG CẤP -->
+    <div class="modal fade" id="createTripModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-primary"><i class="fa-solid fa-plus-circle me-2"></i> Tạo lộ trình chuyến mới</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createTripForm">
+                        <!-- Tự động lấy địa điểm từ đơn hàng -->
+                        <div class="suggestion-box shadow-sm">
+                            <label class="form-label fw-bold text-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Lấy lộ trình từ Đơn hàng chờ</label>
+                            <select id="routeSuggestion" class="form-select border-primary" onchange="applyRouteSuggestion()">
+                                <option value="">-- Đang quét đơn hàng chờ xử lý... --</option>
+                            </select>
+                            <small class="text-muted mt-1 d-block">Hệ thống gom nhóm địa chỉ của các đơn hàng chưa gán chuyến để bạn không cần gõ tay.</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Điểm đi <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="startLocation" required placeholder="Ví dụ: Kho Hà Nội">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Điểm đến <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="endLocation" required placeholder="Ví dụ: Kho Hải Phòng">
+                            </div>
+                        </div>
+                        
+                        <div class="row border-top pt-3 mt-1">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Thời gian xuất phát dự kiến</label>
+                                <input type="datetime-local" class="form-control" id="startTime" onchange="calculateEndTime('startTime', 'endTime')">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-success">Dự kiến đến <small>(+3 ngày tự động)</small></label>
+                                <input type="datetime-local" class="form-control border-success" id="endTime">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ghi chú chuyến xe</label>
+                            <textarea class="form-control" id="tripNote" rows="2" placeholder="Nhập ghi chú cho chuyến xe này (nếu có)..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mt-2" id="btnSubmitTrip"><i class="fa-solid fa-check me-1"></i> Tạo chuyến ngay</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SỬA CHUYẾN -->
+    <div class="modal fade" id="editTripModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold text-warning"><i class="fa-solid fa-pen-to-square me-2"></i> Sửa lộ trình chuyến</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTripForm">
+                        <input type="hidden" id="editTripId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Điểm đi <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editStartLocation" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Điểm đến <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="editEndLocation" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Thời gian xuất phát</label>
+                                <input type="datetime-local" class="form-control" id="editStartTime" onchange="calculateEndTime('editStartTime', 'editEndTime')">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold text-success">Dự kiến đến</label>
+                                <input type="datetime-local" class="form-control border-success" id="editEndTime">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Ghi chú chuyến xe</label>
+                            <textarea class="form-control" id="editTripNote" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Trạng thái chuyến</label>
+                            <select class="form-select fw-bold" id="editStatus">
+                                <option value="PLANNED">Lên kế hoạch (PLANNED)</option>
+                                <option value="IN_PROGRESS">Đang chạy (IN_PROGRESS)</option>
+                                <option value="COMPLETED">Hoàn thành (COMPLETED)</option>
+                                <option value="CANCELLED">Hủy chuyến (CANCELLED)</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-warning w-100 mt-2" id="btnUpdateTrip"><i class="fa-solid fa-save me-1"></i> Lưu thay đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL XEM CHI TIẾT ĐƠN HÀNG TRONG CHUYẾN (ĐÃ NÂNG CẤP) -->
+    <div class="modal fade" id="tripOrdersModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable"> <!-- modal-xl để mở rộng bảng -->
+            <div class="modal-content bg-light">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-boxes-packing me-2"></i> Chi tiết đơn hàng trong chuyến #<span id="modalTripId"></span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="tripInfoBanner" class="bg-white p-3 border-bottom d-none">
+                        <!-- Nơi hiển thị thông tin chuyến xe tóm tắt -->
+                    </div>
+                    <table class="table table-bordered table-hover mb-0 bg-white">
+                        <thead class="table-light sticky-top shadow-sm">
+                            <tr>
+                                <th class="ps-3" style="width: 15%">Mã & Trạng thái</th>
+                                <th style="width: 30%">Thông tin Lấy hàng (Gửi)</th>
+                                <th style="width: 30%">Thông tin Giao hàng (Nhận)</th>
+                                <th style="width: 25%">Thông tin Hàng & Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tripOrdersTableBody">
+                            <tr><td colspan="4" class="text-center py-4">Đang tải dữ liệu...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng cửa sổ</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_URL = new URL('../../backend/public/index.php', window.location.href);
+        let tripListCache = [];
+        let allOrdersCache = []; // Cache đơn hàng 
+
+        async function api(route, method = 'GET', data = null) {
+            API_URL.searchParams.set('route', route);
+            const options = { method, credentials: 'same-origin', headers: { 'Accept': 'application/json' } };
+            if (data) {
+                options.headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(data);
+            }
+            const res = await fetch(API_URL.href, options);
+            if (res.status === 401) { window.location.href = '../customer/login.html'; return; }
+            const json = await res.json();
+            if (!res.ok || !json.success) throw new Error(json.message || 'Lỗi hệ thống');
+            return json.data;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const user = await api('/api/me');
+                if (!['ADMIN', 'STAFF'].includes(user.role)) {
+                    alert('Bạn không có quyền truy cập trang quản lý này!');
+                    window.location.href = '../customer/dashboard.html';
+                    return;
+                }
+                document.getElementById('currentUser').textContent = user.full_name;
+                
+                // Tải danh sách đơn hàng & Xử lý Gợi ý tự động
+                allOrdersCache = await api('/api/orders') || [];
+                populateRouteSuggestions();
+
+                await refreshTripTable();
+            } catch (e) {
+                alert('Lỗi khởi tạo: ' + e.message);
+            }
+        });
+
+        // -----------------------------------------------------
+        // CÁC HÀM XỬ LÝ LỘ TRÌNH VÀ THỜI GIAN
+        // -----------------------------------------------------
+
+        function populateRouteSuggestions() {
+            const select = document.getElementById('routeSuggestion');
+            const pendingOrders = allOrdersCache.filter(o => o.status === 'PENDING');
+            
+            if (pendingOrders.length === 0) {
+                select.innerHTML = '<option value="">(Chưa có đơn hàng mới nào chờ xử lý)</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">-- Chọn tuyến đường từ đơn chờ --</option>';
+            const uniqueRoutes = new Set();
+
+            pendingOrders.forEach(o => {
+                if (!o.pickup_address || !o.delivery_address) return;
+                
+                // Trích xuất Tỉnh/Thành phố từ địa chỉ (Lấy phần tử cuối cùng sau dấu phẩy)
+                const pParts = o.pickup_address.split(',');
+                const dParts = o.delivery_address.split(',');
+                const pCity = pParts[pParts.length - 1].trim();
+                const dCity = dParts[dParts.length - 1].trim();
+                
+                const valObj = { p: pCity, d: dCity };
+                const valStr = JSON.stringify(valObj);
+
+                if (!uniqueRoutes.has(valStr)) {
+                    uniqueRoutes.add(valStr);
+                    // Đếm số đơn đi tuyến này
+                    const count = pendingOrders.filter(x => x.pickup_address.includes(pCity) && x.delivery_address.includes(dCity)).length;
+                    select.innerHTML += `<option value='${valStr}'>Từ: ${pCity} ➔ Đến: ${dCity} (Có ${count} đơn)</option>`;
+                }
+            });
+        }
+
+        function applyRouteSuggestion() {
+            const val = document.getElementById('routeSuggestion').value;
+            if (!val) return;
+            const route = JSON.parse(val);
+            document.getElementById('startLocation').value = route.p;
+            document.getElementById('endLocation').value = route.d;
+        }
+
+        function calculateEndTime(startInputId, endInputId) {
+            const startVal = document.getElementById(startInputId).value;
+            if (!startVal) return;
+            
+            const d = new Date(startVal);
+            d.setDate(d.getDate() + 3); // Cộng thêm 3 ngày
+            
+            // Format sang datetime-local
+            const tzOffset = d.getTimezoneOffset() * 60000; 
+            const localISOTime = (new Date(d - tzOffset)).toISOString().slice(0, 16);
+            document.getElementById(endInputId).value = localISOTime;
+        }
+
+        function formatDateTimeLocal(value) {
+            if (!value) return '';
+            try { return String(value).trim().replace(' ', 'T').substring(0, 16); } catch (e) { return ''; }
+        }
+
+        function formatDisplayDate(value) {
+            if(!value) return '';
+            try { return new Date(value.replace(' ', 'T')).toLocaleString('vi-VN'); } catch(e) { return value; }
+        }
+
+        /* -----------------------------------------------------
+           TẢI BẢNG CHUYẾN XE
+        ------------------------------------------------------*/
+        /* TẢI BẢNG CHUYẾN XE */
+        async function refreshTripTable(searchId = null) {
+            const tbody = document.getElementById('staffTripTableBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fa-solid fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
+            try {
+                let trips = await api('/api/trips');
+                tripListCache = trips || [];
+
+                if (searchId) { trips = trips.filter(t => t.id == searchId); }
+
+                if (trips.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Không tìm thấy chuyến xe nào.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                trips.forEach(trip => {
+                    // XỬ LÝ TRẠNG THÁI HIỂN THỊ ĐẸP HƠN
+                    let badgeColor = 'bg-secondary';
+                    let statusText = trip.status || 'KHÔNG RÕ';
+                    
+                    if (trip.status === 'PLANNED') {
+                        badgeColor = 'bg-warning text-dark';
+                        statusText = 'Lên kế hoạch';
+                    }
+                    else if (trip.status === 'IN_PROGRESS') {
+                        badgeColor = 'bg-primary';
+                        statusText = 'Đang chạy';
+                    }
+                    else if (trip.status === 'COMPLETED') {
+                        badgeColor = 'bg-success';
+                        statusText = 'Đã hoàn thành';
+                    }
+                    else if (trip.status === 'CANCELLED') {
+                        badgeColor = 'bg-danger';
+                        statusText = 'Đã hủy';
+                    }
+
+                    const orderCountInTrip = allOrdersCache.filter(o => o.trip_id == trip.id).length;
+                    
+                    // Xử lý hiển thị thời gian
+                    let timeDisplay = `<span class="text-muted fst-italic">Chưa ấn định</span>`;
+                    if (trip.start_time) {
+                        timeDisplay = `
+                            <div><i class="fa-solid fa-arrow-up text-primary"></i> Lên xe: ${formatDisplayDate(trip.start_time)}</div>
+                            ${trip.end_time ? `<div class="text-success mt-1"><i class="fa-solid fa-location-dot"></i> Đến nơi: ~${formatDisplayDate(trip.end_time)}</div>` : ''}
+                        `;
+                    }
+
+                    // Nút thao tác
+                    let actionButtons = `
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTripOrders(${trip.id})" title="Xem chi tiết đơn"><i class="fa-solid fa-boxes-packing"></i></button>
+                    `;
+                    
+                    // Chỉ cho phép sửa/xóa khi chuyến xe CHƯA chạy (PLANNED)
+                    if (trip.status === 'PLANNED') {
+                        actionButtons += `
+                            <button class="btn btn-sm btn-outline-warning me-1" onclick="openEditModal(${trip.id})" title="Sửa Lộ trình"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTripHandler(${trip.id})" title="Xóa chuyến"><i class="fa-solid fa-trash"></i></button>
+                        `;
+                    } else {
+                        // Nếu đang chạy hoặc đã xong, hiện nút Xem (Mắt) để thay thế
+                        actionButtons += `<button class="btn btn-sm btn-outline-secondary" onclick="openEditModal(${trip.id})" title="Xem chi tiết"><i class="fa-solid fa-eye"></i></button>`;
+                    }
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="ps-3 fw-bold text-primary">#${trip.id}</td>
+                            <td><strong class="text-dark">${trip.start_location || ''}</strong> <br>➔ <strong>${trip.end_location || ''}</strong></td>
+                            <td class="small">${timeDisplay}</td>
+                            <td class="text-center">
+                                <span class="badge rounded-pill bg-light text-dark border"><i class="fa-solid fa-box text-primary me-1"></i> ${orderCountInTrip} đơn</span>
+                            </td>
+                            <td><span class="badge ${badgeColor}">${statusText}</span></td>
+                            <td class="text-center">
+                                ${actionButtons}
+                            </td>
+                        </tr>
+                    `;
+                });
+            } catch (error) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-4">Lỗi tải dữ liệu.</td></tr>`;
+            }
+        }
+        /* TÌM KIẾM CHUYẾN */
+        document.getElementById('searchTripForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('searchTripId').value.trim();
+            refreshTripTable(id);
+        });
+
+        function clearSearch() {
+            document.getElementById('searchTripId').value = '';
+            refreshTripTable();
+        }
+
+        /* XEM CHI TIẾT ĐƠN HÀNG (ĐÃ NÂNG CẤP GHI CHÚ VÀ GIỜ ĐẾN) */
+        function viewTripOrders(tripId) {
+            document.getElementById('modalTripId').textContent = tripId;
+            const tbody = document.getElementById('tripOrdersTableBody');
+            tbody.innerHTML = '';
+
+            const trip = tripListCache.find(t => t.id == tripId);
+            const ordersInTrip = allOrdersCache.filter(o => o.trip_id == tripId);
+            
+            // Tính toán giờ dự kiến đến cho các đơn
+            let estArrivalHtml = '';
+            if (trip && (trip.end_time || trip.start_time)) {
+                let timeStr = trip.end_time ? trip.end_time : trip.start_time;
+                // Nếu chưa có end_time DB, ta tạm tính
+                if (!trip.end_time) {
+                    let d = new Date(trip.start_time.replace(' ', 'T'));
+                    d.setDate(d.getDate() + 3);
+                    timeStr = d.toLocaleString('vi-VN');
+                } else {
+                    timeStr = formatDisplayDate(trip.end_time);
+                }
+                estArrivalHtml = `<div class="badge bg-info text-dark mt-2 p-2 w-100 text-start"><i class="fa-regular fa-clock"></i> Dự kiến giao khách: <b>${timeStr}</b></div>`;
+            }
+
+            if (ordersInTrip.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-5 text-danger border-0"><h5><i class="fa-solid fa-box-open me-2"></i>Chuyến xe này chưa có đơn hàng nào được gán.</h5></td></tr>`;
+            } else {
+                ordersInTrip.forEach(o => {
+                    let stColor = o.status === 'DELIVERED' ? 'success' : (o.status === 'CANCELLED' ? 'danger' : 'primary');
+                    let paymentBadge = o.payment_status === 'PAID' ? '<span class="text-success fw-bold"><i class="fa-solid fa-check"></i> Đã thanh toán</span>' : '<span class="text-danger fw-bold">Chưa thanh toán (Thu hộ)</span>';
+                    
+                    // Làm nổi bật Ghi chú
+                    const noteHtml = o.note ? `<div class="alert alert-warning py-2 px-2 mt-2 mb-0 shadow-sm border-warning"><i class="fa-solid fa-comment-dots text-danger"></i> <strong>Ghi chú:</strong> ${o.note}</div>` : '';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td class="ps-3 align-middle border-end">
+                                <strong class="text-primary fs-5 d-block mb-1">#${o.order_code}</strong>
+                                <span class="badge bg-${stColor} fs-6">${o.status}</span>
+                                ${estArrivalHtml}
+                            </td>
+                            <td class="align-middle">
+                                <div><i class="fa-solid fa-user text-muted"></i> <strong>${o.sender_name || 'Khách gửi'}</strong></div>
+                                <div><i class="fa-solid fa-phone text-muted"></i> ${o.sender_phone || 'Không có sđt'}</div>
+                                <div class="small mt-2"><i class="fa-solid fa-location-dot text-danger"></i> ${o.pickup_address}</div>
+                            </td>
+                            <td class="align-middle">
+                                <div><i class="fa-solid fa-user text-muted"></i> <strong>${o.receiver_name || 'Khách nhận'}</strong></div>
+                                <div><i class="fa-solid fa-phone text-muted"></i> ${o.receiver_phone || 'Không có sđt'}</div>
+                                <div class="small mt-2"><i class="fa-solid fa-location-dot text-success"></i> ${o.delivery_address}</div>
+                            </td>
+                            <td class="align-middle">
+                                <div><strong>Hàng:</strong> ${o.goods_type || 'Tổng hợp'} (<span class="text-primary fw-bold">${o.total_weight} kg</span>)</div>
+                                <div class="mt-1"><strong>Cước:</strong> <span class="text-danger fw-bold">${Number(o.shipping_fee).toLocaleString('vi-VN')} đ</span></div>
+                                <div class="mt-1">${paymentBadge}</div>
+                                ${noteHtml}
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+            new bootstrap.Modal(document.getElementById('tripOrdersModal')).show();
+        }
+
+        /* -----------------------------------------------------
+           TẠO VÀ SỬA CHUYẾN API
+        ------------------------------------------------------*/
+        document.getElementById('createTripForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitTrip');
+            btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang xử lý...`;
+            try {
+                let rawStart = document.getElementById('startTime').value;
+                let rawEnd = document.getElementById('endTime').value;
+
+                const payload = {
+                    start_location: document.getElementById('startLocation').value.trim(),
+                    end_location: document.getElementById('endLocation').value.trim(),
+                    start_time: rawStart ? rawStart.replace('T', ' ') + ':00' : null,
+                    end_time: rawEnd ? rawEnd.replace('T', ' ') + ':00' : null,
+                    note: document.getElementById('tripNote').value.trim(),
+                    status: 'PLANNED'
+                };
+                await api('/api/trips', 'POST', payload);
+                alert('Tạo chuyến xe lộ trình mới thành công!');
+                bootstrap.Modal.getInstance(document.getElementById('createTripModal')).hide();
+                this.reset();
+                await refreshTripTable();
+            } catch (error) {
+                alert('Lỗi: ' + error.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check me-1"></i> Tạo chuyến ngay`;
+            }
+        });
+
+        function openEditModal(id) {
+            const trip = tripListCache.find(t => t.id == id);
+            if (!trip) return alert('Lỗi lấy thông tin chuyến.');
+            document.getElementById('editTripId').value = trip.id;
+            document.getElementById('editStartLocation').value = trip.start_location;
+            document.getElementById('editEndLocation').value = trip.end_location;
+            document.getElementById('editStartTime').value = formatDateTimeLocal(trip.start_time);
+            document.getElementById('editEndTime').value = formatDateTimeLocal(trip.end_time);
+            document.getElementById('editTripNote').value = trip.note || '';
+            document.getElementById('editStatus').value = trip.status || 'PLANNED';
+            new bootstrap.Modal(document.getElementById('editTripModal')).show();
+        }
+
+        document.getElementById('editTripForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnUpdateTrip');
+            btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin me-1"></i> Đang lưu...`;
+            try {
+                const id = document.getElementById('editTripId').value;
+                let rawStart = document.getElementById('editStartTime').value;
+                let rawEnd = document.getElementById('editEndTime').value;
+
+                const payload = {
+                    start_location: document.getElementById('editStartLocation').value.trim(),
+                    end_location: document.getElementById('editEndLocation').value.trim(),
+                    start_time: rawStart ? rawStart.replace('T', ' ') + (rawStart.length === 16 ? ':00' : '') : null,
+                    end_time: rawEnd ? rawEnd.replace('T', ' ') + (rawEnd.length === 16 ? ':00' : '') : null,
+                    note: document.getElementById('editTripNote').value.trim(),
+                    status: document.getElementById('editStatus').value
+                };
+                
+                API_URL.searchParams.set('route', '/api/trips');
+                API_URL.searchParams.set('id', id); 
+                const response = await fetch(API_URL.href, {
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                const res = await response.json();
+                if (!res.success) throw new Error(res.message);
+
+                alert('Cập nhật chuyến xe thành công!');
+                bootstrap.Modal.getInstance(document.getElementById('editTripModal')).hide();
+                await refreshTripTable();
+            } catch (error) {
+                alert('Lỗi cập nhật: ' + error.message);
+            } finally {
+                btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-save me-1"></i> Lưu thay đổi`;
+            }
+        });
+
+        /* XÓA CHUYẾN */
+        async function deleteTripHandler(id) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa chuyến xe #${id}? Việc này sẽ giải phóng tất cả đơn hàng trong chuyến.`)) return;
+            try {
+                API_URL.searchParams.set('route', '/api/trips');
+                API_URL.searchParams.set('id', id);
+                const response = await fetch(API_URL.href, { method: 'DELETE' });
+                const res = await response.json();
+                if (!res.success) throw new Error(res.message);
+                alert('Xóa chuyến xe thành công!');
+                await refreshTripTable();
+            } catch (error) {
+                alert('Lỗi xóa chuyến: ' + error.message);
+            }
+        }
+        // Đăng xuất
+        document.getElementById('logoutButton').addEventListener('click', async () => {
+            if(!confirm("Bạn muốn đăng xuất?")) return;
+            await api('/api/logout', 'POST');
+            sessionStorage.clear();
+            window.location.href = '../customer/login.html';
+        });
+    </script>
 </body>
 </html>

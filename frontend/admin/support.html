@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý phiếu hỗ trợ | TMS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a href="dashboard.html" class="navbar-brand">
+            <i class="fa-solid fa-headset me-2"></i>Quản lý phiếu hỗ trợ
+        </a>
+        <a href="dashboard.html" class="btn btn-outline-light btn-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i>Về Dashboard
+        </a>
+    </div>
+</nav>
+
+<main class="container-fluid py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+        <div>
+            <h4 class="mb-1">Quản lý phiếu hỗ trợ khách hàng</h4>
+            <p class="text-muted mb-0">Theo dõi yêu cầu và phân công nhân viên xử lý.</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadTickets()">
+            <i class="fa-solid fa-rotate me-1"></i>Làm mới
+        </button>
+    </div>
+
+    <div id="alertBox"></div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label for="statusFilter" class="form-label">Lọc trạng thái</label>
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Tất cả trạng thái</option>
+                        <option value="PENDING">Chờ xử lý</option>
+                        <option value="PROCESSING">Đang xử lý</option>
+                        <option value="RESOLVED">Đã giải quyết</option>
+                        <option value="CLOSED">Đã đóng</option>
+                    </select>
+                </div>
+                <div class="col-md-8">
+                    <label for="searchInput" class="form-label">Tìm phiếu</label>
+                    <input id="searchInput" class="form-control"
+                           placeholder="Nhập mã phiếu hoặc tiêu đề...">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <strong>Danh sách phiếu hỗ trợ</strong>
+            <span id="ticketCount" class="badge bg-secondary ms-2">0</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Mã phiếu</th>
+                        <th>Khách hàng</th>
+                        <th>Tiêu đề</th>
+                        <th>Trạng thái</th>
+                        <th>Nhân viên phụ trách</th>
+                        <th>Ngày tạo</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody id="ticketTable">
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            Đang tải dữ liệu...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-4" id="detailCard" hidden>
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <strong>Chi tiết phiếu</strong>
+            <button class="btn btn-sm btn-outline-secondary" onclick="closeDetail()">
+                Đóng
+            </button>
+        </div>
+        <div class="card-body">
+            <div id="ticketDetail"></div>
+
+            <hr>
+            <h6>Lịch sử trao đổi</h6>
+            <div id="messageList" class="mb-3"></div>
+
+            <div class="row g-2 align-items-end">
+                <div class="col-md-8">
+                    <label for="staffSelect" class="form-label">Phân công nhân viên STAFF</label>
+                    <select id="staffSelect" class="form-select">
+                        <option value="">Đang tải nhân viên...</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <button id="assignBtn" class="btn btn-success w-100"
+                            onclick="assignStaff()">
+                        <i class="fa-solid fa-user-check me-1"></i>Phân công
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+const API_BASE = 'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php?route=';
+
+let tickets = [];
+let staffList = [];
+let selectedTicketId = null;
+
+const statusLabels = {
+    PENDING: 'Chờ xử lý',
+    PROCESSING: 'Đang xử lý',
+    RESOLVED: 'Đã giải quyết',
+    CLOSED: 'Đã đóng'
+};
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[char]);
+}
+
+function showAlert(message, type = 'danger') {
+    document.getElementById('alertBox').innerHTML =
+        `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${escapeHtml(message)}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+}
+
+async function api(path, options = {}) {
+    const [apiPath, queryString = ''] = path.split('?');
+
+const requestUrl = API_BASE
+    + encodeURIComponent(apiPath)
+    + (queryString ? '&' + queryString : '');
+
+const response = await fetch(requestUrl, {
+        credentials: 'include',
+        ...options,
+        headers: {
+            ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+            ...(options.headers || {})
+        }
+    });
+
+    let result;
+    try {
+        result = await response.json();
+    } catch {
+        throw new Error(`API trả về dữ liệu không hợp lệ (HTTP ${response.status}).`);
+    }
+
+    if (!response.ok || result.success === false) {
+        throw new Error(result.message || `Lỗi HTTP ${response.status}`);
+    }
+
+    return result.data ?? result;
+}
+
+async function init() {
+    try {
+        const me = await api('/api/me');
+        const user = me.user ?? me;
+
+        if (user.role !== 'ADMIN') {
+            showAlert('Trang này chỉ dành cho tài khoản ADMIN.');
+            document.getElementById('ticketTable').innerHTML =
+                '<tr><td colspan="7" class="text-center text-danger py-4">Không có quyền truy cập.</td></tr>';
+            return;
+        }
+
+        await Promise.all([loadStaff(), loadTickets()]);
+    } catch (error) {
+        showAlert('Không thể khởi tạo trang: ' + error.message);
+    }
+}
+
+async function loadStaff() {
+    const select = document.getElementById('staffSelect');
+    select.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+
+    // Tải danh sách nhân viên từ API quản lý người dùng hiện có.
+    try {
+        const data = await api('/api/users');
+        const users = Array.isArray(data) ? data : (data.users ?? data.items ?? []);
+
+        staffList = users.filter(user =>
+            user.role === 'STAFF' && Number(user.status) === 1
+        );
+
+        staffList.forEach(staff => {
+            const option = document.createElement('option');
+            option.value = staff.id;
+            option.textContent = `${staff.full_name || staff.username} (${staff.username})`;
+            select.appendChild(option);
+        });
+
+        if (staffList.length === 0) {
+            select.innerHTML = '<option value="">Không tìm thấy nhân viên STAFF hoạt động</option>';
+        }
+    } catch (error) {
+        select.innerHTML = '<option value="">Không tải được danh sách nhân viên</option>';
+        console.error('Load staff:', error);
+    }
+}
+
+async function loadTickets() {
+    const tbody = document.getElementById('ticketTable');
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4">Đang tải...</td></tr>';
+
+    try {
+        const status = document.getElementById('statusFilter').value;
+        const query = status ? `?status=${encodeURIComponent(status)}` : '';
+        const data = await api('/api/staff/support-tickets' + query);
+
+        tickets = Array.isArray(data) ? data : (data.tickets ?? data.items ?? []);
+        renderTickets();
+    } catch (error) {
+        tickets = [];
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Không tải được danh sách phiếu.</td></tr>';
+        showAlert('Tải danh sách phiếu thất bại: ' + error.message);
+    }
+}
+
+function renderTickets() {
+    const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
+    const filtered = tickets.filter(ticket =>
+        String(ticket.ticket_code ?? '').toLowerCase().includes(keyword) ||
+        String(ticket.subject ?? '').toLowerCase().includes(keyword)
+    );
+
+    document.getElementById('ticketCount').textContent = filtered.length;
+
+    const tbody = document.getElementById('ticketTable');
+
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Không có phiếu phù hợp.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(ticket => `
+        <tr>
+            <td><strong>${escapeHtml(ticket.ticket_code)}</strong></td>
+            <td>${escapeHtml(ticket.customer_name)}</td>
+            <td>${escapeHtml(ticket.subject)}</td>
+            <td><span class="badge ${ticket.status === 'PENDING' ? 'bg-warning text-dark' : ticket.status === 'PROCESSING' ? 'bg-primary' : ticket.status === 'RESOLVED' ? 'bg-success' : 'bg-secondary'}">${escapeHtml(statusLabels[ticket.status] || ticket.status)}</span></td>
+            <td>${escapeHtml(ticket.assigned_name || 'Chưa phân công')}</td>
+            <td>${escapeHtml(ticket.created_at)}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary"
+                        onclick="showDetail(${Number(ticket.id)})">
+                    Chi tiết
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function showDetail(ticketId) {
+    selectedTicketId = ticketId;
+    document.getElementById('detailCard').hidden = false;
+    document.getElementById('ticketDetail').textContent = 'Đang tải chi tiết...';
+    document.getElementById('messageList').textContent = 'Đang tải lịch sử...';
+    document.getElementById('staffSelect').value = '';
+
+    try {
+        const data = await api(`/api/staff/support-tickets/show?id=${encodeURIComponent(ticketId)}`);
+        const ticket = data.ticket ?? data;
+        const messages = data.messages ?? [];
+
+        document.getElementById('ticketDetail').innerHTML = `
+            <p><strong>Mã phiếu:</strong> ${escapeHtml(ticket.ticket_code)}</p>
+            <p><strong>Khách hàng:</strong> ${escapeHtml(ticket.customer_name)}</p>
+            <p><strong>Tiêu đề:</strong> ${escapeHtml(ticket.subject)}</p>
+            <p><strong>Nội dung:</strong><br>${escapeHtml(ticket.description).replace(/\n/g, '<br>')}</p>
+            <p><strong>Trạng thái:</strong> ${escapeHtml(statusLabels[ticket.status] || ticket.status)}</p>
+            <p><strong>Nhân viên phụ trách:</strong> ${escapeHtml(ticket.assigned_name || 'Chưa phân công')}</p>
+        `;
+
+        document.getElementById('messageList').innerHTML = messages.length
+            ? messages.map(message => `
+                <div class="border rounded p-3 mb-2 bg-light">
+                    <div class="d-flex justify-content-between flex-wrap gap-2">
+                        <strong>${escapeHtml(message.sender_name)}</strong>
+                        <small class="text-muted">${escapeHtml(message.created_at)}</small>
+                    </div>
+                    <div class="mt-2">${escapeHtml(message.message).replace(/\n/g, '<br>')}</div>
+                </div>
+            `).join('')
+            : '<p class="text-muted">Chưa có tin nhắn trao đổi.</p>';
+
+        if (ticket.assigned_to) {
+            document.getElementById('staffSelect').value = String(ticket.assigned_to);
+        }
+    } catch (error) {
+        showAlert('Không tải được chi tiết phiếu: ' + error.message);
+    }
+
+    document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function assignStaff() {
+    if (!selectedTicketId) {
+        showAlert('Bạn cần chọn phiếu trước khi phân công.');
+        return;
+    }
+
+    const staffId = document.getElementById('staffSelect').value;
+    if (!staffId) {
+        showAlert('Vui lòng chọn nhân viên STAFF.');
+        return;
+    }
+
+    const button = document.getElementById('assignBtn');
+    button.disabled = true;
+
+    try {
+        await api('/api/admin/support-tickets/assign', {
+            method: 'POST',
+            body: JSON.stringify({
+                ticket_id: selectedTicketId,
+                staff_id: Number(staffId)
+            })
+        });
+
+        showAlert('Phân công nhân viên thành công.', 'success');
+        await loadTickets();
+        await showDetail(selectedTicketId);
+    } catch (error) {
+        showAlert('Phân công thất bại: ' + error.message);
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function closeDetail() {
+    document.getElementById('detailCard').hidden = true;
+    selectedTicketId = null;
+}
+
+document.getElementById('statusFilter').addEventListener('change', loadTickets);
+document.getElementById('searchInput').addEventListener('input', renderTickets);
+
+init();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,919 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dịch vụ khách hàng - Quản lý vận tải</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --text: #172b4d;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --page-bg: #f4f7fb;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: var(--page-bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        a { text-decoration: none; }
+
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+        }
+
+        .brand {
+            color: var(--primary);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .brand i { margin-right: 9px; }
+
+        .page-wrap {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 34px 20px 48px;
+        }
+
+        .page-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 26px;
+        }
+
+        .heading-icon {
+            width: 54px;
+            height: 54px;
+            display: grid;
+            place-items: center;
+            background: #dbeafe;
+            color: var(--primary);
+            border-radius: 15px;
+            font-size: 23px;
+            flex-shrink: 0;
+        }
+
+        .page-heading h1 {
+            font-size: 28px;
+            font-weight: 750;
+            margin: 0 0 7px;
+        }
+
+        .page-heading p {
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        .btn, .ticket-item, .panel {
+            transition: border-color .18s ease, box-shadow .18s ease;
+        }
+
+        .btn:hover, .ticket-item:hover, .panel:hover {
+            transform: none;
+        }
+
+        .stat-card, .panel {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, .035);
+        }
+
+        .stat-card {
+            padding: 19px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            font-size: 19px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue { color: #2563eb; background: #dbeafe; }
+        .stat-icon.orange { color: #b45309; background: #fef3c7; }
+        .stat-icon.green { color: #15803d; background: #dcfce7; }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 25px;
+            font-weight: 750;
+            line-height: 1.1;
+        }
+
+        .panel {
+            padding: 22px;
+            margin-bottom: 20px;
+            min-width: 0;
+        }
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .panel-heading h2 {
+            font-size: 18px;
+            font-weight: 750;
+            margin: 0;
+        }
+
+        .ticket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ticket-item {
+            width: 100%;
+            text-align: left;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .ticket-item:hover {
+            border-color: #bfdbfe;
+            box-shadow: 0 3px 10px rgba(37, 99, 235, .05);
+        }
+
+        .ticket-item.active {
+            border-color: var(--primary);
+            background: #f8fbff;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, .07);
+        }
+
+        .ticket-code {
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .ticket-subject {
+            font-size: 14px;
+            font-weight: 700;
+            margin: 7px 0;
+            overflow-wrap: anywhere;
+        }
+
+        .ticket-meta {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 20px;
+            padding: 5px 9px;
+            font-size: 11px;
+            line-height: 1.2;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-PENDING { background: #fef3c7; color: #92400e; }
+        .status-PROCESSING { background: #dbeafe; color: #1d4ed8; }
+        .status-RESOLVED { background: #dcfce7; color: #166534; }
+        .status-CLOSED { background: #e2e8f0; color: #475569; }
+
+        .detail-title {
+            font-size: 21px;
+            font-weight: 750;
+            overflow-wrap: anywhere;
+        }
+
+        .detail-description {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .message-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 430px;
+            overflow-y: auto;
+            padding: 2px 3px;
+        }
+
+        .message {
+            max-width: 88%;
+            padding: 13px 15px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            overflow-wrap: anywhere;
+        }
+
+        .message.mine {
+            align-self: flex-end;
+            background: #eaf2ff;
+        }
+
+        .message-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .message-content {
+            white-space: pre-wrap;
+            line-height: 1.55;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 38px 16px;
+            color: var(--muted);
+        }
+
+        .empty-state i {
+            font-size: 30px;
+            color: #94a3b8;
+            margin-bottom: 14px;
+        }
+
+        .empty-state h3 {
+            color: var(--text);
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .required::after {
+            content: " *";
+            color: #dc2626;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-control, .form-select {
+            border-color: #cbd5e1;
+            border-radius: 9px;
+            padding: 10px 12px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #93b4fd;
+            box-shadow: 0 0 0 .2rem rgba(37, 99, 235, .12);
+        }
+
+        .page-footer {
+            color: var(--muted);
+            text-align: center;
+            font-size: 12px;
+            padding-top: 8px;
+        }
+
+        @media (max-width: 767px) {
+            .page-wrap { padding: 24px 13px 35px; }
+            .page-heading h1 { font-size: 23px; }
+            .panel { padding: 16px; }
+            .message { max-width: 96%; }
+            .page-heading .btn { width: 100%; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="container d-flex justify-content-between align-items-center gap-3">
+            <a href="dashboard.html" class="brand">
+                <i class="fa-solid fa-truck-fast"></i>Quản lý vận tải
+            </a>
+            <a href="dashboard.html" class="btn btn-outline-primary btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i>
+                Dashboard
+            </a>
+        </div>
+    </header>
+
+    <main class="page-wrap">
+        <section class="page-heading">
+            <div class="d-flex align-items-center gap-3">
+                <div class="heading-icon">
+                    <i class="fa-solid fa-headset"></i>
+                </div>
+                <div>
+                    <h1>Dịch vụ khách hàng</h1>
+                    <p>Gửi yêu cầu hỗ trợ và theo dõi quá trình xử lý.</p>
+                </div>
+            </div>
+
+            <button class="btn btn-primary px-4 py-2"
+                    data-bs-toggle="modal" data-bs-target="#createModal">
+                <i class="fa-solid fa-plus me-2"></i>Tạo phiếu hỗ trợ
+            </button>
+        </section>
+
+        <div id="alertArea" aria-live="polite"></div>
+
+        <!-- Statistics -->
+        <section class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <i class="fa-solid fa-ticket"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Tổng số phiếu</div>
+                        <div class="stat-value" id="totalCount">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Đang xử lý / chờ tiếp nhận</div>
+                        <div class="stat-value" id="processingCount">—</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <div class="stat-label">Đã giải quyết / đóng</div>
+                        <div class="stat-value" id="resolvedCount">—</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="row g-4">
+            <!-- Ticket list -->
+            <section class="col-lg-5">
+                <div class="panel">
+                    <div class="panel-heading">
+                        <h2><i class="fa-solid fa-list-ul text-primary me-2"></i>Phiếu hỗ trợ của tôi</h2>
+                        <button id="refreshBtn" class="btn btn-outline-secondary btn-sm"
+                                type="button" title="Làm mới danh sách">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+
+                    <div id="ticketList" class="ticket-list">
+                        <div class="empty-state">
+                            <i class="fa-solid fa-spinner fa-spin"></i>
+                            <p>Đang tải danh sách...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Ticket detail -->
+            <section class="col-lg-7">
+                <div class="panel" id="detailPanel">
+                    <div id="ticketDetail">
+                        <div class="empty-state">
+                            <i class="fa-regular fa-comments"></i>
+                            <h3>Chọn một phiếu hỗ trợ</h3>
+                            <p class="mb-0">Nội dung và lịch sử trao đổi sẽ hiển thị ở đây.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer class="page-footer">
+            Hệ thống quản lý vận tải và giao nhận hàng hóa
+        </footer>
+    </main>
+
+    <!-- Create ticket modal -->
+    <div class="modal fade" id="createModal" tabindex="-1"
+         aria-labelledby="createModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-4">
+                <div class="modal-header px-4 py-3">
+                    <div>
+                        <h5 class="modal-title fw-bold" id="createModalTitle">
+                            <i class="fa-solid fa-headset text-primary me-2"></i>
+                            Tạo phiếu hỗ trợ
+                        </h5>
+                        <div class="small text-secondary mt-1">
+                            Vui lòng cung cấp thông tin để nhân viên hỗ trợ bạn.
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="modal" aria-label="Đóng"></button>
+                </div>
+
+                <form id="createForm">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label required">Loại yêu cầu</label>
+                                <select id="category" class="form-select" required>
+                                    <option value="CONSULTATION">Tư vấn</option>
+                                    <option value="COMPLAINT">Khiếu nại</option>
+                                    <option value="INCIDENT">Báo cáo sự cố</option>
+                                    <option value="FEEDBACK">Góp ý</option>
+                                    <option value="OTHER">Khác</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="orderId" class="form-label">Đơn hàng liên quan</label>
+                                <input id="orderId" type="number" min="1"
+                                       class="form-control" placeholder="ID đơn hàng (không bắt buộc)">
+                                <div class="form-text">Nhập ID đơn hàng, không phải mã đơn.</div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="subject" class="form-label required">Tiêu đề</label>
+                                <input id="subject" class="form-control" maxlength="200"
+                                       required placeholder="Ví dụ: Đơn hàng giao chậm">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="description" class="form-label required">Nội dung yêu cầu</label>
+                                <textarea id="description" class="form-control" rows="5"
+                                          maxlength="5000" required
+                                          placeholder="Mô tả chi tiết vấn đề bạn gặp phải..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer px-4 py-3">
+                        <button type="button" class="btn btn-light border"
+                                data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" id="createBtn" class="btn btn-primary px-4">
+                            <i class="fa-solid fa-paper-plane me-2"></i>Gửi yêu cầu
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const API_BASE_URL =
+            'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+
+        const ticketList = document.getElementById('ticketList');
+        const ticketDetail = document.getElementById('ticketDetail');
+        const alertArea = document.getElementById('alertArea');
+
+        let currentTicketId = null;
+        let tickets = [];
+
+        const STATUS_LABELS = {
+            PENDING: 'Chờ tiếp nhận',
+            PROCESSING: 'Đang xử lý',
+            RESOLVED: 'Đã giải quyết',
+            CLOSED: 'Đã đóng'
+        };
+
+        const CATEGORY_LABELS = {
+            CONSULTATION: 'Tư vấn',
+            COMPLAINT: 'Khiếu nại',
+            INCIDENT: 'Sự cố',
+            FEEDBACK: 'Góp ý',
+            OTHER: 'Khác'
+        };
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            })[char]);
+        }
+
+        function showAlert(message, type = 'info') {
+            alertArea.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${escapeHtml(message)}
+                    <button type="button" class="btn-close"
+                            data-bs-dismiss="alert" aria-label="Đóng"></button>
+                </div>`;
+            window.scrollTo({ top: 0, behavior: 'auto' });
+        }
+
+        async function apiRequest(route, options = {}, params = {}) {
+            const url = new URL(API_BASE_URL);
+            url.searchParams.set('route', route);
+
+            Object.entries(params).forEach(([key, value]) => {
+                if (value !== null && value !== undefined) {
+                    url.searchParams.set(key, value);
+                }
+            });
+
+            const response = await fetch(url.toString(), {
+                credentials: 'include',
+                cache: 'no-store',
+                ...options
+            });
+
+            const text = await response.text();
+            let result;
+
+            try {
+                result = JSON.parse(text);
+            } catch {
+                console.error('API trả về dữ liệu không phải JSON:', text);
+                throw new Error(`Máy chủ trả về dữ liệu không hợp lệ (HTTP ${response.status}). Mở F12 > Network để xem Response.`);
+            }
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || `Yêu cầu thất bại (HTTP ${response.status}).`);
+            }
+
+            return result.data;
+        }
+
+        function statusBadge(status) {
+            return `<span class="status status-${escapeHtml(status)}">
+                ${escapeHtml(STATUS_LABELS[status] || status || 'Không rõ')}
+            </span>`;
+        }
+
+        function formatDate(value) {
+            if (!value) return '—';
+
+            const date = new Date(String(value).replace(' ', 'T'));
+            return Number.isNaN(date.getTime())
+                ? String(value)
+                : date.toLocaleString('vi-VN');
+        }
+
+        function renderStats() {
+            document.getElementById('totalCount').textContent = tickets.length;
+
+            document.getElementById('processingCount').textContent =
+                tickets.filter(t => ['PENDING', 'PROCESSING'].includes(t.status)).length;
+
+            document.getElementById('resolvedCount').textContent =
+                tickets.filter(t => ['RESOLVED', 'CLOSED'].includes(t.status)).length;
+        }
+
+        async function loadTickets(preferredId = currentTicketId) {
+            ticketList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Đang tải danh sách...</p>
+                </div>`;
+
+            const data = await apiRequest('/api/customer/support-tickets');
+            tickets = Array.isArray(data) ? data : (data?.tickets || []);
+            renderStats();
+
+            if (!tickets.length) {
+                currentTicketId = null;
+                ticketList.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <h3>Chưa có phiếu hỗ trợ</h3>
+                        <p class="mb-0">Nhấn “Tạo phiếu hỗ trợ” để gửi yêu cầu đầu tiên.</p>
+                    </div>`;
+                renderNoTicketSelected();
+                return;
+            }
+
+            ticketList.innerHTML = tickets.map(ticket => `
+                <button type="button"
+                        class="ticket-item ${String(ticket.id) === String(preferredId) ? 'active' : ''}"
+                        data-ticket-id="${escapeHtml(ticket.id)}">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <span class="ticket-code">${escapeHtml(ticket.ticket_code)}</span>
+                        ${statusBadge(ticket.status)}
+                    </div>
+                    <div class="ticket-subject">${escapeHtml(ticket.subject)}</div>
+                    <div class="ticket-meta">
+                        <i class="fa-regular fa-calendar me-1"></i>
+                        ${escapeHtml(formatDate(ticket.created_at))}
+                    </div>
+                </button>
+            `).join('');
+
+            ticketList.querySelectorAll('[data-ticket-id]').forEach(button => {
+                button.addEventListener('click', () => openTicket(button.dataset.ticketId));
+            });
+
+            const selected = tickets.find(t => String(t.id) === String(preferredId)) || tickets[0];
+            await openTicket(selected.id);
+        }
+
+        function renderNoTicketSelected() {
+            ticketDetail.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-regular fa-comments"></i>
+                    <h3>Chọn một phiếu hỗ trợ</h3>
+                    <p class="mb-0">Nội dung và lịch sử trao đổi sẽ hiển thị ở đây.</p>
+                </div>`;
+        }
+
+        async function openTicket(id) {
+            currentTicketId = String(id);
+
+            ticketList.querySelectorAll('[data-ticket-id]').forEach(button => {
+                button.classList.toggle('active', button.dataset.ticketId === currentTicketId);
+            });
+
+            ticketDetail.innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <p>Đang tải chi tiết...</p>
+                </div>`;
+
+            try {
+                const data = await apiRequest(
+                    '/api/customer/support-tickets/show',
+                    {},
+                    { id }
+                );
+
+                const ticket = data.ticket || data;
+                const messages = Array.isArray(data.messages)
+                    ? data.messages
+                    : (Array.isArray(ticket.messages) ? ticket.messages : []);
+
+                const closed = ['RESOLVED', 'CLOSED'].includes(ticket.status);
+
+                ticketDetail.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-2">
+                        <div>
+                            <div class="ticket-code mb-2">${escapeHtml(ticket.ticket_code)}</div>
+                            <h2 class="detail-title mb-2">${escapeHtml(ticket.subject)}</h2>
+                        </div>
+                        ${statusBadge(ticket.status)}
+                    </div>
+
+                    <div class="ticket-meta mb-4">
+                        <span class="me-3">
+                            <i class="fa-regular fa-calendar me-1"></i>
+                            ${escapeHtml(formatDate(ticket.created_at))}
+                        </span>
+                        <span>
+                            <i class="fa-solid fa-tag me-1"></i>
+                            ${escapeHtml(CATEGORY_LABELS[ticket.category] || ticket.category)}
+                        </span>
+                    </div>
+
+                    ${ticket.order_id ? `
+                        <div class="alert alert-light border py-2">
+                            <i class="fa-solid fa-box text-primary me-2"></i>
+                            Đơn hàng liên quan: <strong>#${escapeHtml(ticket.order_id)}</strong>
+                        </div>` : ''}
+
+                    <h3 class="fs-6 fw-bold mb-2">Nội dung yêu cầu</h3>
+                    <div class="detail-description mb-4">${escapeHtml(ticket.description)}</div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="fs-6 fw-bold mb-0">
+                            <i class="fa-regular fa-comments text-primary me-2"></i>
+                            Lịch sử trao đổi
+                        </h3>
+                        <span class="ticket-meta">${messages.length} tin nhắn</span>
+                    </div>
+
+                    <div class="message-list mb-4" id="messageList">
+                        ${messages.length ? messages.map(message => {
+                            const mine = String(message.sender_role || '').toUpperCase() === 'CUSTOMER';
+                            return `
+                                <div class="message ${mine ? 'mine' : ''}">
+                                    <div class="message-meta">
+                                        <strong>${escapeHtml(message.sender_name || (mine ? 'Bạn' : 'Nhân viên'))}</strong>
+                                        <span class="ms-1">${escapeHtml(formatDate(message.created_at))}</span>
+                                    </div>
+                                    <div class="message-content">${escapeHtml(message.message)}</div>
+                                </div>`;
+                        }).join('') : `
+                            <div class="text-secondary small">
+                                Chưa có tin nhắn trao đổi.
+                            </div>`}
+                    </div>
+
+                    ${closed ? `
+                        <div class="alert alert-secondary mb-0">
+                            <i class="fa-solid fa-circle-check me-2"></i>
+                            Phiếu đã ${ticket.status === 'CLOSED' ? 'đóng' : 'được giải quyết'}.
+                            Bạn không thể gửi thêm phản hồi.
+                        </div>
+                    ` : `
+                        <form id="replyForm">
+                            <label for="replyMessage" class="form-label">Gửi phản hồi</label>
+                            <textarea id="replyMessage" class="form-control mb-3"
+                                      rows="3" maxlength="5000" required
+                                      placeholder="Nhập nội dung cần trao đổi..."></textarea>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" id="replyBtn" class="btn btn-primary px-4">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Gửi phản hồi
+                                </button>
+                            </div>
+                        </form>
+                    `}
+                `;
+
+                const messageList = document.getElementById('messageList');
+                if (messageList) messageList.scrollTop = messageList.scrollHeight;
+
+                const replyForm = document.getElementById('replyForm');
+                if (replyForm) replyForm.addEventListener('submit', submitReply);
+
+            } catch (error) {
+                ticketDetail.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        ${escapeHtml(error.message)}
+                    </div>`;
+            }
+        }
+
+        async function submitReply(event) {
+            event.preventDefault();
+
+            const textarea = document.getElementById('replyMessage');
+            const button = document.getElementById('replyBtn');
+            const message = textarea.value.trim();
+
+            if (!message) {
+                showAlert('Vui lòng nhập nội dung phản hồi.', 'warning');
+                return;
+            }
+
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...';
+
+            try {
+                await apiRequest('/api/customer/support-tickets/reply', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ticket_id: currentTicketId,
+                        message
+                    })
+                });
+
+                showAlert('Đã gửi phản hồi thành công.', 'success');
+                await loadTickets(currentTicketId);
+
+            } catch (error) {
+                showAlert(error.message, 'danger');
+                button.disabled = false;
+                button.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Gửi phản hồi';
+            }
+        }
+
+        document.getElementById('createForm').addEventListener('submit', async event => {
+            event.preventDefault();
+
+            const button = document.getElementById('createBtn');
+            const orderValue = document.getElementById('orderId').value.trim();
+
+            if (orderValue && (!/^\d+$/.test(orderValue) || Number(orderValue) <= 0)) {
+                showAlert('ID đơn hàng phải là số nguyên dương.', 'warning');
+                return;
+            }
+
+            const payload = {
+                category: document.getElementById('category').value,
+                subject: document.getElementById('subject').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                order_id: orderValue || null
+            };
+
+            if (!payload.subject || !payload.description) {
+                showAlert('Vui lòng nhập tiêu đề và nội dung yêu cầu.', 'warning');
+                return;
+            }
+
+            button.disabled = true;
+            button.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang gửi...';
+
+            try {
+                const data = await apiRequest('/api/customer/support-tickets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById('createForm').reset();
+
+                bootstrap.Modal.getOrCreateInstance(
+                    document.getElementById('createModal')
+                ).hide();
+
+                showAlert(
+                    `Tạo phiếu hỗ trợ thành công${data.ticket_code ? ': ' + data.ticket_code : ''}.`,
+                    'success'
+                );
+
+                await loadTickets(data.id || null);
+
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fa-solid fa-paper-plane me-2"></i>Gửi yêu cầu';
+            }
+        });
+
+        document.getElementById('refreshBtn').addEventListener('click', async () => {
+            try {
+                await loadTickets(currentTicketId);
+            } catch (error) {
+                showAlert(error.message, 'danger');
+            }
+        });
+
+        async function loadCurrentUser() {
+            try {
+                const user = await apiRequest('/api/me');
+
+                if (!user || user.role !== 'CUSTOMER') {
+                    window.location.href = 'login.html';
+                    return false;
+                }
+
+                return true;
+            } catch {
+                window.location.href = 'login.html';
+                return false;
+            }
+        }
+
+        (async function init() {
+            if (!await loadCurrentUser()) return;
+
+            try {
+                await loadTickets();
+            } catch (error) {
+                ticketList.innerHTML = `
+                    <div class="alert alert-danger mb-0">
+                        ${escapeHtml(error.message)}
+                    </div>`;
+            }
+        })();
+    </script>
+</body>
+</html>

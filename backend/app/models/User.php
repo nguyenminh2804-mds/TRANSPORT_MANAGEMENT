@@ -208,4 +208,20 @@ class User
             ':id' => $id
         ]);
     }
+    
+    // Lấy danh sách nhân viên có thể nhận phiếu hỗ trợ
+public function getSupportStaff()
+{
+    $sql = "SELECT id, username, full_name, role
+            FROM {$this->table}
+            WHERE status = 1
+              AND role = 'STAFF'
+            ORDER BY full_name ASC";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 }

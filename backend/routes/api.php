@@ -1,7 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../core/Router.php';
-
+require_once __DIR__ . '/../app/controllers/StatisticsController.php';
+require_once __DIR__ . '/../app/controllers/TripController.php';
 require_once __DIR__ . '/../app/controllers/AuthController.php';
 require_once __DIR__ . '/../app/controllers/UserController.php';
 require_once __DIR__ . '/../app/controllers/CustomerController.php';
@@ -9,7 +10,7 @@ require_once __DIR__ . '/../app/controllers/OrderController.php';
 require_once __DIR__ . '/../app/controllers/DriverController.php';
 require_once __DIR__ . '/../app/controllers/VehicleController.php';
 require_once __DIR__ . '/../app/controllers/AssignmentController.php';
-
+require_once __DIR__ . '/../app/controllers/SupportController.php';
 $router = new Router();
 
 /*
@@ -204,18 +205,43 @@ $router->delete('/api/customers', function () use ($customerController) {
 | Customer Orders
 |--------------------------------------------------------------------------
 */
-
+/*
+|--------------------------------------------------------------------------
+| Customer Orders
+|--------------------------------------------------------------------------
+*/
 $orderController = new OrderController();
 
 $router->get('/api/customer/orders', function () use ($orderController) {
-    $orderController->myOrders();
+    $orderController->handle('myOrders');
+});
+
+$router->post('/api/customer/orders', function () use ($orderController) {
+    $orderController->handle('createCustomerOrder');
+});
+
+// BỔ SUNG: API SỬA ĐƠN HÀNG DÀNH CHO KHÁCH
+$router->post('/api/customer/orders/update', function () use ($orderController) {
+    $orderController->handle('update');
+});
+
+// BỔ SUNG: API HỦY ĐƠN HÀNG DÀNH CHO KHÁCH
+$router->post('/api/customer/orders/cancel', function () use ($orderController) {
+    $orderController->handle('cancel');
 });
 
 $router->post('/api/customer/orders/track', function () use ($orderController) {
-    $orderController->track();
+    $orderController->handle('track');
 });
-
-
+$router->get('/api/orders', function () use ($orderController) {
+    $orderController->handle('index');
+});
+$router->post('/api/orders/update-status', function () use ($orderController) {
+    $orderController->handle('updateStatus');
+});
+$router->post('/api/orders/update-payment', function () use ($orderController) {
+    $orderController->handle('updatePaymentStatus');
+});
 /*
 |--------------------------------------------------------------------------
 | Driver Management
@@ -307,23 +333,134 @@ $router->put('/api/assignments/cancel', function () use ($assignmentController) 
     $assignmentController->handle('cancel');
 });
 
-require_once __DIR__.'/../app/controllers/DriverPortalController.php';
+$tripController = new TripController();
+
+$router->get('/api/trips', function () use ($tripController) {
+    $tripController->handle('index');
+});
+
+$router->get('/api/trips/show', function () use ($tripController) {
+    $tripController->handle('show');
+});
+
+$router->post('/api/trips', function () use ($tripController) {
+    $tripController->handle('store');
+});
+
+$router->put('/api/trips', function () use ($tripController) {
+    $tripController->handle('update');
+});
+
+$router->put('/api/trips/status', function () use ($tripController) {
+    $tripController->handle('status');
+});
+$router->post('/api/trips/assign-order', function () use ($tripController) {
+    $tripController->handle('assignOrder');
+});
+$router->delete('/api/trips', function () use ($tripController) {
+    $tripController->handle('destroy');
+});
+
+$statisticsController = new StatisticsController();
+
+$router->get('/api/statistics/overview', function () use ($statisticsController) {
+    $statisticsController->handle('overview');
+});
+
+$supportController = new SupportController();
+
+// Khách hàng
+$router->get('/api/customer/support-tickets', function () use ($supportController) {
+    $supportController->handle('customerIndex');
+});
+
+$router->post('/api/customer/support-tickets', function () use ($supportController) {
+    $supportController->handle('customerCreate');
+});
+
+$router->get('/api/customer/support-tickets/show', function () use ($supportController) {
+    $supportController->handle('customerShow');
+});
+
+$router->post('/api/customer/support-tickets/reply', function () use ($supportController) {
+    $supportController->handle('customerReply');
+});
+
+// Nhân viên / Admin
+$router->get('/api/staff/support-tickets', function () use ($supportController) {
+    $supportController->handle('staffIndex');
+});
+
+$router->post('/api/staff/support-tickets/reply', function () use ($supportController) {
+    $supportController->handle('staffReply');
+});
+
+$router->post('/api/staff/support-tickets/status', function () use ($supportController) {
+    $supportController->handle('staffStatus');
+});
+
+$router->get('/api/staff/support-tickets/show', function () use ($supportController) {
+    $supportController->handle('staffShow');
+});
+
+$router->post('/api/admin/support-tickets/assign', function () use ($supportController) {
+    $supportController->handle('adminAssign');
+});
+
+
+require_once __DIR__ . '/../app/controllers/DriverPortalController.php';
+require_once __DIR__ . '/../app/controllers/AssignmentRequestController.php';
+
 $driverPortalController = new DriverPortalController();
-$router->get('/api/driver/home', function () use ($driverPortalController) { $driverPortalController->handle('home'); });
-$router->get('/api/driver/trips', function () use ($driverPortalController) { $driverPortalController->handle('schedule'); });
-$router->get('/api/driver/profile', function () use ($driverPortalController) { $driverPortalController->handle('profile'); });
-$router->put('/api/driver/profile', function () use ($driverPortalController) { $driverPortalController->handle('updateProfile'); });
-$router->put('/api/driver/accept', function () use ($driverPortalController) { $driverPortalController->handle('accept'); });
-$router->put('/api/driver/start', function () use ($driverPortalController) { $driverPortalController->handle('start'); });
-$router->put('/api/driver/complete', function () use ($driverPortalController) { $driverPortalController->handle('complete'); });
 
-$router->put('/api/driver/availability', function () use ($driverPortalController) { $driverPortalController->handle('availability'); });
+$router->get('/api/driver/home', function () use ($driverPortalController) {
+    $driverPortalController->handle('home');
+});
 
-require_once __DIR__.'/../app/controllers/AssignmentRequestController.php';
-$requestController=new AssignmentRequestController();
-$router->get('/api/driver/requests',function()use($requestController){$requestController->handle('mine');});
-$router->post('/api/driver/requests',function()use($requestController){$requestController->handle('submit');});
-$router->get('/api/assignment-requests',function()use($requestController){$requestController->handle('list');});
-$router->put('/api/assignment-requests/review',function()use($requestController){$requestController->handle('review');});
+$router->get('/api/driver/trips', function () use ($driverPortalController) {
+    $driverPortalController->handle('schedule');
+});
+
+$router->get('/api/driver/profile', function () use ($driverPortalController) {
+    $driverPortalController->handle('profile');
+});
+
+$router->put('/api/driver/profile', function () use ($driverPortalController) {
+    $driverPortalController->handle('updateProfile');
+});
+
+$router->put('/api/driver/accept', function () use ($driverPortalController) {
+    $driverPortalController->handle('accept');
+});
+
+$router->put('/api/driver/start', function () use ($driverPortalController) {
+    $driverPortalController->handle('start');
+});
+
+$router->put('/api/driver/complete', function () use ($driverPortalController) {
+    $driverPortalController->handle('complete');
+});
+
+$router->put('/api/driver/availability', function () use ($driverPortalController) {
+    $driverPortalController->handle('availability');
+});
+
+$assignmentRequestController = new AssignmentRequestController();
+
+$router->get('/api/driver/requests', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('mine');
+});
+
+$router->post('/api/driver/requests', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('submit');
+});
+
+$router->get('/api/assignment-requests', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('list');
+});
+
+$router->put('/api/assignment-requests/review', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('review');
+});
 
 return $router;
