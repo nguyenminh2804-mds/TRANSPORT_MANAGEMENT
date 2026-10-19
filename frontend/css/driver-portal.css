@@ -1,0 +1,14 @@
+.driver-home-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.driver-portal .drivers-card { margin:20px 0; min-width:0; }
+.driver-home-grid .drivers-card { margin-bottom:0; }
+.driver-portal .driver-trip { padding:14px 0; border-bottom:1px solid #edf0f5; overflow-wrap:anywhere; }
+.driver-portal .driver-trip p { margin:6px 0; }
+.driver-portal .driver-count { padding:16px 24px; margin:0; }
+.driver-portal .drivers-badge { display:inline-flex; gap:6px; align-items:center; }
+.driver-portal .drivers-badge.pending { background:#fef3c7; color:#92400e; }
+.driver-portal .drivers-badge.accepted { background:#dbeafe; color:#1d4ed8; }
+.driver-portal .drivers-badge.running { background:#ffedd5; color:#9a3412; }
+.driver-portal .drivers-badge.completed { background:#dcfce7; color:#166534; }
+.driver-portal .drivers-badge.cancelled,.driver-portal .drivers-badge.unknown { background:#f1f5f9; color:#526078; }
+.driver-portal #profileForm .drivers-actions { position:static; }
+@media(max-width:640px) { .driver-home-grid { grid-template-columns:minmax(0,1fr); gap:0; } }

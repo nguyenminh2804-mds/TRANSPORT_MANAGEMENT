@@ -407,4 +407,60 @@ $router->post('/api/admin/support-tickets/assign', function () use ($supportCont
     $supportController->handle('adminAssign');
 });
 
+
+require_once __DIR__ . '/../app/controllers/DriverPortalController.php';
+require_once __DIR__ . '/../app/controllers/AssignmentRequestController.php';
+
+$driverPortalController = new DriverPortalController();
+
+$router->get('/api/driver/home', function () use ($driverPortalController) {
+    $driverPortalController->handle('home');
+});
+
+$router->get('/api/driver/trips', function () use ($driverPortalController) {
+    $driverPortalController->handle('schedule');
+});
+
+$router->get('/api/driver/profile', function () use ($driverPortalController) {
+    $driverPortalController->handle('profile');
+});
+
+$router->put('/api/driver/profile', function () use ($driverPortalController) {
+    $driverPortalController->handle('updateProfile');
+});
+
+$router->put('/api/driver/accept', function () use ($driverPortalController) {
+    $driverPortalController->handle('accept');
+});
+
+$router->put('/api/driver/start', function () use ($driverPortalController) {
+    $driverPortalController->handle('start');
+});
+
+$router->put('/api/driver/complete', function () use ($driverPortalController) {
+    $driverPortalController->handle('complete');
+});
+
+$router->put('/api/driver/availability', function () use ($driverPortalController) {
+    $driverPortalController->handle('availability');
+});
+
+$assignmentRequestController = new AssignmentRequestController();
+
+$router->get('/api/driver/requests', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('mine');
+});
+
+$router->post('/api/driver/requests', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('submit');
+});
+
+$router->get('/api/assignment-requests', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('list');
+});
+
+$router->put('/api/assignment-requests/review', function () use ($assignmentRequestController) {
+    $assignmentRequestController->handle('review');
+});
+
 return $router;
