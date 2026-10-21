@@ -509,8 +509,8 @@ class SupportController extends Controller
     {
         // Chỉ Admin được phân công
         if (
-            !isset($_SESSION['user']) ||
-            ($_SESSION['user']['role'] ?? '') !== 'ADMIN'
+            empty($_SESSION['user_id']) ||
+            ($_SESSION['role'] ?? '') !== 'ADMIN'
         ) {
             $this->error('Bạn không có quyền phân công phiếu hỗ trợ', 403);
             return;
