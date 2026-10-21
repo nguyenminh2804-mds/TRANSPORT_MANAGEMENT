@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__.'/Assignment.php';
+require_once __DIR__.'/DeliveryProgress.php';
 class DriverPortal
 {
     protected $db;
@@ -22,11 +23,17 @@ class DriverPortal
         if($from!==''&&$to!==''&&$from>$to)throw new DomainException('Ngày bắt đầu phải trước hoặc bằng ngày kết thúc.',422);
         return [$from,$to];
     }
-    public function schedule($driverId,$from='',$to=''):array {
+    public function schedule($driverId,$from='',$to='',$tripId='',$route=''):array {
         self::dates($from,$to);
-        $sql='SELECT a.assignment_id,a.trip_id,a.status,a.accepted_at,a.assigned_at,a.completed_at,a.cancelled_at,a.notes,t.status AS trip_status,t.start_time,t.actual_started_at,t.end_time,t.start_location,t.end_location,v.license_plate,EXISTS(SELECT 1 FROM assignment_requests r WHERE r.assignment_id=a.assignment_id AND r.request_status=\'pending\') AS has_pending_request,(SELECT COUNT(*) FROM trip_orders x WHERE x.trip_id=a.trip_id) AS order_count FROM assignments a LEFT JOIN trips t ON t.id=a.trip_id LEFT JOIN vehicles v ON v.vehicle_id=a.vehicle_id WHERE a.driver_id=?';$p=[$driverId];
+        if(!is_string($route)||mb_strlen($route)>150)throw new DomainException('Tuyến đường tối đa 150 ký tự.',422);
+        if(!is_string($tripId))throw new DomainException('Mã chuyến không hợp lệ.',422);
+        $tripId=trim($tripId);if($tripId!=='')$tripId=Assignment::id($tripId,true);
+        $sql='SELECT a.assignment_id,a.trip_id,a.status,a.accepted_at,a.assigned_at,a.completed_at,a.cancelled_at,a.notes,t.status AS trip_status,t.start_time,a.actual_started_at,t.end_time,t.start_location,t.end_location,v.license_plate,EXISTS(SELECT 1 FROM assignment_requests r WHERE r.assignment_id=a.assignment_id AND r.request_status=\'pending\') AS has_pending_request,('.DeliveryProgress::orderCountSql('a.trip_id').') AS order_count FROM assignments a LEFT JOIN trips t ON t.id=a.trip_id LEFT JOIN vehicles v ON v.vehicle_id=a.vehicle_id WHERE a.driver_id=?';$p=[$driverId];
         if($from!==''){$sql.=' AND t.start_time>=?';$p[]=$from.' 00:00:00';}
         if($to!==''){$sql.=' AND t.start_time<?';$p[]=(new DateTimeImmutable($to))->modify('+1 day')->format('Y-m-d').' 00:00:00';}
+        if($tripId!==''){$sql.=' AND a.trip_id=?';$p[]=$tripId;}
+        $route=trim($route);
+        if($route!==''){$sql.=" AND CONCAT_WS(' → ',t.start_location,t.end_location) LIKE ? ESCAPE '!'";$p[]='%'.strtr($route,['!'=>'!!','%'=>'!%','_'=>'!_']).'%';}
         $rows=$this->rows($sql.' ORDER BY t.start_time DESC,a.assignment_id DESC',$p);
         foreach($rows as &$a){$a['assignment_id']=(string)$a['assignment_id'];$a['trip_id']=(string)$a['trip_id'];$a['order_count']=(int)$a['order_count'];$a['has_pending_request']=(bool)$a['has_pending_request'];$a['phase']=self::phase($a);}return $rows;
     }
@@ -95,8 +102,11 @@ class DriverPortal
             self::checkAction($action,$a,$trip,$d,$v);
             if($action==='accept')$this->write('UPDATE assignments SET accepted_at=GREATEST(NOW(),assigned_at) WHERE assignment_id=?',[$id]);
             if($action==='start'){
-                // start_time is planned departure, never an actual movement timestamp.
-                $this->write("UPDATE trips SET status='IN_PROGRESS',actual_started_at=COALESCE(actual_started_at,NOW()) WHERE id=? AND status='PLANNED'",[$a['trip_id']]);
+                // NOW() is identical throughout this one statement. Both timestamps and
+                // the trip transition are committed with the resource changes below.
+                $start=$this->db->prepare("UPDATE assignments a JOIN trips t ON t.id=a.trip_id SET a.actual_started_at=NOW(),t.actual_started_at=NOW(),t.status='IN_PROGRESS' WHERE a.assignment_id=? AND a.driver_id=? AND a.status='assigned' AND a.accepted_at IS NOT NULL AND a.actual_started_at IS NULL AND t.status='PLANNED' AND t.driver_id=a.driver_id AND t.vehicle_id=a.vehicle_id");
+                $start->execute([$id,$d['driver_id']]);
+                if($start->rowCount()===0)throw new DomainException('Phân công đã bắt đầu hoặc dữ liệu đã thay đổi. Hãy tải lại lịch chạy; thời điểm đã ghi được giữ nguyên.',409);
                 $this->write("UPDATE drivers SET status='on_trip' WHERE driver_id=?",[$a['driver_id']]);$this->write("UPDATE vehicles SET status='on_trip' WHERE vehicle_id=?",[$a['vehicle_id']]);
             }
             if($action==='complete'){

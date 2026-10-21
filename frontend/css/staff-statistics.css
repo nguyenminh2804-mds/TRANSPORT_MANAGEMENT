@@ -1,0 +1,6 @@
+#statistics { scroll-margin-top:20px; }
+#statistics .stat-card { border-radius:12px; border:1px solid #e5eaf2; box-shadow:0 4px 18px rgba(23,32,51,.05); }
+#statistics .icon-box { width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px; }
+#statistics .chart-container { background:#fff; border:1px solid #e5eaf2; border-radius:12px; padding:20px; box-shadow:0 4px 18px rgba(23,32,51,.05); margin-bottom:30px; }
+#statistics .progress-sm { height:8px; border-radius:4px; }
+#statistics > .d-flex { flex-wrap:wrap; gap:12px; }

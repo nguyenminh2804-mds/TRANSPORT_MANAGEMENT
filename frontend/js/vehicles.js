@@ -2,7 +2,7 @@
     'use strict';
     const $ = id => document.getElementById(id);
     const endpoint = new URL('../../backend/public/index.php', location.href);
-    const labels = {available:'Sẵn sàng', on_trip:'Đang thực hiện chuyến', maintenance:'Bảo trì', inactive:'Chưa sẵn sàng', pending:'Đã phân công – Chờ tiếp nhận', accepted:'Đã phân công – Đã tiếp nhận, chưa bắt đầu', unknown:'Dữ liệu phân công không hợp lệ'};
+    const labels = {available:'Sẵn sàng', on_trip:'Đang thực hiện chuyến', maintenance:'Bảo trì', inactive:'Chưa sẵn sàng', pending:'Chờ tiếp nhận phân công', accepted:'Đã tiếp nhận phân công', unknown:'Dữ liệu phân công không hợp lệ'};
     function displayStatus(row) { return row.display_status || (row.has_active_assignment && row.status === 'available' ? 'unknown' : row.status); }
     function showEffectiveStatus(select,row) {
         for(const option of Array.from(select.querySelectorAll?.('option[data-effective]')||[]))option.remove();

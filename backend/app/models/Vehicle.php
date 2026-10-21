@@ -95,7 +95,8 @@ class Vehicle
             $sql .= " AND (v.license_plate LIKE :plate ESCAPE '!' OR v.vehicle_type LIKE :type ESCAPE '!' OR v.brand LIKE :brand ESCAPE '!')";
             foreach (['plate','type','brand'] as $key) $params[$key] = '%' . strtr($search, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         }
-        if ($status !== '') { $sql .= ' AND ('.ResourceStatus::sql('v','vehicle_id').')=:status'; $params['status'] = $status; }
+        if($status==='assigned'){$sql.=' AND ('.ResourceStatus::sql('v','vehicle_id').") IN ('pending','accepted','on_trip')";}
+        elseif ($status !== '') { $sql .= ' AND ('.ResourceStatus::sql('v','vehicle_id').')=:status'; $params['status'] = $status; }
         $stmt = $this->conn->prepare($sql . ' ORDER BY v.vehicle_id DESC'); $stmt->execute($params);
         return array_map([$this, 'dto'], $stmt->fetchAll());
     }

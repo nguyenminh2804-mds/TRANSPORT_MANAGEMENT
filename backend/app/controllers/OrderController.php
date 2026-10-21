@@ -37,6 +37,7 @@ class OrderController extends Controller
     public function handle($action)
 
     {
+        header('Cache-Control: no-store, private');
 
         header('Cache-Control: no-store, private');
 
@@ -346,7 +347,7 @@ public function createCustomerOrder()
 
         'payment_method' => $paymentMethod,
 
-        'payment_status' => 'UNPAID',
+        'payment_status' => $paymentMethod === 'SENDER_PAY' ? 'PAID' : 'UNPAID',
 
         'status' => 'PENDING',
 
@@ -366,7 +367,9 @@ public function createCustomerOrder()
 
                 'status' => 'PENDING',
 
-                'payment_status' => 'UNPAID'
+                'payment_status' => $orderData['payment_status'],
+
+                'display_payment_status' => $orderData['payment_status']
 
             ], 'Tạo đơn hàng thành công!');
 

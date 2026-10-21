@@ -126,30 +126,80 @@
             .message { max-width: 95%; }
         }
     </style>
+<link rel="stylesheet" href="../css/transport-navigation.css?v=3a935e6b2794">
+<script src="../js/staff-shell.js?v=34940f67e369" defer></script>
 </head>
 
-<body>
-<header class="topbar">
-    <div class="container-fluid px-3 px-lg-4 py-3">
-        <div class="d-flex align-items-center gap-3">
-            <div class="brand-icon">
-                <i class="fa-solid fa-headset fs-5"></i>
-            </div>
-            <div>
-                <h5 class="mb-0 fw-bold">Quản lý hỗ trợ</h5>
-                <small class="text-secondary">Hệ thống vận chuyển TMS</small>
-            </div>
-            <div class="ms-auto">
-                <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">
-                    <i class="fa-solid fa-arrow-left me-1"></i>
-                    Quay lại
-                </a>
-            </div>
+<body class="staff-shell">
+<header class="drivers-header">
+      <div class="drivers-container drivers-row">
+        <a href="dashboard.html" class="drivers-brand"
+          ><i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
+          <span>Quản lý vận tải</span></a
+        >
+        <div class="drivers-row drivers-user">
+          <span class="drivers-avatar" aria-hidden="true"
+            ><i class="fa-solid fa-user"></i></span
+          ><span id="currentUser">Đang kiểm tra phiên…</span
+          ><button id="logoutButton" type="button">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+            Đăng xuất
+          </button>
         </div>
-    </div>
-</header>
+      </div>
+    </header>
 
-<main class="container-fluid px-3 px-lg-4 py-4">
+<main class="drivers-container">
+<nav class="transport-nav" aria-label="Chức năng nhân viên">
+        <ul class="transport-nav__items">
+          <li class="transport-nav__item">
+            <a
+              class="transport-nav__link"
+              href="dashboard.html"
+              ><i class="fa-solid fa-house" aria-hidden="true"></i
+              ><span>Tổng quan</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="trips.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Chuyến vận chuyển</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="orders.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Đơn hàng</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="drivers.html"
+              ><i class="fa-solid fa-id-card" aria-hidden="true"></i
+              ><span>Quản lý tài xế</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="vehicles.html"
+              ><i class="fa-solid fa-truck" aria-hidden="true"></i
+              ><span>Quản lý phương tiện</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="assignment.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Phân công</span></a
+            >
+          </li>
+
+
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="support.html" aria-current="page">
+              <i class="fa-solid fa-headset" aria-hidden="true"></i>
+              <span>Hỗ trợ khách hàng</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
             <h4 class="fw-bold mb-1">Phiếu hỗ trợ khách hàng</h4>
@@ -237,7 +287,7 @@
 
 <script>
 const API_BASE =
-    'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+    new URL('../../backend/public/index.php',window.location.href).href;
 
 const state = {
     tickets: [],

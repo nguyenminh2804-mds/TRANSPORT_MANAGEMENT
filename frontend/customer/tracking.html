@@ -1241,7 +1241,7 @@ function renderOrder(order) {
         'resultPayment'
     ).textContent =
         getPaymentLabel(
-            order.payment_status
+            order.display_payment_status || order.payment_status
         );
 
 

@@ -18,7 +18,7 @@
         if (!response.ok || !result?.success) throw new Error(response.status >= 500 ? 'Không thể xác thực phiên lúc này. Vui lòng thử lại.' : result?.message || 'Không thể xác thực phiên.');
         return result.data;
     }
-    function hideContent() { $('staffContent').hidden = true; $('currentUser').textContent = 'Đang kiểm tra phiên…'; }
+    function hideContent() { window.staffSessionReady=false;document.dispatchEvent(new Event('staff-session-locked')); $('staffContent').hidden = true; $('currentUser').textContent = 'Đang kiểm tra phiên…'; }
     async function initialize() {
         const current = ++revision; hideContent(); $('retrySession').hidden = true; message('Đang kiểm tra phiên đăng nhập…');
         try {
@@ -26,7 +26,7 @@
             if (current !== revision) return;
             if (!['STAFF','ADMIN'].includes(user?.role) || Number(user.status) !== 1) throw new Error('Trang tổng quan nhân viên yêu cầu tài khoản STAFF/ADMIN đang hoạt động.');
             $('currentUser').textContent = user.full_name || user.username;
-            $('staffContent').hidden = false; message('');
+            $('staffContent').hidden = false; message('');window.staffSessionReady=true;document.dispatchEvent(new Event('staff-session-ready'));
         } catch (error) { if (current === revision) { message(error.message,true); $('retrySession').hidden = false; } }
     }
     $('retrySession').addEventListener('click',initialize);

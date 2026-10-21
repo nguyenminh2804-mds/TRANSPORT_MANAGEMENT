@@ -27,7 +27,7 @@ class DriverController extends Controller
                 $search = $this->query('search');
                 $status = $this->query('status');
                 if ($status !== '') {
-                    if (!in_array($status, array_merge(['available','on_trip','inactive'], ResourceStatus::EXTRA), true)) $this->error('Bộ lọc trạng thái không hợp lệ.', 422);
+                    if (!in_array($status, array_merge(['available','on_trip','inactive','assigned'], ResourceStatus::EXTRA), true)) $this->error('Bộ lọc trạng thái không hợp lệ.', 422);
                 }
                 $this->success($model->getAll($search, $status));
             }

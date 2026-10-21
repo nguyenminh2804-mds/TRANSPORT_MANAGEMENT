@@ -14,7 +14,7 @@ class VehicleController extends Controller
             if (!$model->isManager($_SESSION['user_id'])) $this->error('Chỉ ADMIN/STAFF đang hoạt động được quản lý phương tiện.', 403);
             if ($action === 'index') {
                 $search = $this->query('search'); $status = $this->query('status');
-                if ($status !== '' && !in_array($status, array_merge(Vehicle::STATUSES, ResourceStatus::EXTRA), true)) throw new DomainException('Bộ lọc trạng thái không hợp lệ.', 422);
+                if ($status !== '' && !in_array($status, array_merge(Vehicle::STATUSES, ResourceStatus::EXTRA, ['assigned']), true)) throw new DomainException('Bộ lọc trạng thái không hợp lệ.', 422);
                 $this->success($model->getAll($search, $status));
             }
             if ($action === 'stats') $this->success($model->stats());

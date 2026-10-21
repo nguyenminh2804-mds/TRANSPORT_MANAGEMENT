@@ -62,8 +62,9 @@ class AssignmentRequest extends DriverPortal {
                 if(!$t||!$d||!$v||(string)$r['driver_id']!==(string)$a['driver_id'])throw new DomainException('Phân công/chuyến đã thay đổi.',409);
                 self::validateType($r['request_type'],$a,$t);
                 // Stop the current assignment, not the trip: it must remain eligible for reassignment.
-                // Preserve trip times, orders, assignment history and the request review record.
-                if($r['request_type']==='cancel_trip')$this->write("UPDATE trips SET status='PLANNED' WHERE id=?",[$a['trip_id']]);
+                // Preserve the old assignment's actual_started_at and notes.
+                // Only the current trip clock resets; orders/history/review records remain intact.
+                $this->write("UPDATE trips SET status='PLANNED',actual_started_at=NULL WHERE id=?",[$a['trip_id']]);
                 $this->write("UPDATE assignments SET status='cancelled',cancelled_at=GREATEST(NOW(),assigned_at) WHERE assignment_id=?",[$a['assignment_id']]);
                 foreach(['drivers'=>'driver_id','vehicles'=>'vehicle_id'] as $table=>$key){
                     $active=$this->rows("SELECT assignment_id FROM assignments WHERE $key=? AND status='assigned' FOR UPDATE",[$a[$key]]);

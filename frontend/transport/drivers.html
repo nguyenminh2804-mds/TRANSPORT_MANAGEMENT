@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="../css/transport.css?v=e059e844b2db">
     <link rel="stylesheet" href="../css/drivers.css?v=54c368497b09">
     <link rel="stylesheet" href="../css/drivers-management.css?v=d874fc54ef5b">
-    <script src="../js/drivers.js?v=025eadc398a9" defer></script>
-    <link rel="stylesheet" href="../css/transport-navigation.css?v=24826222cfe9">
+    <script src="../js/drivers.js?v=89cf84a39033" defer></script>
+
+<link rel="stylesheet" href="../css/status-filter.css?v=6f2f38a4f2fc"><script src="../js/status-filter.js?v=c13774ebe363" defer></script>
+<link rel="stylesheet" href="../css/transport-navigation.css?v=3a935e6b2794">
 </head>
 <body class="drivers-page drivers-management">
     <header class="drivers-header"><div class="drivers-container drivers-row">
@@ -21,13 +23,55 @@
     </div></header>
     <main class="drivers-container">
             <nav class="transport-nav" aria-label="Chức năng nhân viên">
-      <ul class="transport-nav__items">
-        <li class="transport-nav__item"><a class="transport-nav__link" href="dashboard.html"><i class="fa-solid fa-house" aria-hidden="true"></i><span>Tổng quan</span></a></li>
-        <li class="transport-nav__item"><a class="transport-nav__link" href="drivers.html" aria-current="page"><i class="fa-solid fa-id-card" aria-hidden="true"></i><span>Quản lý tài xế</span></a></li>
-        <li class="transport-nav__item"><a class="transport-nav__link" href="vehicles.html"><i class="fa-solid fa-truck" aria-hidden="true"></i><span>Quản lý phương tiện</span></a></li>
-        <li class="transport-nav__item"><a class="transport-nav__link" href="assignment.html"><i class="fa-solid fa-route" aria-hidden="true"></i><span>Phân công</span></a></li>
-      </ul>
-    </nav>
+        <ul class="transport-nav__items">
+          <li class="transport-nav__item">
+            <a
+              class="transport-nav__link"
+              href="dashboard.html"
+              ><i class="fa-solid fa-house" aria-hidden="true"></i
+              ><span>Tổng quan</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="trips.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Chuyến vận chuyển</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="orders.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Đơn hàng</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="drivers.html" aria-current="page"
+              ><i class="fa-solid fa-id-card" aria-hidden="true"></i
+              ><span>Quản lý tài xế</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="vehicles.html"
+              ><i class="fa-solid fa-truck" aria-hidden="true"></i
+              ><span>Quản lý phương tiện</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="assignment.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Phân công</span></a
+            >
+          </li>
+
+
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="support.html">
+              <i class="fa-solid fa-headset" aria-hidden="true"></i>
+              <span>Hỗ trợ khách hàng</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
         <div class="drivers-row drivers-title customer-orders-page-header"><div><h1><span class="drivers-heading-icon"><i class="fa-solid fa-id-card" aria-hidden="true"></i></span>Quản lý tài xế</h1><p>Thông tin hồ sơ, giấy phép lái xe và trạng thái làm việc.</p></div><button id="addButton" type="button" class="drivers-primary" disabled><i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm tài xế</button></div>
         <div id="pageMessage" role="status" aria-live="polite"></div>
@@ -36,13 +80,13 @@
             <div class="customer-order-summary-card"><div class="customer-summary-icon delivering" aria-hidden="true"><i class="fa-solid fa-circle-check"></i></div><div><span>Sẵn sàng</span><strong id="availableDrivers">—</strong></div></div>
             <div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-truck"></i></div><div><span>Đang thực hiện chuyến</span><strong id="busyDrivers">—</strong></div></div>
             <div class="customer-order-summary-card"><div class="customer-summary-icon drivers-icon-inactive" aria-hidden="true"><i class="fa-solid fa-user-slash"></i></div><div><span>Chưa sẵn sàng</span><strong id="inactiveDrivers">—</strong></div></div>
-        <div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-clock" aria-hidden="true"></i></div><div><span>Chờ tiếp nhận phân công</span><strong id="pendingDrivers">—</strong></div></div><div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div><div><span>Đã tiếp nhận – Chưa bắt đầu</span><strong id="acceptedDrivers">—</strong></div></div></section>
+        <div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-clock" aria-hidden="true"></i></div><div><span>Chờ tiếp nhận phân công</span><strong id="pendingDrivers">—</strong></div></div><div class="customer-order-summary-card"><div class="customer-summary-icon pending" aria-hidden="true"><i class="fa-solid fa-circle-check" aria-hidden="true"></i></div><div><span>Đã tiếp nhận phân công</span><strong id="acceptedDrivers">—</strong></div></div></section>
         <p id="statsMessage" class="drivers-note" role="status">Đang tải thống kê…</p>
         <section class="customer-orders-card drivers-list-card" aria-labelledby="listHeading">
             <div class="drivers-row drivers-list-heading customer-orders-card-header"><div><h2 id="listHeading"><i class="fa-solid fa-address-book" aria-hidden="true"></i>Danh sách tài xế</h2><p>Tra cứu hồ sơ và quản lý trạng thái làm việc</p></div><button id="refreshButton" class="customer-refresh-btn" type="button"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Làm mới</button></div>
             <form id="filterForm" class="drivers-filters">
                 <label for="search"><span><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</span><input type="search" id="search" maxlength="150" placeholder="Mã, họ tên, điện thoại hoặc số GPLX"></label>
-                <label for="statusFilter"><span><i class="fa-solid fa-filter" aria-hidden="true"></i> Lọc trạng thái</span><select id="statusFilter"><option value="">Tất cả trạng thái</option><option value="available">Sẵn sàng</option><option value="on_trip">Đang thực hiện chuyến</option><option value="inactive">Chưa sẵn sàng</option><option value="pending">Đã phân công – Chờ tiếp nhận</option><option value="accepted">Đã tiếp nhận – Chưa bắt đầu</option></select></label>
+                <label for="statusFilter"><span><i class="fa-solid fa-filter" aria-hidden="true"></i> Lọc trạng thái</span><select id="statusFilter" data-status-filter="drivers"><option value="">Tất cả trạng thái</option><option value="available">Sẵn sàng</option><option value="inactive">Chưa sẵn sàng</option><option value="assigned">Đã phân công</option><option value="pending">Tài xế chưa tiếp nhận</option><option value="accepted">Tài xế đã tiếp nhận</option><option value="on_trip">Tài xế đang thực hiện chuyến</option></select></label>
                 <button type="submit" class="drivers-primary"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Tìm kiếm</button><button id="resetFilter" type="button"><i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i> Xóa bộ lọc</button>
             </form>
             <div class="drivers-results"><p id="resultCount" role="status">Đang kiểm tra phiên đăng nhập…</p><button id="listRetry" type="button" hidden><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Thử lại</button></div>
