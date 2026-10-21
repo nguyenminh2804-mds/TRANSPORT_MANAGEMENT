@@ -1,5 +1,5 @@
 /* Shared transport navigation. No page-specific navigation selectors. */
-.drivers-page .transport-nav { margin:0; padding:8px; border:1px solid #e5eaf2; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(23,32,51,.05); }
+.drivers-page .transport-nav,.staff-shell .transport-nav { margin:0; padding:8px; border:1px solid #e5eaf2; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(23,32,51,.05); }
 .transport-nav .transport-nav__items { display:flex; flex-wrap:wrap; align-items:stretch; gap:8px; list-style:none; margin:0; padding:0; }
 .transport-nav .transport-nav__item { display:flex; min-width:0; }
 .transport-nav .transport-nav__link { display:flex; align-items:center; gap:8px; min-height:44px; padding:10px 14px; border-radius:8px; color:#526078; text-decoration:none; font-size:14px; font-weight:600; line-height:1.5; overflow-wrap:anywhere; }
@@ -37,3 +37,20 @@ html:has(body.drivers-page) { overflow-y:scroll; scrollbar-gutter:auto; }
 .transport-requests-button.has-pending { animation:requests-nudge 3s ease-in-out infinite; }
 @keyframes requests-nudge { 0%,12%,100% { transform:rotate(0); } 3%,9% { transform:rotate(-1deg); } 6% { transform:rotate(1deg); } }
 @media(prefers-reduced-motion:reduce) { .transport-requests-button.has-pending { animation:none; } }
+
+/* Existing Bootstrap modules share the overview shell without restyling their controls. */
+.staff-shell { margin:0; min-height:100vh; background:#f5f7fb; color:#172033; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; font-size:15px; }
+html:has(body.staff-shell) { overflow-y:scroll; scrollbar-gutter:auto; }
+.staff-shell main.drivers-container { width:100%; max-width:1200px; margin:0 auto; padding:28px 20px 40px; }
+.staff-shell .drivers-header { background:linear-gradient(135deg,#2563eb,#1d4ed8); color:white; box-shadow:0 4px 18px rgba(37,99,235,.2); }
+.staff-shell .drivers-header .drivers-container { max-width:1200px; margin:auto; padding:0 20px; min-height:76px; }
+.staff-shell .drivers-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.staff-shell .drivers-brand { font-size:21px; font-weight:700; color:white; text-decoration:none; }
+.staff-shell .drivers-header button { border:1px solid #dce3ee; background:white; color:#172033; border-radius:8px; padding:10px 16px; font:inherit; font-weight:600; }
+.staff-shell .transport-nav { margin:0; }
+.staff-shell .transport-nav a { text-decoration:none; }
+@media(max-width:640px) { .staff-shell .drivers-header .drivers-container { padding:14px 20px; } }
+
+.drivers-page main.drivers-container,.staff-shell main.drivers-container { width:100%; max-width:1200px; margin:0 auto; padding:28px 20px 40px; }
+
+@media(max-width:640px) { .drivers-page .drivers-header > .drivers-container,.staff-shell .drivers-header > .drivers-container { padding:14px 16px; } }

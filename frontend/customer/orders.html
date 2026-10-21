@@ -116,7 +116,7 @@
 
             <div class="customer-summary-icon delivering"><i class="fa-solid fa-truck"></i></div>
 
-            <div><span>Đang giao</span><strong id="shippingOrders">0</strong></div>
+            <div><span>Đang vận chuyển</span><strong id="shippingOrders">0</strong></div>
 
         </div>
 
@@ -577,9 +577,9 @@ async function loadOrders() {
 
             const row = document.createElement('tr');
 
-            const status = getStatusInfo(order.status);
+            const status = getStatusInfo((order.display_status || order.status));
 
-            const payment = getPaymentInfo(order.payment_status);
+            const payment = getPaymentInfo(order.display_payment_status || order.payment_status);
 
             // Xây dựng cột Thao tác
 
@@ -587,7 +587,7 @@ async function loadOrders() {
 
             // 1. Nút Sửa/Hủy (Chỉ hiện khi PENDING)
 
-            if (order.status === 'PENDING') {
+            if ((order.display_status || order.status) === 'PENDING') {
 
                 actionButtons += `
 
@@ -601,7 +601,7 @@ async function loadOrders() {
 
             // 2. Nút Thanh toán QR (Hiện khi người gửi trả phí và chưa thanh toán)
 
-            if (order.payment_method === 'SENDER_PAY' && order.payment_status !== 'PAID' && order.status !== 'CANCELLED') {
+            if (order.payment_method === 'SENDER_PAY' && (order.display_payment_status || order.payment_status) !== 'PAID' && (order.display_status || order.status) !== 'CANCELLED') {
 
                 actionButtons += `
 
@@ -907,8 +907,8 @@ function openInvoiceModal(orderId) {
     }
 
     currentInvoiceOrder = order;
-    const statusInfo = getStatusInfo(order.status);
-    const paymentInfo = getPaymentInfo(order.payment_status);
+    const statusInfo = getStatusInfo((order.display_status || order.status));
+    const paymentInfo = getPaymentInfo(order.display_payment_status || order.payment_status);
 
     const invoiceHtml = `
         <div class="invoice-paper">
@@ -1013,9 +1013,9 @@ function updateSummary(orders) {
 
     document.getElementById('totalOrders').textContent = orders.length;
 
-    document.getElementById('shippingOrders').textContent = orders.filter(o => o.status === 'DELIVERING' || o.status === 'IN_TRANSIT').length;
+    document.getElementById('shippingOrders').textContent = orders.filter(o => (o.display_status||o.status)==='IN_TRANSIT').length;
 
-    document.getElementById('pendingOrders').textContent = orders.filter(o => o.status === 'PENDING').length;
+    document.getElementById('pendingOrders').textContent = orders.filter(o => (o.display_status||o.status)==='PENDING').length;
 
 }
 
@@ -1029,11 +1029,11 @@ function getStatusInfo(status) {
 
         PICKING_UP: { label: 'Đang lấy hàng', className: 'status-picking', icon: 'fa-solid fa-box' },
 
-        DELIVERING: { label: 'Đang giao', className: 'status-delivering', icon: 'fa-solid fa-truck' },
+        DELIVERING: { label: 'Đang vận chuyển', className: 'status-delivering', icon: 'fa-solid fa-truck' },
 
-        IN_TRANSIT: { label: 'Đang giao', className: 'status-delivering', icon: 'fa-solid fa-truck' },
+        IN_TRANSIT: { label: 'Đang vận chuyển', className: 'status-delivering', icon: 'fa-solid fa-truck' },
 
-        DELIVERED: { label: 'Đã giao', className: 'status-delivered', icon: 'fa-solid fa-check' },
+        DELIVERED: { label: 'Đã giao thành công', className: 'status-delivered', icon: 'fa-solid fa-check' },
 
         CANCELLED: { label: 'Đã hủy', className: 'status-cancelled', icon: 'fa-solid fa-xmark' }
 
@@ -1089,6 +1089,7 @@ function setupLogout() {
 
 }
 
+window.addEventListener('pageshow',event=>{if(event.persisted){loadCurrentUser();loadOrders();}});
 </script>
 
 </body>

@@ -42,7 +42,8 @@ class Driver
                 $params[$key] = '%' . strtr($search, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
             }
         }
-        if ($status !== '') {
+        if($status==='assigned'){$sql.=' AND ('.ResourceStatus::sql('d','driver_id').") IN ('pending','accepted','on_trip')";}
+        elseif ($status !== '') {
             $sql .= ' AND ('.ResourceStatus::sql('d','driver_id').')=:status';
             $params['status'] = $status;
         }

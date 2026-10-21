@@ -23,13 +23,13 @@ class Assignment
     }
     private function rows(string $sql,array $params=[]):array { $s=$this->db->prepare($sql);$s->execute($params);return $s->fetchAll(); }
     private function write(string $sql,array $params=[]):void { $s=$this->db->prepare($sql);$s->execute($params); }
-    private function base():string { return 'SELECT a.assignment_id,a.trip_id,a.driver_id,a.vehicle_id,a.assigned_by,a.assigned_at,a.accepted_at,a.completed_at,a.cancelled_at,a.status,a.notes,t.start_location,t.end_location,t.start_time,t.actual_started_at,t.end_time,t.status AS trip_status,d.driver_code,d.full_name AS driver_name,v.license_plate,u.full_name AS assigned_by_name FROM assignments a LEFT JOIN trips t ON t.id=a.trip_id LEFT JOIN drivers d ON d.driver_id=a.driver_id LEFT JOIN vehicles v ON v.vehicle_id=a.vehicle_id LEFT JOIN users u ON u.id=a.assigned_by'; }
+    private function base():string { return 'SELECT a.assignment_id,a.trip_id,a.driver_id,a.vehicle_id,a.assigned_by,a.assigned_at,a.accepted_at,a.completed_at,a.cancelled_at,a.status,a.notes,t.start_location,t.end_location,t.start_time,a.actual_started_at,t.end_time,t.status AS trip_status,d.driver_code,d.full_name AS driver_name,v.license_plate,u.full_name AS assigned_by_name FROM assignments a LEFT JOIN trips t ON t.id=a.trip_id LEFT JOIN drivers d ON d.driver_id=a.driver_id LEFT JOIN vehicles v ON v.vehicle_id=a.vehicle_id LEFT JOIN users u ON u.id=a.assigned_by'; }
     private function dto(array $rows):array {foreach($rows as &$r)foreach(['assignment_id','trip_id','driver_id','vehicle_id','assigned_by'] as $k)$r[$k]=$r[$k]===null?null:(string)$r[$k];foreach($rows as &$r)$r['phase']=self::phase($r);return $rows;}
     public function manager($id,bool $lock=false):bool {return (bool)$this->rows("SELECT id FROM users WHERE id=? AND role IN ('ADMIN','STAFF') AND status=1".($lock?' FOR UPDATE':''),[$id]);}
     public function all(string $search='',string $status=''):array {
         $sql=$this->base().' WHERE 1=1';$p=[];
         if($search!==''){$sql.=" AND (d.full_name LIKE ? ESCAPE '!' OR d.driver_code LIKE ? ESCAPE '!' OR v.license_plate LIKE ? ESCAPE '!' OR t.start_location LIKE ? ESCAPE '!' OR t.end_location LIKE ? ESCAPE '!' OR CAST(a.trip_id AS CHAR) LIKE ? ESCAPE '!')";$q='%'.strtr($search,['!'=>'!!','%'=>'!%','_'=>'!_']).'%';$p=array_fill(0,6,$q);}
-        if($status==='assigned'){$sql.=' AND a.status=?';$p[]=$status;}
+        if($status==='assigned'){$sql.=" AND a.status='assigned' AND t.status IN ('PLANNED','IN_PROGRESS')";}
         elseif($status!==''){
             if(!in_array($status,['pending','accepted','running','completed','cancelled'],true))throw new DomainException('Bộ lọc không hợp lệ.',422);
             $sql.=" AND (CASE WHEN a.status='cancelled' OR t.status='CANCELLED' THEN 'cancelled' WHEN a.status='completed' THEN 'completed' WHEN a.status='assigned' AND t.status='IN_PROGRESS' THEN 'running' WHEN a.status='assigned' AND t.status='PLANNED' AND a.accepted_at IS NULL THEN 'pending' WHEN a.status='assigned' AND t.status='PLANNED' AND a.accepted_at IS NOT NULL THEN 'accepted' ELSE 'unknown' END)=?";$p[]=$status;
@@ -53,7 +53,8 @@ class Assignment
     private function release(array $a):void {
         foreach(['drivers'=>'driver_id','vehicles'=>'vehicle_id'] as $table=>$key){
             $busy=$this->rows("SELECT assignment_id FROM assignments WHERE $key=? AND status='assigned' FOR UPDATE",[$a[$key]]);
-            if(!$busy)$this->write("UPDATE $table SET status='available' WHERE $key=? AND status='on_trip'",[$a[$key]]);
+            $running=$this->rows("SELECT id FROM trips WHERE $key=? AND status='IN_PROGRESS' FOR UPDATE",[$a[$key]]);
+            if(!$busy&&!$running)$this->write("UPDATE $table SET status='available' WHERE $key=? AND status='on_trip'",[$a[$key]]);
         }
     }
     public function mutate(string $action,string $actor,?array $data=null,?string $id=null,?string $reason=null) {
@@ -88,21 +89,22 @@ class Assignment
                 if($lockedTrips[(string)$old['trip_id']]['status']!=='PLANNED')throw new DomainException('Chuyến đang thực hiện; không thể đổi phân công.',409);
             }
             if($action==='cancel'){
-                if($trip['status']!=='PLANNED')throw new DomainException('Chỉ hủy thông thường trước khi chuyến bắt đầu; chuyến đang chạy cần quy trình duyệt.',409);
+                if(!in_array($trip['status'],['PLANNED','IN_PROGRESS'],true))throw new DomainException('Chuyến đã kết thúc/hủy; không thể hủy phân công này.',409);
                 $notes=($old['notes']??'')."\n[Hủy bởi tài khoản #$actor] ".trim($reason);
                 if(strlen($notes)>65535)throw new DomainException('Ghi chú lịch sử quá dài; chưa thể lưu lý do hủy.',422);
                 $this->write('UPDATE assignments SET notes=? WHERE assignment_id=?',[$notes,$id]);
                 $column=$action==='complete'?'completed_at':'cancelled_at';$status=$action==='complete'?'completed':'cancelled';
-                $this->write("UPDATE assignments SET status=?, $column=GREATEST(NOW(),assigned_at) WHERE assignment_id=?",[$status,$id]);$this->release($old);$result=$this->find($id);
+                $this->write("UPDATE assignments SET status=?, $column=GREATEST(NOW(),assigned_at) WHERE assignment_id=?",[$status,$id]);$this->write("UPDATE trips SET status='PLANNED',actual_started_at=NULL WHERE id=?",[$tripId]);$this->release($old);$result=$this->find($id);
             }else{
                 $driver=$drivers[$data['driver_id']]??null;$vehicle=$vehicles[$data['vehicle_id']]??null;
                 if(!$driver||!$vehicle)throw new DomainException('Tài xế hoặc phương tiện không tồn tại.',422);
                 self::eligible($trip,$driver,$vehicle,$old&&(string)$old['driver_id']===$data['driver_id'],$old&&(string)$old['vehicle_id']===$data['vehicle_id']);
                 $active=$this->rows("SELECT assignment_id FROM assignments WHERE status='assigned' AND (trip_id=? OR driver_id=? OR vehicle_id=?) FOR UPDATE",[$tripId,$data['driver_id'],$data['vehicle_id']]);
                 foreach($active as $a)if(!$old||(string)$a['assignment_id']!==$id)throw new DomainException('Chuyến, tài xế hoặc xe đã có phân công đang hiệu lực.',409);
+                // A new assignment starts without a time; never copy or rewrite an older row's timestamp.
                 if($old)$this->write("UPDATE assignments SET status='cancelled',cancelled_at=GREATEST(NOW(),assigned_at) WHERE assignment_id=?",[$id]);
-                $this->write("INSERT INTO assignments (trip_id,driver_id,vehicle_id,assigned_by,assigned_at,status,notes) VALUES (?,?,?,?,NOW(),'assigned',?)",[$tripId,$data['driver_id'],$data['vehicle_id'],$actor,$data['notes']]);$newId=(string)$this->db->lastInsertId();
-                $this->write('UPDATE trips SET driver_id=?,vehicle_id=? WHERE id=?',[$data['driver_id'],$data['vehicle_id'],$tripId]);
+                $this->write("INSERT INTO assignments (trip_id,driver_id,vehicle_id,assigned_by,assigned_at,status,notes,actual_started_at) VALUES (?,?,?,?,NOW(),'assigned',?,NULL)",[$tripId,$data['driver_id'],$data['vehicle_id'],$actor,$data['notes']]);$newId=(string)$this->db->lastInsertId();
+                $this->write('UPDATE trips SET driver_id=?,vehicle_id=?,actual_started_at=NULL WHERE id=?',[$data['driver_id'],$data['vehicle_id'],$tripId]);
                 // Active unique indexes reserve resources; on_trip is set only by Driver start.
                 if($old)$this->release($old);$result=$this->find($newId);
             }

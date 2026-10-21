@@ -11,14 +11,14 @@
     <!-- CSS chung của hệ thống -->
     <link rel="stylesheet" href="../css/common.css">
     <link rel="stylesheet" href="../css/transport.css">
-    <link rel="stylesheet" href="../css/transport-navigation.css">
+
     <style>
         body { background-color: #f5f7fb; }
         .card-custom { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; box-shadow: 0 3px 12px rgba(0,0,0,0.03); overflow: hidden; }
         .table-custom th { background-color: #f9fafb; font-size: 13px; color: #6b7280; text-transform: uppercase; padding: 12px 15px; }
         .table-custom td { padding: 12px 15px; vertical-align: middle; font-size: 14px; color: #1f2937; }
         .table-responsive { max-height: 65vh; overflow-y: auto; }
-        
+
         .suggestion-box {
             background-color: #e8f4fd;
             border: 1px dashed #0d6efd;
@@ -27,36 +27,81 @@
             margin-bottom: 20px;
         }
     </style>
+<link rel="stylesheet" href="../css/transport-navigation.css?v=3a935e6b2794">
 </head>
-<body class="transport-page">
+<body class="staff-shell transport-page">
 
     <!-- HEADER -->
-    <header class="drivers-header mb-3">
-        <div class="drivers-container drivers-row d-flex justify-content-between align-items-center">
-            <a href="dashboard.html" class="drivers-brand text-decoration-none d-flex align-items-center gap-2">
-                <i class="fa-solid fa-truck-fast text-primary fs-4"></i> 
-                <span class="fw-bold text-dark">Quản lý vận tải</span>
-            </a>
-            <div class="drivers-row drivers-user d-flex align-items-center gap-3">
-                <span class="drivers-avatar"><i class="fa-solid fa-user"></i></span>
-                <span id="currentUser" class="fw-bold">Đang kiểm tra phiên…</span>
-                <button id="logoutButton" class="btn btn-outline-danger btn-sm"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
-            </div>
+    <header class="drivers-header">
+      <div class="drivers-container drivers-row">
+        <a href="dashboard.html" class="drivers-brand"
+          ><i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
+          <span>Quản lý vận tải</span></a
+        >
+        <div class="drivers-row drivers-user">
+          <span class="drivers-avatar" aria-hidden="true"
+            ><i class="fa-solid fa-user"></i></span
+          ><span id="currentUser">Đang kiểm tra phiên…</span
+          ><button id="logoutButton" type="button">
+            <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+            Đăng xuất
+          </button>
         </div>
+      </div>
     </header>
 
-    <main class="container py-3">
+    <main class="drivers-container">
         <!-- ĐIỀU HƯỚNG NHÂN VIÊN -->
-        <nav class="transport-nav mb-4" aria-label="Chức năng nhân viên">
-            <ul class="transport-nav__items nav nav-pills gap-2 bg-white p-2 rounded shadow-sm">
-                <li class="nav-item"><a class="nav-link" href="dashboard.html"><i class="fa-solid fa-house me-1"></i> Tổng quan</a></li>
-                <li class="nav-item"><a class="nav-link" href="orders.html"><i class="fa-solid fa-boxes-stacked me-1"></i> Quản lý đơn hàng</a></li>
-                <li class="nav-item"><a class="nav-link" href="drivers.html"><i class="fa-solid fa-id-card me-1"></i> Quản lý tài xế</a></li>
-                <li class="nav-item"><a class="nav-link" href="vehicles.html"><i class="fa-solid fa-truck me-1"></i> Quản lý phương tiện</a></li>
-                <li class="nav-item"><a class="nav-link active" href="trips.html"><i class="fa-solid fa-route me-1"></i> Chuyến xe & Lộ trình</a></li>
-                <li class="nav-item"><a class="nav-link" href="assignment.html"><i class="fa-solid fa-user-check me-1"></i> Phân công tài xế</a></li>
-            </ul>
-        </nav>
+        <nav class="transport-nav" aria-label="Chức năng nhân viên">
+        <ul class="transport-nav__items">
+          <li class="transport-nav__item">
+            <a
+              class="transport-nav__link"
+              href="dashboard.html"
+              ><i class="fa-solid fa-house" aria-hidden="true"></i
+              ><span>Tổng quan</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="trips.html" aria-current="page"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Chuyến vận chuyển</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="orders.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Đơn hàng</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="drivers.html"
+              ><i class="fa-solid fa-id-card" aria-hidden="true"></i
+              ><span>Quản lý tài xế</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="vehicles.html"
+              ><i class="fa-solid fa-truck" aria-hidden="true"></i
+              ><span>Quản lý phương tiện</span></a
+            >
+          </li>
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="assignment.html"
+              ><i class="fa-solid fa-route" aria-hidden="true"></i
+              ><span>Phân công</span></a
+            >
+          </li>
+
+
+          <li class="transport-nav__item">
+            <a class="transport-nav__link" href="support.html">
+              <i class="fa-solid fa-headset" aria-hidden="true"></i>
+              <span>Hỗ trợ khách hàng</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
@@ -70,11 +115,11 @@
 
         <!-- TÌM KIẾM CHUYẾN XE -->
         <div class="card card-custom p-3 mb-4">
-            <form id="searchTripForm" class="d-flex gap-2 align-items-end">
+            <form id="searchTripForm" class="d-flex flex-wrap gap-2 align-items-end">
                 <div class="flex-grow-1">
                     <label class="form-label text-muted fw-bold small mb-1">Tìm chuyến xe theo ID</label>
                     <input type="number" id="searchTripId" class="form-control" placeholder="Nhập mã ID chuyến (VD: 5)">
-                </div>
+                </div><div><label for="tripListStatus" class="form-label">Trạng thái</label><select id="tripListStatus" class="form-select" onchange="refreshTripTable()"><option value="">Tất cả trạng thái</option><option value="PLANNED">Lên kế hoạch</option><option value="CONFIRMED">Đã xác nhận</option><option value="IN_PROGRESS">Đang thực hiện chuyến</option><option value="COMPLETED">Đã hoàn thành</option><option value="CANCELLED">Đã hủy</option></select></div>
                 <button type="submit" class="btn btn-secondary px-4"><i class="fa-solid fa-magnifying-glass me-1"></i> Tìm kiếm</button>
                 <button type="button" class="btn btn-light border px-4" onclick="clearSearch()"><i class="fa-solid fa-xmark me-1"></i> Xóa bộ lọc</button>
             </form>
@@ -135,7 +180,7 @@
                                 <input type="text" class="form-control" id="endLocation" required placeholder="Ví dụ: Kho Hải Phòng">
                             </div>
                         </div>
-                        
+
                         <div class="row border-top pt-3 mt-1">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Thời gian xuất phát dự kiến</label>
@@ -249,7 +294,7 @@
     <script>
         const API_URL = new URL('../../backend/public/index.php', window.location.href);
         let tripListCache = [];
-        let allOrdersCache = []; // Cache đơn hàng 
+        let allOrdersCache = []; // Cache đơn hàng
 
         async function api(route, method = 'GET', data = null) {
             API_URL.searchParams.set('route', route);
@@ -274,7 +319,7 @@
                     return;
                 }
                 document.getElementById('currentUser').textContent = user.full_name;
-                
+
                 // Tải danh sách đơn hàng & Xử lý Gợi ý tự động
                 allOrdersCache = await api('/api/orders') || [];
                 populateRouteSuggestions();
@@ -292,7 +337,7 @@
         function populateRouteSuggestions() {
             const select = document.getElementById('routeSuggestion');
             const pendingOrders = allOrdersCache.filter(o => o.status === 'PENDING');
-            
+
             if (pendingOrders.length === 0) {
                 select.innerHTML = '<option value="">(Chưa có đơn hàng mới nào chờ xử lý)</option>';
                 return;
@@ -303,13 +348,13 @@
 
             pendingOrders.forEach(o => {
                 if (!o.pickup_address || !o.delivery_address) return;
-                
+
                 // Trích xuất Tỉnh/Thành phố từ địa chỉ (Lấy phần tử cuối cùng sau dấu phẩy)
                 const pParts = o.pickup_address.split(',');
                 const dParts = o.delivery_address.split(',');
                 const pCity = pParts[pParts.length - 1].trim();
                 const dCity = dParts[dParts.length - 1].trim();
-                
+
                 const valObj = { p: pCity, d: dCity };
                 const valStr = JSON.stringify(valObj);
 
@@ -333,12 +378,12 @@
         function calculateEndTime(startInputId, endInputId) {
             const startVal = document.getElementById(startInputId).value;
             if (!startVal) return;
-            
+
             const d = new Date(startVal);
             d.setDate(d.getDate() + 3); // Cộng thêm 3 ngày
-            
+
             // Format sang datetime-local
-            const tzOffset = d.getTimezoneOffset() * 60000; 
+            const tzOffset = d.getTimezoneOffset() * 60000;
             const localISOTime = (new Date(d - tzOffset)).toISOString().slice(0, 16);
             document.getElementById(endInputId).value = localISOTime;
         }
@@ -364,7 +409,9 @@
                 let trips = await api('/api/trips');
                 tripListCache = trips || [];
 
-                if (searchId) { trips = trips.filter(t => t.id == searchId); }
+                searchId=searchId||document.getElementById('searchTripId').value;
+                if(searchId)trips=trips.filter(t=>String(t.id)===String(searchId));
+                const phase=document.getElementById('tripListStatus').value;if(phase)trips=trips.filter(t=>(t.display_status||t.status)===phase);
 
                 if (trips.length === 0) {
                     tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">Không tìm thấy chuyến xe nào.</td></tr>`;
@@ -375,15 +422,16 @@
                 trips.forEach(trip => {
                     // XỬ LÝ TRẠNG THÁI HIỂN THỊ ĐẸP HƠN
                     let badgeColor = 'bg-secondary';
-                    let statusText = trip.status || 'KHÔNG RÕ';
-                    
-                    if (trip.status === 'PLANNED') {
+                    let statusText = trip.display_status || trip.status || 'KHÔNG RÕ';
+
+                    if ((trip.display_status||trip.status) === 'PLANNED') {
                         badgeColor = 'bg-warning text-dark';
                         statusText = 'Lên kế hoạch';
                     }
-                    else if (trip.status === 'IN_PROGRESS') {
+                    else if ((trip.display_status||trip.status) === 'CONFIRMED') {badgeColor='bg-info text-dark';statusText='Đã xác nhận';}
+                    else if ((trip.display_status||trip.status) === 'IN_PROGRESS') {
                         badgeColor = 'bg-primary';
-                        statusText = 'Đang chạy';
+                        statusText = 'Đang thực hiện chuyến';
                     }
                     else if (trip.status === 'COMPLETED') {
                         badgeColor = 'bg-success';
@@ -394,8 +442,8 @@
                         statusText = 'Đã hủy';
                     }
 
-                    const orderCountInTrip = allOrdersCache.filter(o => o.trip_id == trip.id).length;
-                    
+                    const orderCountInTrip = Number(trip.order_count ?? allOrdersCache.filter(o => (o.effective_trip_id||o.trip_id) == trip.id).length);
+
                     // Xử lý hiển thị thời gian
                     let timeDisplay = `<span class="text-muted fst-italic">Chưa ấn định</span>`;
                     if (trip.start_time) {
@@ -409,7 +457,7 @@
                     let actionButtons = `
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="viewTripOrders(${trip.id})" title="Xem chi tiết đơn"><i class="fa-solid fa-boxes-packing"></i></button>
                     `;
-                    
+
                     // Chỉ cho phép sửa/xóa khi chuyến xe CHƯA chạy (PLANNED)
                     if (trip.status === 'PLANNED') {
                         actionButtons += `
@@ -448,7 +496,7 @@
         });
 
         function clearSearch() {
-            document.getElementById('searchTripId').value = '';
+            document.getElementById('searchTripId').value = '';document.getElementById('tripListStatus').value='';
             refreshTripTable();
         }
 
@@ -460,7 +508,7 @@
 
             const trip = tripListCache.find(t => t.id == tripId);
             const ordersInTrip = allOrdersCache.filter(o => o.trip_id == tripId);
-            
+
             // Tính toán giờ dự kiến đến cho các đơn
             let estArrivalHtml = '';
             if (trip && (trip.end_time || trip.start_time)) {
@@ -482,7 +530,7 @@
                 ordersInTrip.forEach(o => {
                     let stColor = o.status === 'DELIVERED' ? 'success' : (o.status === 'CANCELLED' ? 'danger' : 'primary');
                     let paymentBadge = o.payment_status === 'PAID' ? '<span class="text-success fw-bold"><i class="fa-solid fa-check"></i> Đã thanh toán</span>' : '<span class="text-danger fw-bold">Chưa thanh toán (Thu hộ)</span>';
-                    
+
                     // Làm nổi bật Ghi chú
                     const noteHtml = o.note ? `<div class="alert alert-warning py-2 px-2 mt-2 mb-0 shadow-sm border-warning"><i class="fa-solid fa-comment-dots text-danger"></i> <strong>Ghi chú:</strong> ${o.note}</div>` : '';
 
@@ -577,9 +625,9 @@
                     note: document.getElementById('editTripNote').value.trim(),
                     status: document.getElementById('editStatus').value
                 };
-                
+
                 API_URL.searchParams.set('route', '/api/trips');
-                API_URL.searchParams.set('id', id); 
+                API_URL.searchParams.set('id', id);
                 const response = await fetch(API_URL.href, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
                 });
@@ -618,6 +666,7 @@
             sessionStorage.clear();
             window.location.href = '../customer/login.html';
         });
+        window.addEventListener('pageshow',event=>{if(event.persisted)refreshTripTable();});
     </script>
 </body>
 </html>

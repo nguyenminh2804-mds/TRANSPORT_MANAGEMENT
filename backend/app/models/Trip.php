@@ -3,6 +3,8 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../../core/Database.php';
 
+require_once __DIR__.'/DeliveryProgress.php';
+
 class Trip
 {
     private $conn;
@@ -21,10 +23,11 @@ class Trip
     */
     public function getAll()
     {
-        $sql = "SELECT t.*, 
+        $display=DeliveryProgress::tripStatusSql();$count=DeliveryProgress::orderCountSql('t.id');
+        $sql = "SELECT t.*,($display) AS display_status,
                        d.full_name as driver_name, d.phone as driver_phone,
                        v.license_plate, v.vehicle_type,
-                       (SELECT COUNT(id) FROM orders WHERE trip_id = t.id) as order_count
+                       ($count) as order_count
                 FROM {$this->table} t
                 LEFT JOIN drivers d ON t.driver_id = d.driver_id
                 LEFT JOIN vehicles v ON t.vehicle_id = v.vehicle_id
@@ -42,10 +45,11 @@ class Trip
     */
     public function getByDriverId($driverId)
     {
-        $sql = "SELECT t.*, 
+        $display=DeliveryProgress::tripStatusSql();$count=DeliveryProgress::orderCountSql('t.id');
+        $sql = "SELECT t.*,($display) AS display_status,
                        d.full_name as driver_name, d.phone as driver_phone,
                        v.license_plate, v.vehicle_type,
-                       (SELECT COUNT(id) FROM orders WHERE trip_id = t.id) as order_count
+                       ($count) as order_count
                 FROM {$this->table} t
                 LEFT JOIN drivers d ON t.driver_id = d.driver_id
                 LEFT JOIN vehicles v ON t.vehicle_id = v.vehicle_id
@@ -64,10 +68,11 @@ class Trip
     */
     public function findById($id)
     {
-        $sql = "SELECT t.*, 
+        $display=DeliveryProgress::tripStatusSql();$count=DeliveryProgress::orderCountSql('t.id');
+        $sql = "SELECT t.*,($display) AS display_status,
                        d.full_name as driver_name, d.phone as driver_phone,
                        v.license_plate, v.vehicle_type,
-                       (SELECT COUNT(id) FROM orders WHERE trip_id = t.id) as order_count
+                       ($count) as order_count
                 FROM {$this->table} t
                 LEFT JOIN drivers d ON t.driver_id = d.driver_id
                 LEFT JOIN vehicles v ON t.vehicle_id = v.vehicle_id
@@ -86,9 +91,9 @@ class Trip
     */
     public function create($data)
     {
-        $sql = "INSERT INTO {$this->table} 
+        $sql = "INSERT INTO {$this->table}
                 (driver_id, vehicle_id, start_location, end_location, start_time, status, goods_name, weight, goods_value, receiver_name, receiver_phone)
-                VALUES 
+                VALUES
                 (:driver_id, :vehicle_id, :start_location, :end_location, :start_time, :status, :goods_name, :weight, :goods_value, :receiver_name, :receiver_phone)";
 
         $stmt = $this->conn->prepare($sql);
@@ -114,7 +119,7 @@ class Trip
     */
     public function update($id, $data)
     {
-        $sql = "UPDATE {$this->table} SET 
+        $sql = "UPDATE {$this->table} SET
                 driver_id = :driver_id,
                 vehicle_id = :vehicle_id,
                 start_location = :start_location,

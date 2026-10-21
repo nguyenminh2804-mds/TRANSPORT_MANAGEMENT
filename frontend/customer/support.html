@@ -515,7 +515,7 @@
 
     <script>
         const API_BASE_URL =
-            'http://localhost:19160/TRANSPORT_MANAGEMENT/backend/public/index.php';
+            new URL('../../backend/public/index.php',window.location.href).href;
 
         const ticketList = document.getElementById('ticketList');
         const ticketDetail = document.getElementById('ticketDetail');
@@ -523,6 +523,7 @@
 
         let currentTicketId = null;
         let tickets = [];
+        let supportGeneration=0;
 
         const STATUS_LABELS = {
             PENDING: 'Chờ tiếp nhận',
@@ -569,24 +570,25 @@
                 }
             });
 
-            const response = await fetch(url.toString(), {
-                credentials: 'include',
-                cache: 'no-store',
-                ...options
-            });
+            const generation=supportGeneration;
+            let response;
+            try{response=await fetch(url.toString(),{...options,credentials:'same-origin',cache:'no-store'});}catch{throw new Error('Không thể kết nối máy chủ. Vui lòng thử lại; phiên đăng nhập chưa được xác định là hết hạn.');}
+            if(generation!==supportGeneration)throw Object.assign(new Error('Trang đã thay đổi. Vui lòng làm mới dữ liệu.'),{stale:true});
+            if(response.status===401){clearSupport();window.location.replace('login.html');throw new Error('Vui lòng đăng nhập lại.');}
+
 
             const text = await response.text();
+            if(generation!==supportGeneration)throw Object.assign(new Error('Trang đã thay đổi.'),{stale:true});
             let result;
 
             try {
                 result = JSON.parse(text);
             } catch {
-                console.error('API trả về dữ liệu không phải JSON:', text);
-                throw new Error(`Máy chủ trả về dữ liệu không hợp lệ (HTTP ${response.status}). Mở F12 > Network để xem Response.`);
+                throw new Error(`Máy chủ trả về dữ liệu không hợp lệ (HTTP ${response.status}). Vui lòng thử lại.`);
             }
 
-            if (!response.ok || !result.success) {
-                throw new Error(result.message || `Yêu cầu thất bại (HTTP ${response.status}).`);
+            if (!response.ok || !result?.success) {
+                throw new Error(response.status>=500?'Máy chủ đang gặp lỗi. Vui lòng thử lại.':result.message||`Yêu cầu thất bại (HTTP ${response.status}).`);
             }
 
             return result.data;
@@ -815,7 +817,7 @@
                 });
 
                 showAlert('Đã gửi phản hồi thành công.', 'success');
-                await loadTickets(currentTicketId);
+                if(await loadCurrentUser())await loadTickets(currentTicketId);
 
             } catch (error) {
                 showAlert(error.message, 'danger');
@@ -880,40 +882,28 @@
 
         document.getElementById('refreshBtn').addEventListener('click', async () => {
             try {
-                await loadTickets(currentTicketId);
+                if(await loadCurrentUser())await loadTickets(currentTicketId);
             } catch (error) {
                 showAlert(error.message, 'danger');
             }
         });
 
+        function clearSupport(){supportGeneration++;tickets=[];currentTicketId=null;ticketList.replaceChildren();ticketDetail.replaceChildren();}
         async function loadCurrentUser() {
             try {
-                const user = await apiRequest('/api/me');
-
-                if (!user || user.role !== 'CUSTOMER') {
-                    window.location.href = 'login.html';
-                    return false;
-                }
-
+                const result=await apiRequest('/api/me');const user=result?.user||result;
+                if(!user||user.role!=='CUSTOMER'||Number(user.status)!==1){clearSupport();showAlert('Tài khoản cần quyền CUSTOMER đang hoạt động để xem dịch vụ khách hàng.','danger');return false;}
                 return true;
-            } catch {
-                window.location.href = 'login.html';
-                return false;
-            }
+            }catch(error){if(error.stale)return false;clearSupport();showAlert(error.message,'danger');return false;}
         }
-
-        (async function init() {
-            if (!await loadCurrentUser()) return;
-
-            try {
-                await loadTickets();
-            } catch (error) {
-                ticketList.innerHTML = `
-                    <div class="alert alert-danger mb-0">
-                        ${escapeHtml(error.message)}
-                    </div>`;
-            }
-        })();
+        async function initSupport(){
+            clearSupport();ticketList.textContent='Đang kiểm tra phiên đăng nhập…';
+            if(!await loadCurrentUser())return;
+            try{await loadTickets();}catch(error){if(error.stale)return;ticketList.textContent='Không tải được danh sách hỗ trợ. Bấm Làm mới để thử lại.';showAlert(error.message,'danger');}
+        }
+        window.addEventListener('pagehide',clearSupport);
+        window.addEventListener('pageshow',event=>{if(event.persisted)initSupport();});
+        initSupport();
     </script>
 </body>
 </html>

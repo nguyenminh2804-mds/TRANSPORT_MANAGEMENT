@@ -10,7 +10,7 @@ class DriverPortalController extends Controller {
             if($action==='availability')$this->success($m->availability($_SESSION['user_id'],$this->body()),'Cập nhật trạng thái làm việc thành công.');
             if($action==='profile')$this->success($d);
             if($action==='updateProfile')$this->success($m->updateProfile($_SESSION['user_id'],$this->body()),'Cập nhật hồ sơ thành công.');
-            if($action==='schedule')$this->success($m->schedule($d['driver_id'],$_GET['from']??'',$_GET['to']??''));
+            if($action==='schedule')$this->success($m->schedule($d['driver_id'],$_GET['from']??'',$_GET['to']??'',$_GET['trip_id']??'',$_GET['route_search']??''));
             if($action==='home')$this->success(DriverPortal::summary($m->schedule($d['driver_id']),$m->clock()));
             if(in_array($action,['accept','start','complete'],true))$this->success($m->action($_SESSION['user_id'],$_GET['id']??null,$action),'Cập nhật chuyến thành công.');
             $this->error('Không tìm thấy thao tác.',404);

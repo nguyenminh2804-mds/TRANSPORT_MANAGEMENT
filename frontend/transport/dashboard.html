@@ -21,14 +21,13 @@
       href="../css/drivers-management.css?v=2c863f6fcd05"
     />
     <script
-      src="../js/transport-dashboard.js?v=staff-overview-1"
+      src="../js/transport-dashboard.js?v=3ee92010164a"
       defer
     ></script>
-    <link
-      rel="stylesheet"
-      href="../css/transport-navigation.css?v=8e7ebdb54c1b"
-    />
-  </head>
+
+  <link rel="stylesheet" href="../css/transport-navigation.css?v=3a935e6b2794">
+<link rel="stylesheet" href="../css/staff-statistics.css?v=2a9529dc2bfc"><script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script><script src="../js/staff-statistics.js?v=20261021-payment-noncancelled-total" defer></script>
+</head>
   <body class="drivers-page drivers-management transport-dashboard">
     <header class="drivers-header">
       <div class="drivers-container drivers-row">
@@ -53,8 +52,7 @@
           <li class="transport-nav__item">
             <a
               class="transport-nav__link"
-              href="dashboard.html"
-              aria-current="page"
+              href="dashboard.html" aria-current="page"
               ><i class="fa-solid fa-house" aria-hidden="true"></i
               ><span>Tổng quan</span></a
             >
@@ -89,12 +87,7 @@
               ><span>Phân công</span></a
             >
           </li>
-          <li class="transport-nav__item">
-            <a class="transport-nav__link" href="statistics.html"
-              ><i class="fa-solid fa-route" aria-hidden="true"></i
-              ><span>Thống kê</span></a
-            >
-          </li>
+
 
           <li class="transport-nav__item">
             <a class="transport-nav__link" href="support.html">
@@ -123,7 +116,128 @@
       <div id="pageMessage" role="status" aria-live="polite">
         Đang kiểm tra phiên đăng nhập…
       </div>
-      <div id="staffContent" hidden></div>
+      <div id="staffContent" hidden><section id="statistics" aria-label="Thống kê nhân viên"><p id="statisticsMessage" class="drivers-note" role="status" aria-live="polite"></p>        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="h4 fw-bold text-secondary mb-1">Báo cáo hoạt động hệ thống</h2>
+                <p class="text-muted mb-0 small">Cập nhật theo thời gian thực từ dữ liệu máy chủ.</p>
+            </div>
+            <button class="btn btn-primary shadow-sm" id="statisticsRefresh">
+                <i class="fa-solid fa-rotate-right me-1"></i> Cập nhật số liệu
+            </button>
+
+        </div>
+
+        <!-- DÒNG 1: THỐNG KÊ VẬN HÀNH (ORDERS & TRIPS) -->
+        <div class="row g-4 mb-4">
+            <!-- Đơn chờ xử lý -->
+            <div class="col-md-3">
+                <div class="card stat-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-bold mb-1 small text-uppercase">Đơn chờ xếp chuyến</p>
+                            <h3 class="fw-bold text-warning mb-0" id="statPendingOrders">—</h3>
+                        </div>
+                        <div class="icon-box bg-warning bg-opacity-10 text-warning"><i class="fa-solid fa-clock"></i></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Đơn đang giao -->
+            <div class="col-md-3">
+                <div class="card stat-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-bold mb-1 small text-uppercase">Đơn đang giao</p>
+                            <h3 class="fw-bold text-primary mb-0" id="statDeliveringOrders">—</h3>
+                        </div>
+                        <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="fa-solid fa-truck-fast"></i></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Chuyến đang chạy -->
+            <div class="col-md-3">
+                <div class="card stat-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-bold mb-1 small text-uppercase">Chuyến đang chạy</p>
+                            <h3 class="fw-bold text-info mb-0" id="statActiveTrips">—</h3>
+                        </div>
+                        <div class="icon-box bg-info bg-opacity-10 text-info"><i class="fa-solid fa-route"></i></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Tổng doanh thu -->
+            <div class="col-md-3">
+                <div class="card stat-card h-100 p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted fw-bold mb-1 small text-uppercase">Doanh thu dự kiến</p>
+                            <h4 class="fw-bold text-success mb-0" id="statTotalRevenue">—</h4>
+                        </div>
+                        <div class="icon-box bg-success bg-opacity-10 text-success"><i class="fa-solid fa-sack-dollar"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DÒNG 2: THỐNG KÊ NGUỒN LỰC (DRIVERS & VEHICLES) VÀ BIỂU ĐỒ -->
+        <div class="row g-4">
+            <!-- Cột trái: Tình trạng nguồn lực -->
+            <div class="col-lg-5">
+                <div class="chart-container h-100">
+                    <h5 class="fw-bold mb-4"><i class="fa-solid fa-battery-half text-primary me-2"></i>Tình trạng Nguồn lực</h5>
+
+                    <!-- Nguồn lực Tài xế -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-secondary">Tài xế đang rảnh</span>
+                            <span class="fw-bold" id="driverText">—</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div id="driverProgress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted mt-1 d-block"><i class="fa-solid fa-user-check me-1"></i> Sẵn sàng để nhận chuyến mới</small>
+                    </div>
+
+                    <!-- Nguồn lực Phương tiện -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-secondary">Xe tải sẵn sàng</span>
+                            <span class="fw-bold" id="vehicleText">—</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div id="vehicleProgress" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-muted mt-1 d-block"><i class="fa-solid fa-truck-ramp-box me-1"></i> Xe đang trống ở kho</small>
+                    </div>
+
+                    <!-- Thanh toán -->
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="fw-bold text-secondary" title="Đơn đã thanh toán chưa bị hủy / Tổng tất cả đơn, gồm đơn hủy">Tỷ lệ đơn ĐÃ thanh toán</span>
+                            <span class="fw-bold text-success" id="paymentText">—</span>
+                        </div>
+                        <div class="progress progress-sm">
+                            <div id="paymentProgress" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột phải: Biểu đồ trạng thái đơn hàng -->
+            <div class="col-lg-7">
+                <div class="chart-container h-100 d-flex flex-column">
+                    <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-donut text-warning me-2"></i>Phân bổ Trạng thái Đơn hàng</h5>
+
+                    <!-- ĐÃ FIX: Khóa cứng height: 300px và xóa flex-grow-1 -->
+                    <div id="chartWrapper" style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="orderStatusChart"></canvas>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+</section></div>
     </main>
   </body>
 </html>
